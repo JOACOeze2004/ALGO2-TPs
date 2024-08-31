@@ -21,22 +21,6 @@ size_t calcular_longitud_subpalabra(const char *str, char separador,
 	}
 	return longitud;
 }
-
-//pre:  asumimos que recibimos un str valido y que se manejo correctamente en caso de que el puntero haya sido null. Y que el separador es valido.
-//post: devolvemos un contador de separadores, que en caso de que el caracter sea igual al delimitador, aumenta.
-size_t contar_delimitadores(const char *str, char separador)
-{
-	size_t letra_actual = 0;
-	size_t contador_separadores = 0;
-	while (str[letra_actual] != '\0') {
-		if (str[letra_actual] == separador) {
-			contador_separadores++;
-		}
-		letra_actual++;
-	}
-	return contador_separadores;
-}
-
 //pre:  asumimos que todos los paramatros son validos.
 //post: copiamos la subcadena al campo string de Partes
 void escribir_subcadena(const char *string, size_t long_subcadena,
@@ -58,8 +42,7 @@ void liberar_memoria_en_substr(struct archivo_csv *texto_editado,
 	for (size_t i = 0; i < cantidad_asignada; i++) {
 		free(texto_editado->string[i]);
 	}
-	free(texto_editado->string);
-	free(texto_editado);
+		//free(texto_editado);
 }
 
 //pre:  Asumimos que los parametros pasados son validos.
@@ -82,75 +65,66 @@ void escribir_palabras(const char *string, char separador,
 		i++;
 		if (string[letra_actual] == separador) {
 			letra_actual++;
-		}
+		}		
 	}
+		// if (string[letra_actual] == '\0'){
+		// 	liberar_memoria_en_substr(texto_editado, i);
+		// }
 	if (error) {
 		liberar_memoria_en_substr(texto_editado, i);
 	}
 }
 
-//post: hacemos un malloc para reservar espacio para el struct Partes, manejando el error, y seteamos el campo string como null y la cantidad como 0.
-struct archivo_csv *inicializar_partes(FILE *archivo,char separador)
-{
-	struct archivo_csv *texto_editado = malloc(sizeof(struct archivo_csv));
-	if (texto_editado == NULL) {
-		return NULL;
-	}
-	texto_editado->columnas = 0;
-	texto_editado->string = NULL;
-	texto_editado->nombre_archivo = archivo;
-	texto_editado->separador = separador;
-	return texto_editado;
-}
-
-
 struct archivo_csv *abrir_archivo_csv(const char *nombre_archivo, char separador){
-	if (nombre_archivo == NULL){
-		return NULL;
-	}
-	FILE *archivo = fopen(nombre_archivo,"r");
+	struct archivo_csv *archivo = malloc(sizeof(struct archivo_csv));
 	if (archivo == NULL){
 		return NULL;
 	}
-	struct archivo_csv *archivo_csv = inicializar_partes(archivo,separador);
-	if (archivo_csv == NULL){
-		fclose(archivo);
+	archivo->nombre_archivo = fopen(nombre_archivo,"r");
+	if (archivo->nombre_archivo == NULL){
+		free(archivo);
 		return NULL;
 	}
-	return archivo_csv;
+	archivo->columnas = 0;
+	archivo->string = NULL;
+	archivo->separador = separador;
+	return archivo;
 }
 
+bool castear_a_int(const char* string, void* ctx){
+	char *caracter = (char *) ctx;
+	if (string[0] != '\0'){
+		*caracter = string[0];
+		return true;
+	}
+	
+	return false;
+}
 
-
-
-
-
-
-
-
-
-
-
+bool castear_a_char(const char* string, void* ctx){
+	int *entero = (int *) ctx;
+	*entero = atoi(string);
+	return true;
+}
 
 size_t leer_linea_csv(struct archivo_csv *archivo, size_t columnas, bool (*funciones[])(const char *, void *), void *ctx[]){
-	char texto[19];
-	if(fgets(texto,sizeof(texto),archivo->nombre_archivo) == NULL){
+	char texto[50];
+	if(fgets(texto,sizeof(texto),archivo->nombre_archivo)== NULL){
 		return 0;
 	}
-	archivo->columnas = contar_delimitadores(texto, archivo->separador) + 1;
-	char **str_temp = realloc(archivo->string,
-				  sizeof(char *) * archivo->columnas);
+	archivo->columnas = columnas;
+	char **str_temp = realloc(archivo->string, sizeof(char *) * archivo->columnas);
 	if (str_temp == NULL) {
 		free(archivo);
 		return 0;
 	}
 	archivo->string = str_temp;
-	escribir_palabras(texto, archivo->separador, archivo);	
+	escribir_palabras(texto, archivo->separador, archivo);
 	return 5;
 }
 
 void cerrar_archivo_csv(struct archivo_csv *archivo){
-	if (archivo->nombre_archivo != NULL){
+	if (archivo != NULL){
 		fclose(archivo->nombre_archivo);
 		for (size_t i = 0; i < archivo->columnas; i++) {
 			free(archivo->string[i]);
@@ -159,3 +133,39 @@ void cerrar_archivo_csv(struct archivo_csv *archivo){
 	}
 	free(archivo);
 }
+
+
+// int main() {
+//     //Leer archivo CSV
+//     struct archivo_csv *archivo = abrir_archivo_csv("/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/pokedex.csv", ';');
+//     if (!archivo) {
+//         printf("Error al abrir el archivo.\n");
+//         return 1;
+//     }
+
+//     printf("Leyendo lineas del archivo...\n");
+//     char texto[1000];
+//     while (fgets(texto, sizeof(texto), archivo->nombre_archivo) != NULL) {
+//         printf("\nLinea leída: %s\n", texto);
+        
+//         //Dividir la línea leída en partes
+//         struct archivo_csv partes;
+//         partes.string = NULL;
+//         partes.separador = archivo->separador;
+// 		size_t columnas = 5;
+//         struct archivo_csv *resultado = escribir_palabras(texto, archivo->separador, &partes);
+//         if (resultado != NULL) {
+//             for (size_t i = 0; i < columnas && resultado->string[i] != NULL; i++) {
+//                 printf("Parte %zu: %s\n", i, resultado->string[i]);
+//             }
+
+//             liberar_memoria_en_substr(&partes, columnas);
+//         }
+//     }
+
+//     printf("Fin de archivo\n");
+
+//     cerrar_archivo_csv(archivo);
+
+//     return 0;
+// }
