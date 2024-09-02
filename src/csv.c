@@ -21,6 +21,7 @@ size_t calcular_longitud_subpalabra(const char *str, char separador,
 	}
 	return longitud;
 }
+
 //pre:  asumimos que todos los paramatros son validos.
 //post: copiamos la subcadena al campo string de Partes
 void escribir_subcadena(const char *string, size_t long_subcadena,
@@ -42,7 +43,8 @@ void liberar_memoria_en_substr(struct archivo_csv *texto_editado,
 	for (size_t i = 0; i < cantidad_asignada; i++) {
 		free(texto_editado->string[i]);
 	}
-		//free(texto_editado);
+	free(texto_editado->string);
+	free(texto_editado);
 }
 
 //pre:  Asumimos que los parametros pasados son validos.
@@ -65,11 +67,8 @@ void escribir_palabras(const char *string, char separador,
 		i++;
 		if (string[letra_actual] == separador) {
 			letra_actual++;
-		}		
+		}
 	}
-		// if (string[letra_actual] == '\0'){
-		// 	liberar_memoria_en_substr(texto_editado, i);
-		// }
 	if (error) {
 		liberar_memoria_en_substr(texto_editado, i);
 	}
@@ -91,17 +90,44 @@ struct archivo_csv *abrir_archivo_csv(const char *nombre_archivo, char separador
 	return archivo;
 }
 
-bool castear_a_int(const char* string, void* ctx){
+struct archivo_csv *dividir_string(struct archivo_csv* archivo ,const char *string)
+{
+	char **str_temp = realloc(archivo->string,
+				  sizeof(char *) * archivo->columnas);
+	if (str_temp == NULL) {
+		free(archivo);
+		return NULL;
+	}
+	archivo->string = str_temp;
+	escribir_palabras(string, archivo->separador, archivo);
+	return archivo;
+}
+
+void liberar_partes(struct archivo_csv *partes) {
+    for (size_t i = 0; i < partes->columnas; i++) {
+        free(partes->string[i]);
+    }
+    free(partes->string);
+    fclose(partes->nombre_archivo);
+    free(partes);
+}
+
+bool castear_a_char(const char* string, void* ctx){
+	if (string == NULL || ctx == NULL){
+		return false;
+	}
 	char *caracter = (char *) ctx;
 	if (string[0] != '\0'){
 		*caracter = string[0];
 		return true;
 	}
-	
 	return false;
 }
 
-bool castear_a_char(const char* string, void* ctx){
+bool castear_a_int(const char* string, void* ctx){
+	if (string == NULL || ctx == NULL){
+		return false;
+	}
 	int *entero = (int *) ctx;
 	*entero = atoi(string);
 	return true;
@@ -109,31 +135,23 @@ bool castear_a_char(const char* string, void* ctx){
 
 size_t leer_linea_csv(struct archivo_csv *archivo, size_t columnas, bool (*funciones[])(const char *, void *), void *ctx[]){
 	char texto[50];
+	size_t contador_lineas_contadas = 5;
 	if(fgets(texto,sizeof(texto),archivo->nombre_archivo)== NULL){
+		return contador_lineas_contadas;
+	}
+	archivo->columnas=columnas;
+	struct archivo_csv *partes = dividir_string(archivo,texto);
+	if (partes == NULL) {
 		return 0;
 	}
-	archivo->columnas = columnas;
-	char **str_temp = realloc(archivo->string, sizeof(char *) * archivo->columnas);
-	if (str_temp == NULL) {
-		free(archivo);
-		return 0;
-	}
-	archivo->string = str_temp;
-	escribir_palabras(texto, archivo->separador, archivo);
-	return 5;
+	return contador_lineas_contadas;
 }
 
 void cerrar_archivo_csv(struct archivo_csv *archivo){
 	if (archivo != NULL){
-		fclose(archivo->nombre_archivo);
-		for (size_t i = 0; i < archivo->columnas; i++) {
-			free(archivo->string[i]);
-		}
-		free(archivo->string);
+		liberar_partes(archivo);
 	}
-	free(archivo);
 }
-
 
 // int main() {
 //     //Leer archivo CSV
@@ -168,4 +186,72 @@ void cerrar_archivo_csv(struct archivo_csv *archivo){
 //     cerrar_archivo_csv(archivo);
 
 //     return 0;
+// }
+
+// #define MAX_LINE_LENGTH 256
+
+// int main() {
+//     // Abre el archivo CSV
+//     struct archivo_csv *archivo = abrir_archivo_csv("/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/pokedex.csv", ';');
+//     if (archivo == NULL) {
+//         perror("No se pudo abrir el archivo");
+//         return EXIT_FAILURE;
+//     }
+
+//     // Define el número máximo de columnas esperadas
+//     size_t columnas_esperadas = 5;  // Ajusta este valor según sea necesario
+
+//     // Lee las líneas del archivo
+//     size_t contador_lineas_contadas;
+//     bool (*funciones[])(const char *, void *) = {NULL}; // Ajusta según tus necesidades
+//     void *ctx[] = {NULL, NULL};  // Contexto para las funciones, si es necesario
+
+//     while ((contador_lineas_contadas = leer_linea_csv(archivo, columnas_esperadas, funciones, ctx)) > 2) {
+//         // Imprime las partes del CSV
+//         for (size_t i = 0; i < archivo->columnas; i++) {
+//             if (archivo->string[i] != NULL) {
+//                 printf("Parte %zu: %s\n", i, archivo->string[i]);
+//             }
+//         }
+
+//     }
+
+//     // Cierra el archivo y libera la memoria
+//     cerrar_archivo_csv(archivo);
+
+//     return EXIT_SUCCESS;
+// }
+
+
+// int main() {
+//     // Abre el archivo CSV
+//     struct archivo_csv *archivo = abrir_archivo_csv("/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/pokedex.csv", ';');
+//     if (archivo == NULL) {
+//         perror("No se pudo abrir el archivo");
+//         return EXIT_FAILURE;
+//     }
+
+//     // Lee y procesa el archivo línea por línea
+//     char line[1024];
+//     while (fgets(line, sizeof(line), archivo->nombre_archivo)) {
+//         // Elimina el salto de línea al final de cada línea
+//         line[strcspn(line, "\n")] = '\0';
+
+//         // Divide la línea en partes usando el separador
+//         struct archivo_csv *partes = dividir_string(archivo, line);
+//         if (partes != NULL) {
+//             // Imprime las partes divididas
+//             for (size_t i = 0; i < partes->columnas; i++) {
+//                 printf("Parte %zu: %s\n", i, partes->string[i]);
+//             }
+
+//             // Libera la memoria asignada para las partes
+//             liberar_memoria_en_substr(partes, partes->columnas);
+//         }
+//     }
+
+//     // Cierra el archivo y libera la memoria
+//     cerrar_archivo_csv(archivo);
+
+//     return EXIT_SUCCESS;
 // }
