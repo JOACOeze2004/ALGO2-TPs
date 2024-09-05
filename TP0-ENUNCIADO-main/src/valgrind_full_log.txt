@@ -1,0 +1,223 @@
+==6059== Memcheck, a memory error detector
+==6059== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==6059== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==6059== Command: ./split
+==6059== Parent PID: 6031
+==6059== 
+--6059-- malloc(472) = 0x4A99040
+--6059-- malloc(4096) = 0x4A99260
+--6059-- malloc(16) = 0x4A9A2A0
+--6059-- realloc(0x0,40)malloc(40) = 0x4A9A2F0
+--6059-- malloc(8) = 0x4A9A360
+--6059-- malloc(2) = 0x4A9A3B0
+--6059-- malloc(3) = 0x4A9A400
+--6059-- malloc(3) = 0x4A9A450
+--6059-- malloc(3) = 0x4A9A4A0
+--6059-- malloc(1024) = 0x4A9A4F0
+--6059-- free(0x4A9A360)
+--6059-- free(0x4A9A3B0)
+--6059-- free(0x4A9A400)
+--6059-- free(0x4A9A450)
+--6059-- free(0x4A9A4A0)
+--6059-- free(0x4A9A2F0)
+--6059-- free(0x4A9A2A0)
+--6059-- malloc(16) = 0x4A9A930
+--6059-- realloc(0x0,40)malloc(40) = 0x4A9A980
+--6059-- malloc(11) = 0x4A9A9F0
+--6059-- malloc(2) = 0x4A9AA40
+--6059-- malloc(3) = 0x4A9AA90
+--6059-- malloc(2) = 0x4A9AAE0
+--6059-- malloc(2) = 0x4A9AB30
+--6059-- free(0x4A9A9F0)
+--6059-- free(0x4A9AA40)
+--6059-- free(0x4A9AA90)
+--6059-- free(0x4A9AAE0)
+--6059-- free(0x4A9AB30)
+--6059-- free(0x4A9A980)
+--6059-- free(0x4A9A930)
+--6059-- malloc(16) = 0x4A9AB80
+--6059-- realloc(0x0,40)malloc(40) = 0x4A9ABD0
+--6059-- malloc(9) = 0x4A9AC40
+--6059-- malloc(2) = 0x4A9AC90
+--6059-- malloc(3) = 0x4A9ACE0
+--6059-- malloc(2) = 0x4A9AD30
+--6059-- malloc(3) = 0x4A9AD80
+--6059-- free(0x4A9AC40)
+--6059-- free(0x4A9AC90)
+--6059-- free(0x4A9ACE0)
+--6059-- free(0x4A9AD30)
+--6059-- free(0x4A9AD80)
+--6059-- free(0x4A9ABD0)
+--6059-- free(0x4A9AB80)
+--6059-- malloc(16) = 0x4A9ADD0
+--6059-- realloc(0x0,40)malloc(40) = 0x4A9AE20
+--6059-- malloc(7) = 0x4A9AE90
+--6059-- malloc(2) = 0x4A9AEE0
+--6059-- malloc(3) = 0x4A9AF30
+--6059-- malloc(3) = 0x4A9AF80
+--6059-- malloc(3) = 0x4A9AFD0
+--6059-- free(0x4A9AE90)
+--6059-- free(0x4A9AEE0)
+--6059-- free(0x4A9AF30)
+--6059-- free(0x4A9AF80)
+--6059-- free(0x4A9AFD0)
+--6059-- free(0x4A9AE20)
+--6059-- free(0x4A9ADD0)
+--6059-- malloc(16) = 0x4A9B020
+--6059-- realloc(0x0,40)malloc(40) = 0x4A9B070
+--6059-- malloc(7) = 0x4A9B0E0
+--6059-- malloc(2) = 0x4A9B130
+--6059-- malloc(2) = 0x4A9B180
+--6059-- malloc(3) = 0x4A9B1D0
+--6059-- malloc(2) = 0x4A9B220
+--6059-- free(0x4A9B0E0)
+--6059-- free(0x4A9B130)
+--6059-- free(0x4A9B180)
+--6059-- free(0x4A9B1D0)
+--6059-- free(0x4A9B220)
+--6059-- free(0x4A9B070)
+--6059-- free(0x4A9B020)
+--6059-- malloc(16) = 0x4A9B270
+--6059-- realloc(0x0,40)malloc(40) = 0x4A9B2C0
+--6059-- malloc(7) = 0x4A9B330
+--6059-- malloc(2) = 0x4A9B380
+--6059-- malloc(2) = 0x4A9B3D0
+--6059-- malloc(2) = 0x4A9B420
+--6059-- malloc(2) = 0x4A9B470
+--6059-- free(0x4A9B330)
+--6059-- free(0x4A9B380)
+--6059-- free(0x4A9B3D0)
+--6059-- free(0x4A9B420)
+--6059-- free(0x4A9B470)
+--6059-- free(0x4A9B2C0)
+--6059-- free(0x4A9B270)
+--6059-- malloc(16) = 0x4A9B4C0
+--6059-- realloc(0x0,40)malloc(40) = 0x4A9B510
+--6059-- malloc(9) = 0x4A9B580
+--6059-- malloc(2) = 0x4A9B5D0
+--6059-- malloc(3) = 0x4A9B620
+--6059-- malloc(3) = 0x4A9B670
+--6059-- malloc(2) = 0x4A9B6C0
+--6059-- free(0x4A9B580)
+--6059-- free(0x4A9B5D0)
+--6059-- free(0x4A9B620)
+--6059-- free(0x4A9B670)
+--6059-- free(0x4A9B6C0)
+--6059-- free(0x4A9B510)
+--6059-- free(0x4A9B4C0)
+--6059-- malloc(16) = 0x4A9B710
+--6059-- realloc(0x0,40)malloc(40) = 0x4A9B760
+--6059-- malloc(8) = 0x4A9B7D0
+--6059-- malloc(2) = 0x4A9B820
+--6059-- malloc(3) = 0x4A9B870
+--6059-- malloc(2) = 0x4A9B8C0
+--6059-- malloc(3) = 0x4A9B910
+--6059-- free(0x4A9B7D0)
+--6059-- free(0x4A9B820)
+--6059-- free(0x4A9B870)
+--6059-- free(0x4A9B8C0)
+--6059-- free(0x4A9B910)
+--6059-- free(0x4A9B760)
+--6059-- free(0x4A9B710)
+--6059-- malloc(16) = 0x4A9B960
+--6059-- realloc(0x0,40)malloc(40) = 0x4A9B9B0
+--6059-- malloc(9) = 0x4A9BA20
+--6059-- malloc(2) = 0x4A9BA70
+--6059-- malloc(3) = 0x4A9BAC0
+--6059-- malloc(3) = 0x4A9BB10
+--6059-- malloc(3) = 0x4A9BB60
+--6059-- free(0x4A9BA20)
+--6059-- free(0x4A9BA70)
+--6059-- free(0x4A9BAC0)
+--6059-- free(0x4A9BB10)
+--6059-- free(0x4A9BB60)
+--6059-- free(0x4A9B9B0)
+--6059-- free(0x4A9B960)
+--6059-- free(0x4A99260)
+--6059-- free(0x4A99040)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x4A9A4F0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+--6059-- free(0x0)
+==6059== 
+==6059== HEAP SUMMARY:
+==6059==     in use at exit: 0 bytes in 0 blocks
+==6059==   total heap usage: 66 allocs, 66 frees, 6,260 bytes allocated
+==6059== 
+==6059== All heap blocks were freed -- no leaks are possible
+==6059== 
+==6059== For lists of detected and suppressed errors, rerun with: -s
+==6059== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
