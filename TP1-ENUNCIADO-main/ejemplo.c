@@ -24,10 +24,10 @@ bool leer_caracter(const char *str, void *ctx)
 	return true;
 }
 
-int main(int argc, char const *argv[])
+int main()
 {
 	struct archivo_csv *archivo =
-		abrir_archivo_csv("ejemplos/ejemplo.csv", ';');
+		abrir_archivo_csv("/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/pokedex.csv", ';');
 
 	bool (*funciones[3])(const char *, void *) = { crear_string_nuevo,
 						       leer_caracter,
