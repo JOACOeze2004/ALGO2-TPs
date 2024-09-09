@@ -96,7 +96,7 @@ void liberar_todo(struct archivo_csv *archivo)
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//pre:	Se asume que el puntero al struct es valido. 
+//pre:	Se asume que el puntero al struct es valido.
 //post:	Inicializa los distintos campos del struct archvios.
 void inicializar_campos(struct archivo_csv *archivo, char separador)
 {
@@ -123,7 +123,7 @@ struct archivo_csv *abrir_archivo_csv(const char *nombre_archivo,
 	if (archivo == NULL) {
 		return NULL;
 	}
-	if (!es_archivo_valido(archivo,nombre_archivo)) {
+	if (!es_archivo_valido(archivo, nombre_archivo)) {
 		free(archivo);
 		return NULL;
 	}
@@ -132,10 +132,10 @@ struct archivo_csv *abrir_archivo_csv(const char *nombre_archivo,
 }
 
 //pre:	Asumimos que el puntero al struct archivo_csv no es null y que se fue reservando memoria para cada elemento del string a castear.
-//post:	libera la memoria reservada para los elementos del vector  de strings hechos por la funcion de dividir_str. 
+//post:	Libera la memoria reservada para los elementos del vector  de strings hechos por la funcion de dividir_str.
 void liberar_substr_al_procesar_linea(struct archivo_csv *archivo)
 {
-		for (size_t i = 0; i < archivo->columnas; i++) {
+	for (size_t i = 0; i < archivo->columnas; i++) {
 		free(archivo->string[i]);
 	}
 }
@@ -147,16 +147,20 @@ size_t leer_linea_csv(struct archivo_csv *archivo, size_t columnas,
 	size_t contador_lineas_casteadas = 0;
 	size_t i = 0;
 	archivo->columnas = columnas;
+	bool es_funcion_invalida = false;
 	if (fgets(texto, sizeof(texto), archivo->nombre_archivo) == NULL) {
 		return contador_lineas_casteadas;
 	}
-    if (dividir_string(archivo, texto) == NULL) {
-        return 0;
-    }
-	while (funciones[i] != NULL && i < archivo->columnas) {
-		if (funciones[i](archivo->string[i], ctx[i])) {
+	if (dividir_string(archivo, texto) == NULL) {
+		return 0;
+	}
+	while (!es_funcion_invalida && i < archivo->columnas) {
+		if (funciones[i] == NULL || ctx[i] == NULL){
+			es_funcion_invalida = true;
+		}		
+		else if (funciones[i](archivo->string[i], ctx[i])) {
 			contador_lineas_casteadas++;
-		}
+		}		
 		i++;
 	}
 	liberar_substr_al_procesar_linea(archivo);

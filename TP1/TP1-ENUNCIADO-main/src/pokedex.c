@@ -23,20 +23,26 @@ struct pokedex *pokedex_crear()
 	return nueva_pokedex;
 }
 
-//pre:	Asumimos que el puntero al struct pokedex, ya fue validado de que fuera NULL. 
-//post:	Devuelve true en caso de que el pokemon ya este en la pokedex, sino esta devuelve true.
+//pre:	Asumimos que el puntero al struct pokedex, ya fue validado de que fuera NULL.
+//post:	Devuelve true en caso de que el pokemon ya este en la pokedex ( o sea tengan mismo nombre y mismas stats), sino esta devuelve true.
 bool es_pokemon_repetido(struct pokedex *pokedex, struct pokemon pokemon)
 {
 	bool esta_repetido = false;
 	for (size_t i = 0; i < pokedex->cantidad; i++) {
 		if (strcmp(pokedex->pokemones[i].nombre, pokemon.nombre) == 0) {
-			esta_repetido = true;
+			if (pokedex->pokemones[i].fuerza == pokemon.fuerza &&
+			    pokedex->pokemones[i].destreza ==
+				    pokemon.destreza &&
+			    pokedex->pokemones[i].resistencia ==
+				    pokemon.resistencia) {
+				esta_repetido = true;
+			}
 		}
 	}
 	return esta_repetido;
 }
 
-//pre:	Asumimos que el puntero al struct pokedex, ya fue validado de que fuera NULL. 
+//pre:	Asumimos que el puntero al struct pokedex, ya fue validado de que fuera NULL.
 //post:	Devuelve true en caso de que la asignacion de memoria haya sido exitosa, sino devuelve falso.
 bool asignar_memoria_pokemon(struct pokedex *pokedex, struct pokemon pokemon)
 {
@@ -48,8 +54,8 @@ bool asignar_memoria_pokemon(struct pokedex *pokedex, struct pokemon pokemon)
 	return true;
 }
 
-//pre:	Asumimos que el puntero al struct pokedex, ya fue validado de que fuera NULL. 
-//post:	Setea los atributos de los campos del struct pokemon. 
+//pre:	Asumimos que el puntero al struct pokedex, ya fue validado de que fuera NULL.
+//post:	Setea los atributos de los campos del struct pokemon.
 void setear_atributos_pokemon(struct pokedex *pokedex, struct pokemon pokemon)
 {
 	strcpy(pokedex->pokemones[pokedex->cantidad].nombre, pokemon.nombre);
@@ -60,14 +66,14 @@ void setear_atributos_pokemon(struct pokedex *pokedex, struct pokemon pokemon)
 	pokedex->cantidad++;
 }
 
-//pre:	Asumimos que el puntero al struct pokedex, ya fue validado de que fuera NULL. 	
+//pre:	Asumimos que el puntero al struct pokedex, ya fue validado de que fuera NULL.
 //post:	devuelve false en caos de que la asignacion de memoria haya fallado.
 bool setear_nuevo_pokemon(struct pokedex *pokedex, struct pokemon pokemon)
 {
-	if (!asignar_memoria_pokemon(pokedex,pokemon)){
+	if (!asignar_memoria_pokemon(pokedex, pokemon)) {
 		return false;
 	}
-	setear_atributos_pokemon(pokedex,pokemon);
+	setear_atributos_pokemon(pokedex, pokemon);
 	return true;
 }
 
@@ -75,31 +81,36 @@ bool setear_nuevo_pokemon(struct pokedex *pokedex, struct pokemon pokemon)
 //post:	Devuelve true en caso de que el tipo es valido (fuego, agua,planta, etc).
 bool es_tipo_esperado(struct pokemon pokemon)
 {
-	return (pokemon.tipo == TIPO_AGUA || pokemon.tipo == TIPO_FUEGO || pokemon.tipo == TIPO_ELECTRICO || pokemon.tipo == TIPO_LUCHA || pokemon.tipo == TIPO_NORMAL || pokemon.tipo == TIPO_PLANTA || pokemon.tipo == TIPO_ROCA );
+	return (pokemon.tipo == TIPO_AGUA || pokemon.tipo == TIPO_FUEGO ||
+		pokemon.tipo == TIPO_ELECTRICO || pokemon.tipo == TIPO_LUCHA ||
+		pokemon.tipo == TIPO_NORMAL || pokemon.tipo == TIPO_PLANTA ||
+		pokemon.tipo == TIPO_ROCA);
 }
 
 //pre:	Asumimos que el archivo se casto correctamnete.
 //post: devuelve true si el nombre del pokemon no es vacio, y si las demas estadisticas del pokemon son mayores o iguales a 0.
 bool es_entrada_adecuada(struct pokemon pokemon)
 {
-	return (strcmp(pokemon.nombre,"") != 0 && es_tipo_esperado(pokemon) && pokemon.fuerza >= 0 && pokemon.destreza >= 0 && pokemon.resistencia >= 0);
+	return (strcmp(pokemon.nombre, "") != 0 && es_tipo_esperado(pokemon) &&
+		pokemon.fuerza >= 0 && pokemon.destreza >= 0 &&
+		pokemon.resistencia >= 0);
 }
 
-//pre:
-//post:
+//pre:	Se aume que el puntero al struct pokedex, ya es valido, y que se inicializaron y se actualizaron los campos cantidad  y capacidad.
+//post:	redimensiona el arreglo, usando realloc, de la pokedex para guardar los pkemones, si es 0 la capacidad, la nueva capacidad va a ser de 10, sino se va multiplicando capacidad*2. Y devuelve true si se logro hacer todo esto. 
 bool redimensionar_pokedex(struct pokedex *pokedex)
 {
 	size_t nueva_capacidad_pokedex =
 		(pokedex->capacidad == 0) ?
 			CAPACIDAD_INICIAL :
 			pokedex->capacidad * FACTOR_DE_CRECIMIENTO;
-	struct pokemon *pokemon_redimensionados = realloc(
-		pokedex->pokemones,
-		nueva_capacidad_pokedex * sizeof(struct pokemon));
-	if (pokemon_redimensionados == NULL) {
+	struct pokemon *pokemones_redimensionados =
+		realloc(pokedex->pokemones,
+			nueva_capacidad_pokedex * sizeof(struct pokemon));
+	if (pokemones_redimensionados == NULL) {
 		return false;
 	}
-	pokedex->pokemones = pokemon_redimensionados;
+	pokedex->pokemones = pokemones_redimensionados;
 	pokedex->capacidad = nueva_capacidad_pokedex;
 	return true;
 }
@@ -110,11 +121,12 @@ bool pokedex_agregar_pokemon(struct pokedex *pokedex, struct pokemon pokemon)
 		return false;
 	}
 	if (pokedex->capacidad <= pokedex->cantidad) {
-		if(!redimensionar_pokedex(pokedex)) {
+		if (!redimensionar_pokedex(pokedex)) {
 			return false;
 		}
 	}
-	if (!es_pokemon_repetido(pokedex, pokemon) && es_entrada_adecuada(pokemon)) {
+	if (!es_pokemon_repetido(pokedex, pokemon) &&
+	    es_entrada_adecuada(pokemon)) {
 		if (setear_nuevo_pokemon(pokedex, pokemon)) {
 			return true;
 		}
@@ -148,7 +160,8 @@ size_t calcular_centro(size_t inicio, size_t fin)
 const struct pokemon *pokedex_buscar_pokemon(struct pokedex *pokedex,
 					     const char *nombre)
 {
-	if (pokedex == NULL || nombre == NULL || (pokedex->cantidad <= 0) || (strcmp(nombre,"") == 0)) {
+	if (pokedex == NULL || nombre == NULL || (pokedex->cantidad <= 0) ||
+	    (strcmp(nombre, "") == 0)) {
 		return NULL;
 	}
 	int se_encontro_pokemon = false;
@@ -175,7 +188,7 @@ const struct pokemon *pokedex_buscar_pokemon(struct pokedex *pokedex,
 }
 
 //pre:	Los punteros al struct pokemones deberian ser validos.
-//post:	intercambiamos de lugar los punteros 1 y 2. 
+//post:	intercambiamos de lugar los punteros 1 y 2.
 void intercambiar_pokemones(struct pokemon *poke_1, struct pokemon *poke_2)
 {
 	struct pokemon aux = *poke_1;
@@ -183,7 +196,7 @@ void intercambiar_pokemones(struct pokemon *poke_1, struct pokemon *poke_2)
 	*poke_2 = aux;
 }
 
-//pre:	Suponemos que el puntero al struct pokedex es valido. 
+//pre:	Suponemos que el puntero al struct pokedex es valido.
 //post:	Ordenamos por burbujeo los strings.
 void ordenar_pokemones(struct pokedex *pokedex)
 {

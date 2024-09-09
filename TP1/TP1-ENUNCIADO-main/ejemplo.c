@@ -27,11 +27,11 @@ bool leer_caracter(const char *str, void *ctx)
 int main()
 {
 	struct archivo_csv *archivo =
-		abrir_archivo_csv("/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/pokedex.csv", ';');
+		abrir_archivo_csv("/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/correcto.txt", ';');
 
-	bool (*funciones[4])(const char *, void *) = { crear_string_nuevo,
+	bool (*funciones[3])(const char *, void *) = { crear_string_nuevo,
 						       leer_caracter,
-						       leer_int, NULL };
+						       leer_int };
 	int entero;
 	char caracter;
 	char *string = NULL;

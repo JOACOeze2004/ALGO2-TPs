@@ -3,12 +3,13 @@
 #include <stdio.h>
 #include <string.h>
 
-bool son_argumentos_validos(int argc, const char *argv[]) {
-    if (argc < 2) {
-        printf("%s <archivo>", argv[0]);
-        return false;
-    }
-    return true;
+bool son_argumentos_validos(int argc, const char *argv[])
+{
+	if (argc < 2) {
+		printf("%s <archivo>", argv[0]);
+		return false;
+	}
+	return true;
 }
 
 //pre:	asumimos que el puntero al struct pokemones  no es NULL, y que los campos e cada pokemon fuern completados exitosamente.
@@ -45,7 +46,7 @@ bool castear_a_char(const char *str, void *ctx)
 }
 
 //pre:	asumimos que le pasamos un tipo de pokemon valido, y que se inicializo correctamente el vector de contador_tipos.
-//post:	le aumentamos en uno al contador dependiendo del tipo que sea el pokemon, llendo del 0 al 7 ( tipo agua = 0, fuego = 1, planta = 2, roca = 3, electrico = 4, normal = 5, lucha = 6) 
+//post:	le aumentamos en uno al contador dependiendo del tipo que sea el pokemon, llendo del 0 al 7 ( tipo agua = 0, fuego = 1, planta = 2, roca = 3, electrico = 4, normal = 5, lucha = 6)
 void actualizar_contadores(char tipo, size_t *contador_tipos)
 {
 	switch (tipo) {
@@ -73,35 +74,45 @@ void actualizar_contadores(char tipo, size_t *contador_tipos)
 	}
 }
 
-//pre:	
-//post:
-int mayor_fuerza_registrada(int maxima_fuerza, int fuerza_pokemon_actual) {
-    return (fuerza_pokemon_actual > maxima_fuerza) ? fuerza_pokemon_actual : maxima_fuerza;
+//pre:	Se debe haber inicializado la fuerza maxima en el main. Ademas de que la fuerza del pokemon a eveluar sea valida.
+//post:	Devuelve la maxima_fuerza si y solo si la fuerza del pokemon actual es mayor a la que fue registada.
+int mayor_fuerza_registrada(int maxima_fuerza, int fuerza_pokemon_actual)
+{
+	return (fuerza_pokemon_actual > maxima_fuerza) ? fuerza_pokemon_actual :
+							 maxima_fuerza;
 }
 
-//pre:	
-//post:
-int mayor_destreza_registrada(int maxima_destreza, int destreza_pokemon_actual) {
-    return (destreza_pokemon_actual > maxima_destreza) ? destreza_pokemon_actual : maxima_destreza;
+//pre:	Se debe haber inicializado la destreza maxima en el main. Ademas de que la destreza del pokemon a eveluar sea valida.
+//post:	Devuelve la maxima_destreza si y solo si la destreza del pokemon actual es mayor a la que fue registada.
+int mayor_destreza_registrada(int maxima_destreza, int destreza_pokemon_actual)
+{
+	return (destreza_pokemon_actual > maxima_destreza) ?
+		       destreza_pokemon_actual :
+		       maxima_destreza;
 }
 
-//pre:	
-//post:
-int mayor_resistencia_registrada(int maxima_resistencia, int resistencia_pokemon_actual) {
-    return (resistencia_pokemon_actual > maxima_resistencia) ? resistencia_pokemon_actual : maxima_resistencia;
+//pre:	Se debe haber inicializado la resistencia maxima en el main. Ademas de que la resistencia del pokemon a eveluar sea valida.
+//post:	Devuelve la maxima_resistencia si y solo si la resistencia del pokemon actual es mayor a la que fue registada.
+int mayor_resistencia_registrada(int maxima_resistencia,
+				 int resistencia_pokemon_actual)
+{
+	return (resistencia_pokemon_actual > maxima_resistencia) ?
+		       resistencia_pokemon_actual :
+		       maxima_resistencia;
 }
 
-bool son_funciones_invalidas(size_t columnas, bool (*funciones[])(const char *, void *)){
-	size_t i=0;
+bool son_funciones_invalidas(size_t columnas,
+			     bool (*funciones[])(const char *, void *))
+{
+	size_t i = 0;
 	bool es_invalida = false;
-	while (i < columnas && !es_invalida){
-		if (funciones[i] == NULL)
-		{
+	while (i < columnas && !es_invalida) {
+		if (funciones[i] == NULL) {
 			es_invalida = true;
 		}
 		i++;
 	}
-	return es_invalida;	
+	return es_invalida;
 }
 
 //pre:	El puntero al struct pokedex, deberia ser valido, ademas de que debe funcionar correctamente la funcion de pokedex_cantidad_pokemones.
@@ -111,7 +122,7 @@ void impirmir_cantidad_total_pokemones(struct pokedex *nueva_pokedex)
 	size_t cantidad_total_pokemones =
 		pokedex_cantidad_pokemones(nueva_pokedex);
 	printf("Total de pokémones en la Pokédex: %zu\n",
-	    cantidad_total_pokemones);
+	       cantidad_total_pokemones);
 }
 
 //pre:	El vector de contadores debe estar inicializado y deberia haberse aumentado con la funcion de aumentar_contadores.
@@ -133,7 +144,7 @@ void imprimir_cant_tipos_pokemones(size_t *contador_tipos)
 void imprimir_resultados(struct pokedex *nueva_pokedex, size_t *contador_tipos)
 {
 	printf("\n");
-	printf("Bienvenido Ash, aqui encontaras todos los pokemones que cargaste, las estadisticas de los mismos, ademas de la cantidad que hay de cada tipo.\n\n");
+	printf("Bienvenido Ash, aqui estan todos los pokemones que cargaste, las estadisticas de los mismos, la cantidad que hay de cada tipo.\n\n");
 	printf("Pokémones en la Pokédex:\n");
 	pokedex_iterar_pokemones(nueva_pokedex, imprimir_pokemon, NULL);
 	printf("\n");
@@ -143,17 +154,18 @@ void imprimir_resultados(struct pokedex *nueva_pokedex, size_t *contador_tipos)
 	imprimir_cant_tipos_pokemones(contador_tipos);
 	printf("\n");
 }
-void imprimir_stats(int fuerza_maxima, int destreza_maxima, int resistencia_maxima)
+void imprimir_stats(int fuerza_maxima, int destreza_maxima,
+		    int resistencia_maxima)
 {
-	printf("La fuerza maxima es de: %i.\n",fuerza_maxima);
-	printf("La destreza maxima es de: %i.\n",destreza_maxima);
-	printf("La resistencia maxima es de: %i.\n",resistencia_maxima);
+	printf("La fuerza maxima es de: %i.\n", fuerza_maxima);
+	printf("La destreza maxima es de: %i.\n", destreza_maxima);
+	printf("La resistencia maxima es de: %i.\n", resistencia_maxima);
+	printf("\n");
 }
-
 
 int main(int argc, char const *argv[])
 {
-	if (!son_argumentos_validos(argc,argv)) {
+	if (!son_argumentos_validos(argc, argv)) {
 		return -1;
 	}
 	const char *nombre_archivo = argv[1];
@@ -172,7 +184,7 @@ int main(int argc, char const *argv[])
 	bool (*funciones[])(const char *,
 			    void *) = { crear_string_nuevo, castear_a_char,
 					castear_a_int,	    castear_a_int,
-					castear_a_int,	    NULL };
+					castear_a_int };
 	void *ctx[] = { &nombre_pokemon, &tipo, &stat1, &stat2, &stat3 };
 	size_t columnas = 5;
 	while (leer_linea_csv(archivo, columnas, funciones, ctx) == 5) {
@@ -181,25 +193,26 @@ int main(int argc, char const *argv[])
 		pokemon.fuerza = stat1;
 		pokemon.destreza = stat2;
 		pokemon.resistencia = stat3;
-		if (!pokedex_agregar_pokemon(nueva_pokedex, pokemon)) {
-			printf("Error al agregar al Pokémon %s a la Pokédex, es posible que ya este en la pokedex, hayas metido un nombre vacio, un tipo invalido o una estadistica negativa.\n ",
+		if (!pokedex_agregar_pokemon(nueva_pokedex, pokemon) || funciones == NULL) {
+			printf("\nError al agregar al Pokémon %s a la Pokédex, es posible que ya este en la pokedex, hayas metido un nombre vacio, un tipo invalido o una estadistica negativa.\n ",
 			       pokemon.nombre);
-		}else{
+		} else {
 			actualizar_contadores(pokemon.tipo, contador_tipos);
-			fuerza_maxima = mayor_fuerza_registrada(fuerza_maxima,pokemon.fuerza);
-			destreza_maxima = mayor_destreza_registrada(destreza_maxima, pokemon.destreza);
-			resistencia_maxima = mayor_resistencia_registrada(resistencia_maxima, pokemon.resistencia);
+			fuerza_maxima = mayor_fuerza_registrada(fuerza_maxima,
+								pokemon.fuerza);
+			destreza_maxima = mayor_destreza_registrada(
+				destreza_maxima, pokemon.destreza);
+			resistencia_maxima = mayor_resistencia_registrada(
+				resistencia_maxima, pokemon.resistencia);
 		}
-		//liberar_partes_restantes(archivo);
 		free(nombre_pokemon);
 	}
-	if (son_funciones_invalidas(columnas,funciones))
-	{	
+	if (son_funciones_invalidas(columnas, funciones)) {
 		free(nombre_pokemon);
 	}
 	cerrar_archivo_csv(archivo);
 	imprimir_resultados(nueva_pokedex, contador_tipos);
-	imprimir_stats(fuerza_maxima,destreza_maxima,resistencia_maxima);
+	imprimir_stats(fuerza_maxima, destreza_maxima, resistencia_maxima);
 	pokedex_destruir(nueva_pokedex);
 	return 0;
 }

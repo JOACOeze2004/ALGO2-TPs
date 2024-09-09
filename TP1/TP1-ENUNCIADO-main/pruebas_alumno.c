@@ -44,108 +44,189 @@ void abrirUnArchivoExistenteDebeRetornarUnPunteroValido()
 	}
 }
 
-void LeerLineaCSVExito() {
-    struct archivo_csv *archivo = abrir_archivo_csv("/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/pokedex.csv", ';');
-    
-    char *nombre;
-    char tipo;
-    int fuerza, destreza, resistencia;
-    
-    void *contextos[] = { &nombre, &tipo, &fuerza, &destreza, &resistencia };
-    bool (*funciones[])(const char *, void *) = { crear_string_nuevo, castear_a_char, castear_a_int, castear_a_int, castear_a_int };
-    
-    size_t columnas_leidas = leer_linea_csv(archivo, 5, funciones, contextos);
-    
-    pa2m_afirmar(columnas_leidas == 5, "Se leen y castean correctamente las 5 columnas.");
-    pa2m_afirmar(strcmp(nombre, "Pikachu") == 0, "El nombre se castean correctamente como 'Pikachu'.");
-    pa2m_afirmar(tipo == 'E', "El tipo se castean correctamente como 'E'.");
-    pa2m_afirmar(fuerza == 20, "La fuerza se castean correctamente como 20.");
-    pa2m_afirmar(destreza == 15, "La destreza se castean correctamente como 15.");
-    pa2m_afirmar(resistencia == 17, "La resistencia se castean correctamente como 17.");
-    free(nombre);
-    cerrar_archivo_csv(archivo);
+void LeerLineaCSVExito()
+{
+	struct archivo_csv *archivo = abrir_archivo_csv(
+		"/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/pokedex.csv",
+		';');
+
+	char *nombre;
+	char tipo;
+	int fuerza, destreza, resistencia;
+
+	void *contextos[] = { &nombre, &tipo, &fuerza, &destreza,
+			      &resistencia };
+	bool (*funciones[])(const char *,
+			    void *) = { crear_string_nuevo, castear_a_char,
+					castear_a_int, castear_a_int,
+					castear_a_int };
+
+	size_t columnas_leidas =
+		leer_linea_csv(archivo, 5, funciones, contextos);
+
+	pa2m_afirmar(columnas_leidas == 5,
+		     "Se leen y castean correctamente las 5 columnas.");
+	pa2m_afirmar(strcmp(nombre, "Pikachu") == 0,
+		     "El nombre se castean correctamente como 'Pikachu'.");
+	pa2m_afirmar(tipo == 'E', "El tipo se castean correctamente como 'E'.");
+	pa2m_afirmar(fuerza == 20,
+		     "La fuerza se castean correctamente como 20.");
+	pa2m_afirmar(destreza == 15,
+		     "La destreza se castean correctamente como 15.");
+	pa2m_afirmar(resistencia == 17,
+		     "La resistencia se castean correctamente como 17.");
+	free(nombre);
+	cerrar_archivo_csv(archivo);
 }
 
-void LeerLineaCSVLineaIncompleta() {
-    struct archivo_csv *archivo = abrir_archivo_csv("/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/pokedex_menos_cols.csv", ';');
-    
-    char *nombre;
-    char tipo;
-    int fuerza, destreza, resistencia;
-    
-    void *contextos[] = { &nombre, &tipo, &fuerza, &destreza, &resistencia };
-    bool (*funciones[])(const char *, void *) = { crear_string_nuevo, castear_a_char, castear_a_int, castear_a_int, castear_a_int };
-    
-    size_t columnas_leidas = leer_linea_csv(archivo, 5, funciones, contextos);
-    
-    pa2m_afirmar(columnas_leidas < 5, "No se leen todas las columnas porque faltan datos en el archivo.");
-    
-    if (columnas_leidas >= 1) {
-		free(nombre); 
-	}    
-    cerrar_archivo_csv(archivo);
-}
+void LeerLineaCSVLineaIncompleta()
+{
+	struct archivo_csv *archivo = abrir_archivo_csv(
+		"/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/pokedex_menos_cols.csv",
+		';');
 
-void LeerLineaCSVValorInvalido() {
-    struct archivo_csv *archivo = abrir_archivo_csv("/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/pokedex_cols_invalidas.csv", ';');
-    
-    char *nombre;
-    char tipo;
-    int fuerza, destreza, resistencia;
-    
-    void *contextos[] = { &nombre, &tipo, &fuerza, &destreza, &resistencia };
-    bool (*funciones[])(const char *, void *) = { crear_string_nuevo, castear_a_char, castear_a_int, castear_a_int, castear_a_int };
-    
-    size_t columnas_leidas = leer_linea_csv(archivo, 5, funciones, contextos);
-    
-    pa2m_afirmar(columnas_leidas < 5, "No se leen todas las columnas debido a un valor inválido.");
-    
-    if (columnas_leidas >= 1){
+	char *nombre;
+	char tipo;
+	int fuerza, destreza, resistencia;
+
+	void *contextos[] = { &nombre, &tipo, &fuerza, &destreza,
+			      &resistencia };
+	bool (*funciones[])(const char *,
+			    void *) = { crear_string_nuevo, castear_a_char,
+					castear_a_int, castear_a_int,
+					castear_a_int };
+
+	size_t columnas_leidas =
+		leer_linea_csv(archivo, 5, funciones, contextos);
+
+	pa2m_afirmar(
+		columnas_leidas < 5,
+		"No se leen todas las columnas porque faltan datos en el archivo.");
+
+	if (columnas_leidas >= 1) {
 		free(nombre);
-	} 
-    
-    cerrar_archivo_csv(archivo);
+	}
+	cerrar_archivo_csv(archivo);
 }
 
-void LeerLineaCSVVAcio() {
-    struct archivo_csv *archivo = abrir_archivo_csv("/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/pokedex_Vacia.csv", ';');
-    
-    char *nombre;
-    char tipo;
-    int fuerza, destreza, resistencia;
-    
-    void *contextos[] = { &nombre, &tipo, &fuerza, &destreza, &resistencia };
-    bool (*funciones[])(const char *, void *) = { crear_string_nuevo, castear_a_char, castear_a_int, castear_a_int, castear_a_int };
-    
-    size_t columnas_leidas = leer_linea_csv(archivo, 5, funciones, contextos);
-    
-    pa2m_afirmar(columnas_leidas == 0, "No se leen las columnas debido a que el archivo esta vacio.");
-    
-    if (columnas_leidas >= 1){
+void LeerLineaCSVValorInvalido()
+{
+	struct archivo_csv *archivo = abrir_archivo_csv(
+		"/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/pokedex_cols_invalidas.csv",
+		';');
+
+	char *nombre;
+	char tipo;
+	int fuerza, destreza, resistencia;
+
+	void *contextos[] = { &nombre, &tipo, &fuerza, &destreza,
+			      &resistencia };
+	bool (*funciones[])(const char *,
+			    void *) = { crear_string_nuevo, castear_a_char,
+					castear_a_int, castear_a_int,
+					castear_a_int };
+
+	size_t columnas_leidas =
+		leer_linea_csv(archivo, 5, funciones, contextos);
+
+	pa2m_afirmar(
+		columnas_leidas < 5,
+		"No se leen todas las columnas debido a un valor inválido.");
+
+	if (columnas_leidas >= 1) {
 		free(nombre);
-	} 
-    
-    cerrar_archivo_csv(archivo);
+	}
+
+	cerrar_archivo_csv(archivo);
 }
 
-void LeerLineaCSVConNullEnFuncionesDevuelveLaCantidadDeColumnasLeidas() {
-    struct archivo_csv *archivo = abrir_archivo_csv("/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/pokedex.csv", ';');
-    
-    char *nombre;
-    char tipo;
-    int fuerza, destreza, resistencia;
-    
-    void *contextos[] = { &nombre, &tipo, &fuerza, &destreza, &resistencia };
-    bool (*funciones[])(const char *, void *) = { crear_string_nuevo, castear_a_char, NULL, castear_a_int, castear_a_int };
-    
-    size_t columnas_leidas = leer_linea_csv(archivo, 5, funciones, contextos);
-    
-    pa2m_afirmar(columnas_leidas == 2, "Solo lee la primera y segunda columna si le pasamos un null al vector de funciones.");
-    
-    if (columnas_leidas >= 1) {
-		free(nombre); 
-	}    
-    cerrar_archivo_csv(archivo);
+void LeerLineaCSVVAcio()
+{
+	struct archivo_csv *archivo = abrir_archivo_csv(
+		"/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/pokedex_Vacia.csv",
+		';');
+
+	char *nombre;
+	char tipo;
+	int fuerza, destreza, resistencia;
+
+	void *contextos[] = { &nombre, &tipo, &fuerza, &destreza,
+			      &resistencia };
+	bool (*funciones[])(const char *,
+			    void *) = { crear_string_nuevo, castear_a_char,
+					castear_a_int, castear_a_int,
+					castear_a_int };
+
+	size_t columnas_leidas =
+		leer_linea_csv(archivo, 5, funciones, contextos);
+
+	pa2m_afirmar(
+		columnas_leidas == 0,
+		"No se leen las columnas debido a que el archivo esta vacio.");
+
+	if (columnas_leidas >= 1) {
+		free(nombre);
+	}
+
+	cerrar_archivo_csv(archivo);
+}
+
+void LeerLineaCSVConNullEnFuncionesDevuelveLaCantidadDeColumnasLeidas()
+{
+	struct archivo_csv *archivo = abrir_archivo_csv(
+		"/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/pokedex.csv",
+		';');
+
+	char *nombre;
+	char tipo;
+	int fuerza, destreza, resistencia;
+
+	void *contextos[] = { &nombre, &tipo, &fuerza, &destreza,
+			      &resistencia };
+	bool (*funciones[])(const char *,
+			    void *) = { crear_string_nuevo, castear_a_char,
+					NULL, castear_a_int, castear_a_int };
+
+	size_t columnas_leidas =
+		leer_linea_csv(archivo, 5, funciones, contextos);
+
+	pa2m_afirmar(
+		columnas_leidas == 2,
+		"Solo lee la primera y segunda columna si le pasamos un null al vector de funciones.");
+
+	if (columnas_leidas >= 1) {
+		free(nombre);
+	}
+	cerrar_archivo_csv(archivo);
+}
+
+void LeerLineaCSVConNullEnctxDevuelveLaCantidadDeColumnasLeidas()
+{
+	struct archivo_csv *archivo = abrir_archivo_csv(
+		"/home/joacoeze/Documents/Programacion/ALGO2/TP1/TP1-ENUNCIADO-main/ejemplos/pokedex.csv",
+		';');
+
+	char *nombre;
+	char tipo;
+	int  destreza, resistencia;
+
+	void *contextos[] = { &nombre, &tipo, NULL, &destreza,
+			      &resistencia };
+	bool (*funciones[])(const char *,
+			    void *) = { crear_string_nuevo, castear_a_char,
+					castear_a_int, castear_a_int, castear_a_int };
+
+	size_t columnas_leidas =
+		leer_linea_csv(archivo, 5, funciones, contextos);
+
+	pa2m_afirmar(
+		columnas_leidas == 2,
+		"Solo lee la primera y segunda columna si le pasamos un null al vector de contexto.");
+
+	if (columnas_leidas >= 1) {
+		free(nombre);
+	}
+	cerrar_archivo_csv(archivo);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // PUREBAS POKEDEX (crear pokedex)
@@ -163,7 +244,7 @@ void crearUnaPokedexNullaResultaEnUnaPokedexNulla()
 {
 	struct pokedex *pokedex = NULL;
 	pa2m_afirmar(pokedex == NULL,
-		    "Crear una pokedex nula resulta en una pokedex nula");
+		     "Crear una pokedex nula resulta en una pokedex nula");
 }
 
 //Pruebas de agregar pokemones
@@ -187,8 +268,9 @@ void agregarUnPokemonConNombreVacioALaPokedexMantieneSuCantidad()
 	struct pokedex *pokedex = pokedex_crear();
 	struct pokemon pokemon_vacio = { "", TIPO_NORMAL, 55, 40, 35 };
 
-	pa2m_afirmar(!pokedex_agregar_pokemon(pokedex, pokemon_vacio),
-		     "No Se puede agregar un pokemon con nombre vacio a la pokedex");
+	pa2m_afirmar(
+		!pokedex_agregar_pokemon(pokedex, pokemon_vacio),
+		"No Se puede agregar un pokemon con nombre vacio a la pokedex");
 	pa2m_afirmar(
 		pokedex_cantidad_pokemones(pokedex) == 0,
 		"La cantidad de pokemones en la pokedex sigue siendo 0 después de intentar agregar un pokemon con nombre vacio");
@@ -201,8 +283,9 @@ void agregarUnPokemonConTipoInvalidoALaPokedexMantieneSuCantidad()
 	struct pokedex *pokedex = pokedex_crear();
 	struct pokemon pokemon_vacio = { "Juan el vago", 'V', 55, 40, 35 };
 
-	pa2m_afirmar(!pokedex_agregar_pokemon(pokedex, pokemon_vacio),
-		     "No Se puede agregar un pokemon con tipo invalido a la pokedex");
+	pa2m_afirmar(
+		!pokedex_agregar_pokemon(pokedex, pokemon_vacio),
+		"No Se puede agregar un pokemon con tipo invalido a la pokedex");
 	pa2m_afirmar(
 		pokedex_cantidad_pokemones(pokedex) == 0,
 		"La cantidad de pokemones en la pokedex sigue siendo 0 después de intentar agregar un pokemon con tipo invalido");
@@ -213,10 +296,12 @@ void agregarUnPokemonConTipoInvalidoALaPokedexMantieneSuCantidad()
 void agregarUnPokemonConStatInvalidaALaPokedexMantieneSuCantidad()
 {
 	struct pokedex *pokedex = pokedex_crear();
-	struct pokemon pokemon_vacio = { "Vicente Viloni", TIPO_LUCHA, -1, 40, 35 };
+	struct pokemon pokemon_vacio = { "Vicente Viloni", TIPO_LUCHA, -1, 40,
+					 35 };
 
-	pa2m_afirmar(!pokedex_agregar_pokemon(pokedex, pokemon_vacio),
-		     "No Se puede agregar un pokemon con stats negativas a la pokedex");
+	pa2m_afirmar(
+		!pokedex_agregar_pokemon(pokedex, pokemon_vacio),
+		"No Se puede agregar un pokemon con stats negativas a la pokedex");
 	pa2m_afirmar(
 		pokedex_cantidad_pokemones(pokedex) == 0,
 		"La cantidad de pokemones en la pokedex sigue siendo 0 después de intentar agregar un pokemon con stats negativas");
@@ -263,16 +348,15 @@ void buscarUnPokemonEnLaPokedexDevuelveElPokemonCorrecto()
 
 void buscarUnPokemonConNombreVacioDevuelveNull()
 {
-    struct pokedex *pokedex = pokedex_crear();
-    struct pokemon charmander = { "Charmander", TIPO_FUEGO, 52, 43, 39 };
-    pokedex_agregar_pokemon(pokedex, charmander);
+	struct pokedex *pokedex = pokedex_crear();
+	struct pokemon charmander = { "Charmander", TIPO_FUEGO, 52, 43, 39 };
+	pokedex_agregar_pokemon(pokedex, charmander);
 
-    const struct pokemon *encontrado =
-        pokedex_buscar_pokemon(pokedex, "");
-    pa2m_afirmar(encontrado == NULL,
-                 "Buscar un pokemon con nombre vacío devuelve NULL");
+	const struct pokemon *encontrado = pokedex_buscar_pokemon(pokedex, "");
+	pa2m_afirmar(encontrado == NULL,
+		     "Buscar un pokemon con nombre vacío devuelve NULL");
 
-    pokedex_destruir(pokedex);
+	pokedex_destruir(pokedex);
 }
 
 void buscarUnPokemonNulloEnLaPokedexDevuelveNull()
@@ -281,7 +365,7 @@ void buscarUnPokemonNulloEnLaPokedexDevuelveNull()
 	struct pokemon charmander = { "Charmander", TIPO_FUEGO, 52, 43, 39 };
 	pokedex_agregar_pokemon(pokedex, charmander);
 
-    char *pokemon_buscado = NULL;
+	char *pokemon_buscado = NULL;
 	const struct pokemon *encontrado =
 		pokedex_buscar_pokemon(pokedex, pokemon_buscado);
 	pa2m_afirmar(encontrado == NULL,
@@ -305,9 +389,7 @@ void buscarUnPokemonInexistenteEnUnaPokedexLlenaDevuelveNull()
 {
 	struct pokedex *pokedex = pokedex_crear();
 
-	struct pokemon charmander = {
-		"Charmander", TIPO_FUEGO, 50, 2, 24
-	}; 
+	struct pokemon charmander = { "Charmander", TIPO_FUEGO, 50, 2, 24 };
 	struct pokemon pikachu = { "Picachu", TIPO_ELECTRICO, 50, 5, 20 };
 
 	pokedex_agregar_pokemon(pokedex, charmander);
@@ -333,17 +415,16 @@ bool mostrarPokemon(struct pokemon *p, void *ctx)
 
 //Pruebas de iterar pokemones
 
-
 void iterarSobreUnaPokedexVaciaNoIteraNingunPokemon()
 {
-    struct pokedex *pokedex = pokedex_crear();
+	struct pokedex *pokedex = pokedex_crear();
 
-    size_t iterados =
-        pokedex_iterar_pokemones(pokedex, mostrarPokemon, NULL);
-    pa2m_afirmar(iterados == 0,
-                 "No se itera sobre ningún pokemon en una Pokédex vacía");
+	size_t iterados =
+		pokedex_iterar_pokemones(pokedex, mostrarPokemon, NULL);
+	pa2m_afirmar(iterados == 0,
+		     "No se itera sobre ningún pokemon en una Pokédex vacía");
 
-    pokedex_destruir(pokedex);
+	pokedex_destruir(pokedex);
 }
 
 void iterarSobreTodosLosPokemonesDeLaPokedexInvocaLaFuncionCorrectamente()
@@ -361,7 +442,7 @@ void iterarSobreTodosLosPokemonesDeLaPokedexInvocaLaFuncionCorrectamente()
 	pokedex_agregar_pokemon(pokedex, larvitar);
 	pokedex_agregar_pokemon(pokedex, cacnea);
 	pokedex_agregar_pokemon(pokedex, joltik);
-	
+
 	size_t iterados =
 		pokedex_iterar_pokemones(pokedex, mostrarPokemon, NULL);
 	pa2m_afirmar(iterados == 5,
@@ -405,11 +486,12 @@ int main()
 	LeerLineaCSVValorInvalido();
 	LeerLineaCSVVAcio();
 	LeerLineaCSVConNullEnFuncionesDevuelveLaCantidadDeColumnasLeidas();
-	
+	LeerLineaCSVConNullEnctxDevuelveLaCantidadDeColumnasLeidas();
+
 	pa2m_nuevo_grupo("Pruebas de pokedex");
 
 	crearUnaPokedexResultaEnUnaPokedexVacia();
-    crearUnaPokedexNullaResultaEnUnaPokedexNulla();
+	crearUnaPokedexNullaResultaEnUnaPokedexNulla();
 
 	pa2m_nuevo_grupo("Pruebas de agregar a la Pokedex");
 
@@ -422,13 +504,13 @@ int main()
 	pa2m_nuevo_grupo("Pruebas de buscar en la Pokedex");
 
 	buscarUnPokemonEnLaPokedexDevuelveElPokemonCorrecto();
-    buscarUnPokemonNulloEnLaPokedexDevuelveNull();
-    buscarUnPokemonConNombreVacioDevuelveNull();
+	buscarUnPokemonNulloEnLaPokedexDevuelveNull();
+	buscarUnPokemonConNombreVacioDevuelveNull();
 	buscarUnPokemonInexistenteEnLaPokedexDevuelveNull();
 	buscarUnPokemonInexistenteEnUnaPokedexLlenaDevuelveNull();
 
 	pa2m_nuevo_grupo("Pruebas de iteracion en la Pokedex");
-    iterarSobreUnaPokedexVaciaNoIteraNingunPokemon();
+	iterarSobreUnaPokedexVaciaNoIteraNingunPokemon();
 	iterarSobreTodosLosPokemonesDeLaPokedexInvocaLaFuncionCorrectamente();
 
 	return pa2m_mostrar_reporte();

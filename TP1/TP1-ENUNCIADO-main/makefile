@@ -19,5 +19,9 @@ ejemplo: src/*.c ejemplo.c
 tp1: src/*.c tp1.c
 	$(CC) $(CFLAGS) src/*.c tp1.c -o tp1
 
+valgrind-tp1: ejemplo
+	valgrind $(VALGRIND_FLAGS) ./tp1 ejemplos/pokedex.csv
+
 clean:
 	rm -f pruebas_alumno ejemplo tp1
+
