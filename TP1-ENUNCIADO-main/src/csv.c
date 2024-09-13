@@ -150,7 +150,7 @@ size_t leer_linea_csv(struct archivo_csv *archivo, size_t columnas,
 	if (archivo == NULL || funciones == NULL || ctx == NULL) {
 		return 0;
 	}
-	char texto[1000];
+	char texto[450];
 	size_t contador_lineas_casteadas = 0;
 	size_t i = 0;
 	archivo->columnas = columnas;
