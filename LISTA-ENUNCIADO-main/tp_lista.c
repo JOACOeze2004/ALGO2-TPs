@@ -1,6 +1,16 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "src/lista.h"
+#include "src/csv.h"
+
+#define TIPO_AGUA 'A'
+#define TIPO_FUEGO 'F'
+#define TIPO_PLANTA 'P'
+#define TIPO_ROCA 'R'
+#define TIPO_ELECTRICO 'E'
+#define TIPO_NORMAL 'N'
+#define TIPO_LUCHA 'L'
 
 struct pokemon {
 	char *nombre;
@@ -18,8 +28,169 @@ int comparar_nombre_pokemon(void *_p1, void *_p2)
 	return strcmp(p1->nombre, p2->nombre);
 }
 
+bool castear_a_int(const char *str, void *ctx)
+{
+	return sscanf(str, "%d", (int *)ctx) == 1;
+}
+
+bool crear_string_nuevo(const char *str, void *ctx)
+{
+	char *nuevo = malloc(strlen(str) + 1);
+	if (nuevo == NULL)
+		return false;
+	strcpy(nuevo, str);
+	*(char **)ctx = nuevo;
+	return true;
+}
+
+bool castear_a_char(const char *str, void *ctx)
+{
+	*(char *)ctx = *(char *)str;
+	return true;
+}
+
+//pre: asumimos que los argumentos que le pasamos son validos (poque se los pasamos nosotros al ejecutar el programa).
+//post: devuelve false en caso de que le pasemos menos de dos arguemntos, sino devolvemos true.
+bool son_argumentos_validos(int argc, const char *argv[])
+{
+	if (argc < 2) {
+		printf("%s <archivo>", argv[0]);
+		return false;
+	}
+	return true;
+}
+
+//pre:	Asumimos que el struct pokemon y los demas argumentos pasados fueron inicalizados y/o casteados correctamente.
+//post:	seteamos los campos del pokemon con lo que fuismo casteando del archivo csv.
+void setear_pokemon(struct pokemon *pokemon, char *nombre, char tipo,
+		    int fuerza, int destreza, int resistencia)
+{
+	pokemon->nombre = nombre;
+	pokemon->tipo = tipo;
+	pokemon->fuerza = fuerza;
+	pokemon->destreza = destreza;
+	pokemon->resistencia = resistencia;
+}
+
+//pre:	asumimos que el puntero al struct pokemones  no es NULL, y que los campos e cada pokemon fuern completados exitosamente.
+//post:	devolvemos true si pudimos pudimos imprimir cada campo correctamente.
+bool imprimir_pokemon(struct pokemon *pokemon, void *ctx)
+{
+	printf("Nombre: %s, ", pokemon->nombre);
+	printf("Tipo: %c, ", pokemon->tipo);
+	printf("Fuerza: %i, ", pokemon->fuerza);
+	printf("Destreza: %i, ", pokemon->destreza);
+	printf("Resistencia: %i\n", pokemon->resistencia);
+	return true;
+}
+
+//pre:	asumimos que le pasamos un tipo de pokemon valido, y que se inicializo correctamente el vector de contador_tipos.
+//post:	le aumentamos en uno al contador dependiendo del tipo que sea el pokemon, llendo del 0 al 7 ( tipo agua = 0, fuego = 1, planta = 2, roca = 3, electrico = 4, normal = 5, lucha = 6)
+void actualizar_contadores(char tipo, size_t *contador_tipos)
+{
+	switch (tipo) {
+	case TIPO_AGUA:
+		contador_tipos[0]++;
+		break;
+	case TIPO_FUEGO:
+		contador_tipos[1]++;
+		break;
+	case TIPO_PLANTA:
+		contador_tipos[2]++;
+		break;
+	case TIPO_ROCA:
+		contador_tipos[3]++;
+		break;
+	case TIPO_ELECTRICO:
+		contador_tipos[4]++;
+		break;
+	case TIPO_NORMAL:
+		contador_tipos[5]++;
+		break;
+	case TIPO_LUCHA:
+		contador_tipos[6]++;
+		break;
+	}
+}
+
+//pre:	El puntero al struct pokedex, deberia ser valido, ademas de que debe funcionar correctamente la funcion de pokedex_cantidad_pokemones.
+//post:	sacamos la cantidad total de pokemones en la pokedex.
+void impirmir_cantidad_total_pokemones(Lista *lista)
+{
+	size_t cantidad_total_pokemones =
+		lista_cantidad_elementos(lista);
+	printf("Total de pokémones en la Pokédex: %zu\n",
+	       cantidad_total_pokemones);
+}
+
+
+//pre:	El vector de contadores debe estar inicializado y deberia haberse aumentado con la funcion de aumentar_contadores.
+//post:	Imprimimos las cantidades de cada tipo de los pokemones en la pokedex.
+void imprimir_cant_tipos_pokemones(size_t *contador_tipos)
+{
+	printf("\nCantidad de Pokemones de cada tipo:\n");
+	printf("Tipo Agua: %zu\n", contador_tipos[0]);
+	printf("Tipo Fuego: %zu\n", contador_tipos[1]);
+	printf("Tipo Planta: %zu\n", contador_tipos[2]);
+	printf("Tipo Roca: %zu\n", contador_tipos[3]);
+	printf("Tipo Eléctrico: %zu\n", contador_tipos[4]);
+	printf("Tipo Normal: %zu\n", contador_tipos[5]);
+	printf("Tipo Lucha: %zu\n", contador_tipos[6]);
+}
+
+//pre:
+//post:	imrpimimos los resultados obtenidos de los contadores. Ayudandonos de la funcion de iterar que venia en el .h.
+void imprimir_resultados(Lista *lista, size_t *contador_tipos)
+{
+	printf("\n");
+	printf("Bienvenido Ash, aqui estan todos los pokemones que cargaste, las estadisticas de los mismos y la cantidad que hay de cada tipo.\n\n");
+	printf("Pokémones en la Pokédex:\n");
+	lista_iterador(lista, imprimir_pokemon, NULL);
+	printf("\n");
+
+	impirmir_cantidad_total_pokemones(lista);
+
+	imprimir_cant_tipos_pokemones(contador_tipos);
+	printf("\n");
+}
+
 int main(int argc, char *argv[])
 {
+	if (!son_argumentos_validos(argc, argv)) {
+		return -1;
+	}
+	Lista *lista = lista_crear();
+	struct archivo_csv *archivo = abrir_archivo_csv(argv[1], ';');
+	size_t contador_tipos[7] = { 0, 0, 0, 0, 0, 0, 0 };
+	struct pokemon pokemon;
+	size_t columnas = 5;
+	char *nombre_pokemon = NULL;
+	char tipo;
+	int fuerza, destreza, resistencia;
+	bool (*funciones[])(const char *,
+			    void *) = { crear_string_nuevo, castear_a_char,
+					castear_a_int, castear_a_int,
+					castear_a_int };
+	void *ctx[] = { &nombre_pokemon, &tipo, &fuerza, &destreza,
+			&resistencia };
+	while (leer_linea_csv(archivo, columnas, funciones, ctx) == 5)
+	{
+		setear_pokemon(&pokemon, nombre_pokemon, tipo, fuerza, destreza, resistencia);
+		if (!lista_agregar_al_final(lista, ctx)) {
+			printf("\nError al agregar al Pokémon %s a la Pokédex, es posible que hayas metido un nombre vacio, un tipo invalido o una estadistica negativa.\n ",
+			       pokemon.nombre);
+		}
+		else{
+			actualizar_contadores(pokemon.tipo, contador_tipos);
+		}
+		free(nombre_pokemon);
+	}
+	cerrar_archivo_csv(archivo);
+	imprimir_resultados(lista, contador_tipos);
+
+
+	
+	
 	//recibir un archivo por linea de comandos
 	//abrir el archivo csv y parsear pokemones
 	//agregar los pokemones a una lista

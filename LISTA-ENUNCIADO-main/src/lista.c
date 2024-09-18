@@ -5,34 +5,40 @@
 typedef struct nodo{
     void* elemento;
     struct nodo* siguiente;
-}nodo;
+}Nodo;
 
-typedef struct nodo Nodo;
-
-typedef struct lista {
+struct lista {
     Nodo* nodo_inicio;
     Nodo* nodo_final; //a ver si lo dejamos xq puede que ni lo usemos.
     size_t cantidad;
-}lista;
+};
 
 
 typedef struct lista_iterador {
     Nodo* nodo_actual_iterador;
-    Lista *lista;
 }lista_iterador;
 
-nodo *crear_nuevo_nodo(void* cosa)
+//pre:
+//post:
+void inicializar_campos_nodo(Nodo *nodo, void *cosa)
+{
+    nodo->siguiente = NULL;
+    nodo->elemento = cosa;
+}
+
+Nodo *crear_nuevo_nodo(void* cosa)
 {
     Nodo *nodo = malloc(sizeof(Nodo));
     if (nodo == NULL )
     {
         return NULL;
     }
-    nodo->siguiente = NULL;
-    nodo->elemento = cosa;
+    inicializar_campos_nodo(nodo, cosa);
     return nodo;
 }
 
+//pre:
+//post:
 void inicializar_campos_lista(Lista *lista)
 {
     lista->cantidad = 0;
@@ -50,16 +56,23 @@ Lista *lista_crear(){
     return lista;    
 }
 
+//pre:
+//post:
+void liberar_nodos(Lista * lista)
+{
+    Nodo *nodo_actual = lista->nodo_inicio;
+    while (nodo_actual != NULL)
+    {
+        Nodo *nodo_siguiente = nodo_actual->siguiente;
+        free(nodo_actual);
+        nodo_actual= nodo_siguiente;
+    }
+}
+
 void lista_destruir(Lista * lista){
     if (lista != NULL)
     {
-        Nodo *nodo_actual = lista->nodo_inicio;
-        while (nodo_actual != NULL)
-        {
-            Nodo *nodo_siguiente = nodo_actual->siguiente;
-            free(nodo_actual);
-            nodo_actual= nodo_siguiente;
-        }
+        liberar_nodos(lista);
         free(lista);
     }
 }
@@ -69,23 +82,25 @@ void destructor(void* elemento)
     free (elemento);
 }
 
-/**
- * Destruye la lista aplicando la funcion destructora (si no es NULL) a cada elemento.
- * */
+void liberar_nodos_y_elementos(Lista *lista, void (*destructor)(void *))
+{
+    Nodo *nodo_actual = lista->nodo_inicio;
+    while (nodo_actual != NULL)
+    {
+        Nodo *nodo_siguiente = nodo_actual->siguiente;
+        if (destructor != NULL)
+        {
+            destructor(nodo_actual->elemento);
+        }
+        free(nodo_actual);
+        nodo_actual= nodo_siguiente;
+    }
+}
+
 void lista_destruir_todo(Lista *lista, void (*destructor)(void *)){
     if (lista != NULL)
     {
-        Nodo *nodo_actual = lista->nodo_inicio;
-        while (nodo_actual != NULL)
-        {
-            Nodo *nodo_siguiente = nodo_actual->siguiente;
-            if (destructor != NULL)
-            {
-                destructor(nodo_actual->elemento);
-            }
-            free(nodo_actual);
-            nodo_actual= nodo_siguiente;
-        }
+        liberar_nodos_y_elementos(lista,destructor);
         free(lista);
     }  
 }
@@ -96,6 +111,28 @@ size_t lista_cantidad_elementos(Lista *lista){
     }
     return lista->cantidad;    
 }
+
+//pre:
+//post:
+void agregar_al_inicio(Lista *lista, Nodo * nodo_nuevo)
+{
+    nodo_nuevo->siguiente = lista->nodo_inicio;
+    lista->nodo_inicio = nodo_nuevo;
+}
+
+//pre:
+//post:
+void agregar_en_posicion_intermedia(Lista *lista, size_t posicion, Nodo *nodo_nuevo)
+{
+    Nodo *nodo_anterior = lista->nodo_inicio;
+    for (size_t i = 0; i < posicion - 1; i++)
+    {
+        nodo_anterior = nodo_anterior->siguiente; 
+    }
+    nodo_nuevo->siguiente = nodo_anterior->siguiente;
+    nodo_anterior->siguiente = nodo_nuevo;    
+}
+
 
 bool lista_agregar_elemento(Lista *lista, size_t posicion, void *cosa){
     if (posicion > lista->cantidad || lista == NULL || cosa == NULL){
@@ -108,20 +145,27 @@ bool lista_agregar_elemento(Lista *lista, size_t posicion, void *cosa){
     }
     nodo_nuevo->elemento = cosa;    
     if (posicion == 0){
-        nodo_nuevo->siguiente = lista->nodo_inicio;
-        lista->nodo_inicio = nodo_nuevo;
+        agregar_al_inicio(lista,nodo_nuevo);
     }
     else{
-        Nodo *nodo_anterior = lista->nodo_inicio;
-        for (size_t i = 0; i < posicion - 1; i++)
-        {
-            nodo_anterior = nodo_anterior->siguiente; 
-        }
-        nodo_nuevo->siguiente = nodo_anterior->siguiente;
-        nodo_anterior->siguiente = nodo_nuevo;        
+        agregar_en_posicion_intermedia(lista,posicion,nodo_nuevo);
     }
     (lista->cantidad)++; 
     return true;  
+}
+
+//pre:
+//post:
+void inicializar_lista_con_nodo(Lista *lista, Nodo *nodo_nuevo){
+    lista->nodo_inicio = nodo_nuevo;
+    lista->nodo_final = nodo_nuevo;
+}
+
+//pre:
+//post:
+void agregar_nodo_al_final(Lista *lista, Nodo *nodo_nuevo){
+    lista->nodo_final->siguiente = nodo_nuevo;
+    lista->nodo_final = nodo_nuevo;
 }
 
 bool lista_agregar_al_final(Lista *lista, void *cosa){    
@@ -135,15 +179,31 @@ bool lista_agregar_al_final(Lista *lista, void *cosa){
         return false;
     }
     if (lista->cantidad == 0){
-        lista->nodo_inicio = nodo_nuevo;
-        lista->nodo_final = nodo_nuevo;
+        inicializar_lista_con_nodo(lista,nodo_nuevo);
     }else{
-        lista->nodo_final->siguiente = nodo_nuevo;
-        lista->nodo_final = nodo_nuevo;
+        agregar_nodo_al_final(lista,nodo_nuevo);
     }
     (lista->cantidad)++;
     return true;
 }
+
+// void eliminar_en_inicio(Lista *lista)
+// {
+//     Nodo *nodo_aux;
+//     nodo_aux = lista->nodo_inicio;
+//     lista->nodo_inicio = nodo_aux->siguiente;
+// }
+
+// void eliminar_en_intermedio(Lista *lista,size_t posicion ,Nodo *nodo_anterior)
+// {
+//     Nodo *nodo_aux;
+//     nodo_anterior = lista->nodo_inicio;
+//     for (size_t i = 1; i < posicion; i++) {
+//         nodo_anterior = nodo_anterior->siguiente;
+//     }
+//     nodo_aux =nodo_anterior->siguiente;
+//     nodo_anterior->siguiente = nodo_aux->siguiente;  
+// }
 
 bool lista_quitar_elemento(Lista *lista, size_t posicion,void **elemento_quitado){
     if (lista == NULL || posicion > lista->cantidad || lista->cantidad == 0)    //corregir si elemento quitado no puede ser null y deveria devolver false.
@@ -156,13 +216,20 @@ bool lista_quitar_elemento(Lista *lista, size_t posicion,void **elemento_quitado
     {
        nodo_aux = lista->nodo_inicio;
        lista->nodo_inicio = nodo_aux->siguiente;
-
-    }else{
+    }else if (posicion == lista->cantidad - 1){
         nodo_anterior = lista->nodo_inicio;
         for (size_t i = 1; i < posicion; i++) {
             nodo_anterior = nodo_anterior->siguiente;
         }
-        nodo_aux =nodo_anterior->siguiente;
+        nodo_aux = nodo_anterior->siguiente;
+        nodo_anterior->siguiente = nodo_aux->siguiente; 
+    }    
+    else{
+        nodo_anterior = lista->nodo_inicio;
+        for (size_t i = 1; i < posicion - 1; i++) {
+            nodo_anterior = nodo_anterior->siguiente;
+        }
+        nodo_aux = nodo_anterior->siguiente;
         nodo_anterior->siguiente = nodo_aux->siguiente;      
     }
     if (elemento_quitado != NULL)
@@ -198,17 +265,24 @@ void *lista_buscar_elemento(Lista *lista, void *buscado, int (*comparador)(void 
     return NULL;    
 }
 
+//pre:
+//post:
+Nodo *obtener_el_nodo_en_posicion(Lista *lista, size_t posicion)
+{
+    Nodo *nodo_actual = lista->nodo_inicio;
+    for (size_t i = 0; i < posicion; i++)
+    {
+        nodo_actual = nodo_actual->siguiente;   
+    }
+    return nodo_actual;
+}
+
 bool lista_obtener_elemento(Lista *lista, size_t posicion, void **elemento_encontrado){
     if (lista == NULL || posicion > lista->cantidad || lista->cantidad == 0) 
     {
         return false;
     }
-    Nodo *nodo_actual = lista->nodo_inicio;
-
-    for (size_t i = 0; i < posicion; i++)
-    {
-        nodo_actual = nodo_actual->siguiente;   
-    }
+    Nodo *nodo_actual = obtener_el_nodo_en_posicion(lista,posicion);
     if (elemento_encontrado != NULL)
     {
         *elemento_encontrado = nodo_actual->elemento;
@@ -217,7 +291,7 @@ bool lista_obtener_elemento(Lista *lista, size_t posicion, void **elemento_encon
     return true;
 }
 
-size_t lista_iterar_elementos(Lista *lista, bool (*f)(void *, void *), void *ctx){
+size_t lista_iterar_elementos(Lista *lista, bool (*f)(void *, void *), void *ctx){  //Si me cagan a pedos en el tp1 q podria modularizar, modulariza.
     if (lista == NULL)
     {
         return 0;
@@ -248,7 +322,6 @@ Lista_iterador *lista_iterador_crear(Lista *lista){
     {
         return NULL;
     }
-    iterador_externo->lista = lista;
     iterador_externo->nodo_actual_iterador = lista->nodo_inicio;
     return iterador_externo;
 }
