@@ -93,11 +93,11 @@ size_t pila_cantidad(Pila *pila)
 
 void *pila_tope(Pila *pila)
 {
-    if (pila == NULL || pila->lista->cantidad == 0 || pila->lista->nodo_final == NULL)
+    if (pila == NULL || pila->lista->cantidad == 0 || pila->lista->nodo_inicio == NULL)
     {
         return NULL;
     } 
-    return pila->lista->nodo_final->elemento;
+    return pila->lista->nodo_inicio->elemento;
 }
 
 bool pila_apilar(Pila *pila, void *cosa)
@@ -106,7 +106,7 @@ bool pila_apilar(Pila *pila, void *cosa)
     {
         return false;
     }
-    return lista_agregar_al_final(pila->lista,cosa);
+    return lista_agregar_elemento(pila->lista,0,cosa);
 }
 
 
@@ -117,7 +117,7 @@ void *pila_desapilar(Pila *pila)
         return NULL;
     }   
     void* elemento_quitado = NULL;
-    if (lista_quitar_elemento(pila->lista,pila->lista->cantidad - 1,&elemento_quitado))  //tecnicamente es O(n) pero el pero caso nunca se daria x lo que seria O(1)
+    if (lista_quitar_elemento(pila->lista,0,&elemento_quitado))
     {
         return elemento_quitado;
     }

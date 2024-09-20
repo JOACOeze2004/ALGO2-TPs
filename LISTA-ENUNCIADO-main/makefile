@@ -26,6 +26,12 @@ formatear-pruebas:
 formatear-ejemplo:
 	$(CLANG_FORMAT) -i -style=file ejemplo.c
 	
-tp-lista: src/*.c tp1.c
+tp-lista: src/*.c tp_lista.c
 	$(CC) $(CFLAGS) src/*.c tp_lista.c -o tp_lista
+	
+valgrind-tp-lista: tp_lista
+	valgrind $(VALGRIND_FLAGS) ./tp_lista ejemplos/pokedex.csv
+	
+correr-tp:
+	$(CC) $(CFLAGS) src/*.c tp_lista.c -o tp_lista && valgrind $(VALGRIND_FLAGS) ./tp_lista ejemplos/pokedex.csv
 

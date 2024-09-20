@@ -13,7 +13,6 @@ struct lista {
     size_t cantidad;
 };
 
-
 typedef struct lista_iterador {
     Nodo* nodo_actual_iterador;
 }lista_iterador;
@@ -75,11 +74,6 @@ void lista_destruir(Lista * lista){
         liberar_nodos(lista);
         free(lista);
     }
-}
-
-void destructor(void* elemento)
-{
-    free (elemento);
 }
 
 void liberar_nodos_y_elementos(Lista *lista, void (*destructor)(void *))
@@ -159,13 +153,17 @@ bool lista_agregar_elemento(Lista *lista, size_t posicion, void *cosa){
 void inicializar_lista_con_nodo(Lista *lista, Nodo *nodo_nuevo){
     lista->nodo_inicio = nodo_nuevo;
     lista->nodo_final = nodo_nuevo;
+    nodo_nuevo->siguiente = NULL; 
 }
 
 //pre:
 //post:
 void agregar_nodo_al_final(Lista *lista, Nodo *nodo_nuevo){
-    lista->nodo_final->siguiente = nodo_nuevo;
-    lista->nodo_final = nodo_nuevo;
+    if (lista->nodo_final != NULL) {
+        lista->nodo_final->siguiente = nodo_nuevo;
+        lista->nodo_final = nodo_nuevo;
+        nodo_nuevo->siguiente = NULL; 
+    }
 }
 
 bool lista_agregar_al_final(Lista *lista, void *cosa){    
@@ -187,26 +185,20 @@ bool lista_agregar_al_final(Lista *lista, void *cosa){
     return true;
 }
 
-// void eliminar_en_inicio(Lista *lista)
-// {
-//     Nodo *nodo_aux;
-//     nodo_aux = lista->nodo_inicio;
-//     lista->nodo_inicio = nodo_aux->siguiente;
-// }
-
-// void eliminar_en_intermedio(Lista *lista,size_t posicion ,Nodo *nodo_anterior)
-// {
-//     Nodo *nodo_aux;
-//     nodo_anterior = lista->nodo_inicio;
-//     for (size_t i = 1; i < posicion; i++) {
-//         nodo_anterior = nodo_anterior->siguiente;
-//     }
-//     nodo_aux =nodo_anterior->siguiente;
-//     nodo_anterior->siguiente = nodo_aux->siguiente;  
-// }
+//pre:
+//post:
+Nodo* lista_quitar_nodo_en_posicion(Lista *lista, size_t posicion) {
+    Nodo *nodo_anterior = lista->nodo_inicio;
+    for (size_t i = 1; i < posicion; i++) {
+        nodo_anterior = nodo_anterior->siguiente;
+    }
+    Nodo *nodo_aux = nodo_anterior->siguiente;
+    nodo_anterior->siguiente = nodo_aux->siguiente;
+    return nodo_aux;
+}
 
 bool lista_quitar_elemento(Lista *lista, size_t posicion,void **elemento_quitado){
-    if (lista == NULL || posicion > lista->cantidad || lista->cantidad == 0)    //corregir si elemento quitado no puede ser null y deveria devolver false.
+    if (lista == NULL || posicion >= lista->cantidad || lista->cantidad == 0)    //corregir si elemento quitado no puede ser null y deveria devolver false.
     {
         return false;
     }
@@ -216,17 +208,10 @@ bool lista_quitar_elemento(Lista *lista, size_t posicion,void **elemento_quitado
     {
        nodo_aux = lista->nodo_inicio;
        lista->nodo_inicio = nodo_aux->siguiente;
-    }else if (posicion == lista->cantidad - 1){
-        nodo_anterior = lista->nodo_inicio;
-        for (size_t i = 1; i < posicion; i++) {
-            nodo_anterior = nodo_anterior->siguiente;
-        }
-        nodo_aux = nodo_anterior->siguiente;
-        nodo_anterior->siguiente = nodo_aux->siguiente; 
     }    
     else{
         nodo_anterior = lista->nodo_inicio;
-        for (size_t i = 1; i < posicion - 1; i++) {
+        for (size_t i = 1; i < posicion ; i++) {
             nodo_anterior = nodo_anterior->siguiente;
         }
         nodo_aux = nodo_anterior->siguiente;

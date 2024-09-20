@@ -79,11 +79,6 @@ void cola_destruir(Cola *cola)
     }
 }
 
-void destructor_cola(void* elemento)
-{
-    free (elemento);
-}
-
 void liberar_nodos_y_elementos_en_cola(Lista *lista, void (*destructor)(void *))
 {
     Nodo *nodo_actual = lista->nodo_inicio;
