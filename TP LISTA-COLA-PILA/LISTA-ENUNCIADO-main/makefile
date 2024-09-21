@@ -14,18 +14,30 @@ pruebas_alumno: src/*.c pruebas_alumno.c
 valgrind-ejemplo: ejemplo
 	valgrind $(VALGRIND_FLAGS) ./ejemplo
 
-ejemplo: src/*.c ejemplo.c
-	$(CC) $(CFLAGS) src/*.c ejemplo.c -o ejemplo
-
 clean:
 	rm -f pruebas_alumno ejemplo
 		
 formatear-pruebas:
 	$(CLANG_FORMAT) -i -style=file pruebas_alumno.c
 	
-formatear-ejemplo:
-	$(CLANG_FORMAT) -i -style=file ejemplo.c
+formatear-lista:
+	$(CLANG_FORMAT) -i -style=file src/lista.c
 	
-tp-lista: src/*.c tp1.c
+formatear-pila:
+	$(CLANG_FORMAT) -i -style=file src/pila.c
+	
+formatear-cola:
+	$(CLANG_FORMAT) -i -style=file src/cola.c
+	
+formatear-tp:
+	$(CLANG_FORMAT) -i -style=file tp_lista.c
+	
+tp-lista: src/*.c tp_lista.c
 	$(CC) $(CFLAGS) src/*.c tp_lista.c -o tp_lista
+	
+valgrind-tp-lista: tp_lista
+	valgrind $(VALGRIND_FLAGS) ./tp_lista ejemplos/pokedex.csv
+	
+correr-tp:
+	$(CC) $(CFLAGS) src/*.c tp_lista.c -o tp_lista && valgrind $(VALGRIND_FLAGS) ./tp_lista ejemplos/pokedex.csv
 
