@@ -241,6 +241,9 @@ void *lista_buscar_elemento(Lista *lista, void *buscado,
 	    lista->cantidad == 0) {
 		return NULL;
 	}
+	if (comparador(buscado, lista->nodo_inicio->elemento) == 0) {
+    	return lista->nodo_inicio->elemento;
+	}
 	bool encontre_elemento = false;
 	Nodo *nodo_actual = lista->nodo_inicio;
 	Nodo *elemento_buscado;
@@ -271,10 +274,10 @@ Nodo *obtener_el_nodo_en_posicion(Lista *lista, size_t posicion)
 bool lista_obtener_elemento(Lista *lista, size_t posicion,
 			    void **elemento_encontrado)
 {
-	if (lista == NULL || posicion > lista->cantidad ||
+	if (lista == NULL || posicion >= lista->cantidad ||
 	    lista->cantidad == 0) {
 		return false;
-	}
+	}	
 	Nodo *nodo_actual = obtener_el_nodo_en_posicion(lista, posicion);
 	if (elemento_encontrado != NULL) {
 		*elemento_encontrado = nodo_actual->elemento;

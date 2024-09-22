@@ -95,7 +95,6 @@ void cola_destruir_todo(Cola *cola, void (*f)(void *))
 	}
 }
 
-//cada una de estas funciones es O(1)
 size_t cola_cantidad(Cola *cola)
 {
 	if (cola == NULL) {
@@ -123,6 +122,9 @@ bool cola_encolar(Cola *cola, void *cosa)
 
 void *cola_desencolar(Cola *cola)
 {
+	if (cola == NULL || cola->lista == NULL || cola->lista->cantidad == 0) {
+		return NULL;
+	}
 	void *elemento_quitado = NULL;
 	if (lista_quitar_elemento(cola->lista, 0, &elemento_quitado)) {
 		return elemento_quitado;

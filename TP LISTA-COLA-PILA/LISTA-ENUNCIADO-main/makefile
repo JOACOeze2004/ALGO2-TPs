@@ -10,13 +10,23 @@ valgrind-alumno: pruebas_alumno
 
 pruebas_alumno: src/*.c pruebas_alumno.c
 	$(CC) $(CFLAGS) src/*.c pruebas_alumno.c -o pruebas_alumno
-
-valgrind-ejemplo: ejemplo
-	valgrind $(VALGRIND_FLAGS) ./ejemplo
+	
+correr-pruebas:
+	$(CC) $(CFLAGS) src/*.c pruebas_alumno.c -o pruebas_alumno && valgrind $(VALGRIND_FLAGS) ./pruebas_alumno
 
 clean:
 	rm -f pruebas_alumno ejemplo
-		
+	
+tp-lista: src/*.c tp_lista.c
+	$(CC) $(CFLAGS) src/*.c tp_lista.c -o tp_lista
+	
+valgrind-tp-lista: tp_lista
+	valgrind $(VALGRIND_FLAGS) ./tp_lista ejemplos/pokedex.csv
+	
+correr-tp:
+	$(CC) $(CFLAGS) src/*.c tp_lista.c -o tp_lista && valgrind $(VALGRIND_FLAGS) ./tp_lista ejemplos/pokedex.csv
+
+
 formatear-pruebas:
 	$(CLANG_FORMAT) -i -style=file pruebas_alumno.c
 	
@@ -31,13 +41,3 @@ formatear-cola:
 	
 formatear-tp:
 	$(CLANG_FORMAT) -i -style=file tp_lista.c
-	
-tp-lista: src/*.c tp_lista.c
-	$(CC) $(CFLAGS) src/*.c tp_lista.c -o tp_lista
-	
-valgrind-tp-lista: tp_lista
-	valgrind $(VALGRIND_FLAGS) ./tp_lista ejemplos/pokedex.csv
-	
-correr-tp:
-	$(CC) $(CFLAGS) src/*.c tp_lista.c -o tp_lista && valgrind $(VALGRIND_FLAGS) ./tp_lista ejemplos/pokedex.csv
-
