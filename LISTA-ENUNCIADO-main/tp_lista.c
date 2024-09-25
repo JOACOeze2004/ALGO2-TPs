@@ -17,7 +17,6 @@
 #define OPCION_BUSCAR 0
 #define CANTIDAD_ENTRADAS_INVALIDAS_PERMITIDAS 5
 
-
 struct pokemon {
 	char *nombre;
 	char tipo;
@@ -175,6 +174,8 @@ void imprimir_inicio_pokedex()
 	printf("Antes de dejarte elegir, hemos decidido ponerte 5 oportunidades para elegir una opcion, asi que por favor escriba bien la opcion a ejecutar\n");
 }
 
+//pre:	Deberiamos tener inicializado el contador de errores.
+//post:	Resta el contador de errores que comete el usuario al equivocarse de entrada (sirve para que el bot no se quede inentando e intentando y tire "time out").
 void restar_contador_errores(int *contador_errores)
 {
 	(*contador_errores)--;
@@ -191,11 +192,12 @@ int porcesar_entrada(char *entrada, int opcion, int *contador_errores)
 	} else {
 		printf("\nERROR 405, por favor ingrese una opcion correcta");
 		restar_contador_errores(contador_errores);
-		printf("\nte quedan:%i intentos\n", *contador_errores);
+		printf("\nte quedan: %i intentos\n", *contador_errores);
 	}
 	return opcion;
 }
 
+//pre:	La entrada deberia ser un string valido.
 //post:	Tenemos un while que mientras la entrada no sea la esperada (listar o buscar) persiste en que le des una entrada valida. Y retornamos la opcion que el usuario eligio (0 es buscar y 1 es listar).
 int definir_opcion(int *contador_errores)
 {
@@ -223,7 +225,7 @@ void imprimir_manual_busqueda()
 	printf("bien, ahora puedes usar el buscador de pokemones\n");
 }
 
-//pre:	La lista debe haberse inicializado con algun pokemon, sino no encontrariamos nunca nada.
+//pre:	La lista debe haberse inicializado con algun pokemon, sino no encontrariamos nunca nada. Ademas el nombre del pokemon no deberia superar los 20 caracteres (igual el nombre mas largo eran 17 caracteres creo) y no leeria nombre de pokemones separados por un espacio
 //post:	Le pedimos un nombre al usuario y nos guardamos el nombre del pokemon en un struct pokemon auxiliar, le pasamos el buscado a la funcion de busar en la lista, si lo encuentra, devuelve el struct sino devuleve null.
 struct pokemon *buscar_pokemon_deseado(Lista *lista)
 {

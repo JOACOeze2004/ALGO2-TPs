@@ -11,16 +11,6 @@ struct pokemon {
 	int destreza;
 	int resistencia;
 };
-//eliminar nodo y iterador
-typedef struct nodo {
-	void *elemento;
-	struct nodo *siguiente;
-} nodo;
-
-typedef struct lista_iterador {
-	nodo *nodo_actual_iterador;
-	Lista *lista;
-} lista_iterador;
 
 int comparar_nombre_pokemon(void *_p1, void *_p2)
 {
@@ -603,50 +593,6 @@ void IteradorAvanzaEnListaLlenaHAstaElFinal()
 	lista_destruir(lista);
 }
 
-void IteradorNoAvanzaSiNoHaySiguiente()
-{
-	Lista *lista = lista_crear();
-	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
-	lista_agregar_al_final(lista, &pikachu);
-
-	Lista_iterador *iterador = lista_iterador_crear(lista);
-
-	pa2m_afirmar(iterador->nodo_actual_iterador != NULL,
-		     "El iterador comienza apuntando al primer elemento");
-
-	pa2m_afirmar(lista_iterador_hay_siguiente(iterador),
-		     "Avanzo al primer elemento");
-
-	lista_iterador_avanzar(iterador);
-	pa2m_afirmar(
-		iterador->nodo_actual_iterador == NULL,
-		"El iterador no avanza más allá del último nodo, porque el primero no tiene mas nodos");
-
-	lista_iterador_destruir(iterador);
-	lista_destruir(lista);
-}
-
-void IteradorNoAvanzaSiNoHayNingunElemento()
-{
-	Lista *lista = lista_crear();
-
-	Lista_iterador *iterador = lista_iterador_crear(lista);
-
-	pa2m_afirmar(iterador->nodo_actual_iterador == NULL,
-		     "El iterador comienza apuntando al nodo inicial");
-
-	pa2m_afirmar(!lista_iterador_hay_siguiente(iterador),
-		     "No hay siguiente de una lista Vacia");
-
-	lista_iterador_avanzar(iterador);
-	pa2m_afirmar(
-		iterador->nodo_actual_iterador == NULL,
-		"El iterador no avanza porque no se puede avanzar en lista vacia");
-
-	lista_iterador_destruir(iterador);
-	lista_destruir(lista);
-}
-
 //Pruebas de ver elemento
 void AvanzarHastaCharizardYPidoEseElementooDevuelveCharizard()
 {
@@ -1209,8 +1155,6 @@ int main()
 	CrearIteradorExternoCorrectamenteNoDevuelveNULL();
 	IteradorAvanzaEnListaLlenaHAstaElFinal();
 	IteradorDevuelveFalseSiNoHaySiguienteEnListaCon1Elemento();
-	IteradorNoAvanzaSiNoHaySiguiente();
-	IteradorNoAvanzaSiNoHayNingunElemento();
 	AvanzarHastaCharizardYPidoEseElementooDevuelveCharizard();
 	IntentarAvanzarYPidoElementooDevuelveNULL();
 

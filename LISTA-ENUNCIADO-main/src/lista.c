@@ -25,8 +25,8 @@ void inicializar_campos_nodo(Nodo *nodo, void *cosa)
 	nodo->elemento = cosa;
 }
 
-//pre:
-//post:
+//pre:	Idealmente, la cosa no deberia ser NULL, pero puede serlo, funcionaria de igual manera.
+//post:	Creo un nuevo nodo con el fin de poder agregar uno en los llamados para las funciones de agregar. Seteamos los campos del mismo y lo devolvemos inicializado y con memoria  reservada.
 Nodo *crear_nuevo_nodo(void *cosa)
 {
 	Nodo *nodo = malloc(sizeof(Nodo));
@@ -77,7 +77,7 @@ void lista_destruir(Lista *lista)
 }
 
 //pre: se asume que el puntero a lista no va a ser NULL igual que con la funcion destructora.
-//post: HAce exactamente lo mismo que liberar_nodos pero va aplica la funcion destructora a los elementos que hay en los nodos (util para el main que reservas memoria para cada elemento del archivo).
+//post: Hace exactamente lo mismo que liberar_nodos pero va aplica la funcion destructora a los elementos que hay en los nodos (util para el main que reservas memoria para cada elemento del archivo).
 void liberar_nodos_y_elementos(Lista *lista, void (*destructor)(void *))
 {
 	Nodo *nodo_actual = lista->nodo_inicio;
@@ -161,11 +161,7 @@ void inicializar_lista_con_nodo(Lista *lista, Nodo *nodo_nuevo)
 void agregar_nodo_al_final(Lista *lista, Nodo *nodo_nuevo)
 {
 	nodo_nuevo->siguiente = NULL;
-	if (lista->nodo_final != NULL) {
-		lista->nodo_final->siguiente = nodo_nuevo;
-	} else {
-		lista->nodo_inicio = nodo_nuevo;
-	}
+	lista->nodo_final->siguiente = nodo_nuevo;
 	lista->nodo_final = nodo_nuevo;
 }
 
@@ -217,10 +213,18 @@ void liberar_nodo_y_decrementar_cantidad(Lista *lista, Nodo *nodo_aux)
 		free(nodo_aux);
 	}
 	(lista->cantidad)--;
-	if (lista->cantidad == 0) {
-		lista->nodo_inicio = NULL;
-		lista->nodo_final = NULL;
+}
+
+//pre:	La lista debe no ser NULL, ademas deberiamos tener mas de un elemento para poder reacomodar los punteros en caos de eliminacion del ultimo elemento
+//post:	Recorremos la lista hasta llegar al final, y setear el nodo final como el nodo anterior y el siguiente del mismo como NULL.
+void acomodar_punteros_eliminar_al_final(Lista *lista)
+{
+	Nodo *nodo_anterior = lista->nodo_inicio;
+	while (nodo_anterior->siguiente != NULL) {
+		nodo_anterior = nodo_anterior->siguiente;
 	}
+	lista->nodo_final = nodo_anterior;
+	lista->nodo_final->siguiente = NULL;
 }
 
 bool lista_quitar_elemento(Lista *lista, size_t posicion,
@@ -230,25 +234,17 @@ bool lista_quitar_elemento(Lista *lista, size_t posicion,
 	    lista->cantidad == 0) {
 		return false;
 	}
-	Nodo *nodo_aux = NULL;
+	Nodo *nodo_aux;
 	if (posicion == 0) {
 		nodo_aux = lista->nodo_inicio;
 		lista->nodo_inicio = nodo_aux->siguiente;
-		if (lista->nodo_inicio == NULL) {
-			lista->nodo_final = NULL;
-		}
 	} else {
 		nodo_aux = lista_quitar_nodo_en_posicion(lista, posicion);
 		if (nodo_aux == NULL) {
 			return false;
 		}
 		if (nodo_aux == lista->nodo_final) {
-			Nodo *nodo_anterior = lista->nodo_inicio;
-			while (nodo_anterior->siguiente != NULL) {
-				nodo_anterior = nodo_anterior->siguiente;
-			}
-			lista->nodo_final = nodo_anterior;
-			lista->nodo_final->siguiente = NULL;
+			acomodar_punteros_eliminar_al_final(lista);
 		}
 	}
 	setear_elemento_quitado(elemento_quitado, nodo_aux);
