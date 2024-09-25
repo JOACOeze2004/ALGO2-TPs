@@ -15,6 +15,7 @@
 #define LISTAR "listar"
 #define OPCION_LISTAR 1
 #define OPCION_BUSCAR 0
+#define CANTIDAD_ENTRADAS_INVALIDAS_PERMITIDAS 5
 
 struct pokemon {
 	char *nombre;
@@ -170,11 +171,19 @@ void imprimir_inicio_pokedex()
 	printf("Bienvenido Ash, aqui estan todos los pokemones que cargaste, las estadisticas de los mismos y la cantidad que hay de cada tipo.\n");
 	printf("En esta version 1.2 de la pokedex, tienes dos opciones de momento, o buscar un pokemon de los que ingresaste o mostrarte todos los pokemones que haya\n");
 	printf("Entonces, si desea buscar un pokemon, debe insertar la palabra 'buscar, para listar los pokemones que haya en la pokedex con sus estadisticas \nponga la palabra 'listar'");
+	printf("Antes de dejarte elegir, hemos decidido ponerte 5 oportunidades para elegir una opcion, asi que por favor escriba bien la opcion a ejecutar\n");
+}
+
+//pre:	Deberiamos tener inicializado el contador de errores.
+//post:	Resta el contador de errores que comete el usuario al equivocarse de entrada (sirve para que el bot no se quede inentando e intentando y tire "time out").
+void restar_contador_errores(int *contador_errores)
+{
+	(*contador_errores)--;
 }
 
 //pre:	La entrada deberia ser un string valido.
 //post:	Si la entrada es listar, devolvemos la opcion como un 1, si es buscar devolvemos la opcion como un 0 para luego procesarla.
-int porcesar_entrada(char *entrada, int opcion)
+int porcesar_entrada(char *entrada, int opcion, int *contador_errores)
 {
 	if (strcmp(entrada, LISTAR) == 0) {
 		opcion = OPCION_LISTAR;
@@ -182,19 +191,25 @@ int porcesar_entrada(char *entrada, int opcion)
 		opcion = OPCION_BUSCAR;
 	} else {
 		printf("\nERROR 405, por favor ingrese una opcion correcta");
+		restar_contador_errores(contador_errores);
+		printf("\nte quedan: %i intentos\n", *contador_errores);
 	}
 	return opcion;
 }
 
+//pre:	La entrada deberia ser un string valido.
 //post:	Tenemos un while que mientras la entrada no sea la esperada (listar o buscar) persiste en que le des una entrada valida. Y retornamos la opcion que el usuario eligio (0 es buscar y 1 es listar).
-int definir_opcion()
+int definir_opcion(int *contador_errores)
 {
 	char entrada[20];
 	int opcion = -1;
-	while (opcion == -1) {
+	while (opcion == -1 && *contador_errores != 0) {
 		printf("\nIngrese la opcion que quiera ------------> ");
 		if (scanf("%s", entrada) == 1) {
-			opcion = porcesar_entrada(entrada, opcion);
+			opcion = porcesar_entrada(entrada, opcion,
+						  contador_errores);
+		} else {
+			restar_contador_errores(contador_errores);
 		}
 	}
 	return opcion;
@@ -210,7 +225,7 @@ void imprimir_manual_busqueda()
 	printf("bien, ahora puedes usar el buscador de pokemones\n");
 }
 
-//pre:	La lista debe haberse inicializado con algun pokemon, sino no encontrariamos nunca nada.
+//pre:	La lista debe haberse inicializado con algun pokemon, sino no encontrariamos nunca nada. Ademas el nombre del pokemon no deberia superar los 20 caracteres (igual el nombre mas largo eran 17 caracteres creo) y no leeria nombre de pokemones separados por un espacio
 //post:	Le pedimos un nombre al usuario y nos guardamos el nombre del pokemon en un struct pokemon auxiliar, le pasamos el buscado a la funcion de busar en la lista, si lo encuentra, devuelve el struct sino devuleve null.
 struct pokemon *buscar_pokemon_deseado(Lista *lista)
 {
@@ -245,9 +260,10 @@ void procesar_pokemon_buscado(Lista *pokedex, void *ctx)
 
 //pre:	La lista, el contador y el ctx debn ser validos.
 //post:	Segun la entrada del usuario, definimso que hacemos, si es 0, llamamos a las funciones que se encarguen de buscar al pokemon, si la opcion fue 1, imprimimos los resultados que obtubimos de porcesar el archivo.
-void ejecutar_opciones(Lista *pokedex, size_t *contador_tipos, void *ctx)
+void ejecutar_opciones(Lista *pokedex, size_t *contador_tipos, void *ctx,
+		       int *contador_errores)
 {
-	int opcion = definir_opcion();
+	int opcion = definir_opcion(contador_errores);
 	if (opcion == OPCION_LISTAR) {
 		imprimir_resultados(pokedex, contador_tipos);
 	} else if (opcion == OPCION_BUSCAR) {
@@ -282,6 +298,7 @@ int main(int argc, const char *argv[])
 	char *nombre_pokemon = NULL;
 	char tipo;
 	int fuerza, destreza, resistencia;
+	int contador_errores = CANTIDAD_ENTRADAS_INVALIDAS_PERMITIDAS;
 	bool (*funciones[])(const char *,
 			    void *) = { crear_string_nuevo, castear_a_char,
 					castear_a_int, castear_a_int,
@@ -303,21 +320,7 @@ int main(int argc, const char *argv[])
 	}
 	cerrar_archivo_csv(archivo);
 	imprimir_inicio_pokedex();
-	ejecutar_opciones(pokedex, contador_tipos, ctx);
+	ejecutar_opciones(pokedex, contador_tipos, ctx, &contador_errores);
 	lista_destruir_todo(pokedex, liberar_pokemon);
-
-	// //Recorrer lista
-	// //Posibilidad 3
-	// //TDA iterador externo
-	// Lista_iterador *i;
-	// for (i = lista_iterador_crear(pokedex); //O(1)
-	//      lista_iterador_hay_siguiente(i); //O(1)
-	//      lista_iterador_avanzar(i)) { //O(1)
-	// 	struct pokemon *p;
-	// 	p = lista_iterador_obtener_elemento_actual(i); //O(1)
-	// 	///hacer algo
-	// }
-	// lista_iterador_destruir(i);
-
 	return 0;
 }

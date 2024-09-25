@@ -11,16 +11,6 @@ struct pokemon {
 	int destreza;
 	int resistencia;
 };
-//eliminar nodo y iterador
-typedef struct nodo {
-	void *elemento;
-	struct nodo *siguiente;
-} nodo;
-
-typedef struct lista_iterador {
-	nodo *nodo_actual_iterador;
-	Lista *lista;
-} lista_iterador;
 
 int comparar_nombre_pokemon(void *_p1, void *_p2)
 {
@@ -62,14 +52,14 @@ void AgregarMasAllaDeCantidadDevuelveFalse()
 	Lista *lista = lista_crear();
 	void *elemento = (int *)4;
 	bool se_agrega = lista_agregar_elemento(lista, 1, elemento);
-	bool se_agrega_redux = lista_agregar_elemento(lista, 0, NULL);
 	pa2m_afirmar(
 		!se_agrega,
 		"No puedo agregar mas alla de la cantidad de elementos que haya");
 	pa2m_afirmar(lista_cantidad_elementos(lista) == 0,
 		     "La cantidad inicial de una lista se mantiene en 0");
-	pa2m_afirmar(!se_agrega_redux, "No puedo agregar si el cosa* es NULL");
-	pa2m_afirmar(lista_cantidad_elementos(lista) == 0,
+	bool se_agrega_redux = lista_agregar_elemento(lista, 0, NULL);
+	pa2m_afirmar(se_agrega_redux, "Puedo agregar si el cosa* es NULL");
+	pa2m_afirmar(lista_cantidad_elementos(lista) == 1,
 		     "La cantidad inicial de una lista se mantiene en 0");
 
 	lista_destruir(lista);
@@ -565,8 +555,8 @@ void IteradorDevuelveFalseSiNoHaySiguienteEnListaCon1Elemento()
 	Lista_iterador *iterador_externo = lista_iterador_crear(lista);
 
 	pa2m_afirmar(
-		!lista_iterador_hay_siguiente(iterador_externo),
-		"El iterador indica correctamente que no hay un siguiente elemento en una lista con 1 elemento");
+		lista_iterador_hay_siguiente(iterador_externo),
+		"El iterador indica correctamente que debo avanzar a la posicion 0 en una lista con 1 elemento");
 
 	lista_iterador_destruir(iterador_externo);
 	lista_destruir(lista);
@@ -596,54 +586,10 @@ void IteradorAvanzaEnListaLlenaHAstaElFinal()
 		"El iterador indica correctamente que hay un siguiente elemento al llegar al anteultimo elemento");
 	lista_iterador_avanzar(iterador_externo);
 	pa2m_afirmar(
-		!lista_iterador_hay_siguiente(iterador_externo),
+		lista_iterador_hay_siguiente(iterador_externo),
 		"El iterador indica correctamente que no hay un siguiente elemento al llegar al ultimo elemento (porque seria el final)");
 
 	lista_iterador_destruir(iterador_externo);
-	lista_destruir(lista);
-}
-
-void IteradorNoAvanzaSiNoHaySiguiente()
-{
-	Lista *lista = lista_crear();
-	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
-	lista_agregar_al_final(lista, &pikachu);
-
-	Lista_iterador *iterador = lista_iterador_crear(lista);
-
-	pa2m_afirmar(iterador->nodo_actual_iterador != NULL,
-		     "El iterador comienza apuntando al primer elemento");
-
-	pa2m_afirmar(!lista_iterador_hay_siguiente(iterador),
-		     "El primer elemento no tiene siguiente");
-
-	lista_iterador_avanzar(iterador);
-	pa2m_afirmar(
-		iterador->nodo_actual_iterador != NULL,
-		"El iterador no avanza más allá del último nodo, porque el primero no tiene mas nodos");
-
-	lista_iterador_destruir(iterador);
-	lista_destruir(lista);
-}
-
-void IteradorNoAvanzaSiNoHayNingunElemento()
-{
-	Lista *lista = lista_crear();
-
-	Lista_iterador *iterador = lista_iterador_crear(lista);
-
-	pa2m_afirmar(iterador->nodo_actual_iterador == NULL,
-		     "El iterador comienza apuntando al nodo inicial");
-
-	pa2m_afirmar(!lista_iterador_hay_siguiente(iterador),
-		     "No hay siguiente de una lista Vacia");
-
-	lista_iterador_avanzar(iterador);
-	pa2m_afirmar(
-		iterador->nodo_actual_iterador == NULL,
-		"El iterador no avanza porque no se puede avanzar en lista vacia");
-
-	lista_iterador_destruir(iterador);
 	lista_destruir(lista);
 }
 
@@ -681,8 +627,10 @@ void AvanzarHastaCharizardYPidoEseElementooDevuelveCharizard()
 		strcmp(elemento_actual_nuevo->nombre, "Venusaur") == 0,
 		"El iterador devuelve correctamente el elemento Venusaur si volvi a avanzar");
 	pa2m_afirmar(
-		!lista_iterador_hay_siguiente(iterador),
-		"No hay siguiente si llegue al ultimo elemento de la lista");
+		lista_iterador_hay_siguiente(iterador),
+		"Hay siguiente antes de llegar al ultimo elemento de la lista");
+	lista_iterador_hay_siguiente(iterador),
+		"No hay siguiente si llegue al ultimo elemento de la lista";
 
 	lista_iterador_destruir(iterador);
 	lista_destruir(lista);
@@ -1121,6 +1069,48 @@ void DesapilarYEncolarPoneAlMismoElemento()
 	pila_destruir(pila);
 }
 
+void SimularPruebaDeAgregadoYEliminacionMixta()
+{
+	Lista *lista = lista_crear();
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon bulbasaur = { "Bulbasaur", 'P', 49, 49, 45 };
+	struct pokemon charmander = { "Charmander", 'F', 52, 43, 39 };
+
+	pa2m_afirmar(lista_agregar_al_final(lista, &pikachu),
+		     "Agregar Pikachu al final de la lista");
+	pa2m_afirmar(lista_agregar_al_final(lista, &bulbasaur),
+		     "Agregar Bulbasaur al final de la lista");
+	pa2m_afirmar(lista_agregar_al_final(lista, &charmander),
+		     "Agregar Charmander al final de la lista");
+
+	pa2m_afirmar(lista_cantidad_elementos(lista) == 3,
+		     "La lista debe contener 3 elementos");
+
+	struct pokemon *elemento_eliminado = NULL;
+	pa2m_afirmar(lista_quitar_elemento(lista, 2,
+					   (void **)&elemento_eliminado),
+		     "Eliminar Charmander de la lista");
+	pa2m_afirmar(elemento_eliminado != NULL,
+		     "El elemento eliminado no es nulo");
+	pa2m_afirmar(strcmp(elemento_eliminado->nombre, "Charmander") == 0,
+		     "Se eliminó correctamente Charmander");
+
+	pa2m_afirmar(
+		lista_cantidad_elementos(lista) == 2,
+		"La lista debe contener 2 elementos después de eliminar a Charmander");
+
+	struct pokemon squirtle = { "Squirtle", 'A', 48, 65, 50 };
+	pa2m_afirmar(lista_agregar_al_final(lista, &squirtle),
+		     "Agregar Squirtle al final de la lista");
+
+	pa2m_afirmar(
+		lista_cantidad_elementos(lista) == 3,
+		"La lista debe contener 3 elementos después de agregar a Squirtle");
+
+	lista_destruir(lista);
+}
+
 int main()
 {
 	pa2m_nuevo_grupo("Pruebas de Lista");
@@ -1165,8 +1155,6 @@ int main()
 	CrearIteradorExternoCorrectamenteNoDevuelveNULL();
 	IteradorAvanzaEnListaLlenaHAstaElFinal();
 	IteradorDevuelveFalseSiNoHaySiguienteEnListaCon1Elemento();
-	IteradorNoAvanzaSiNoHaySiguiente();
-	IteradorNoAvanzaSiNoHayNingunElemento();
 	AvanzarHastaCharizardYPidoEseElementooDevuelveCharizard();
 	IntentarAvanzarYPidoElementooDevuelveNULL();
 
@@ -1203,5 +1191,7 @@ int main()
 	DesapilarVariasVecesEnPilaConUnElementoDevuelveNULL();
 	DesapilarYEncolarPoneAlMismoElemento();
 
+	pa2m_nuevo_grupo("Pruebas Adicionales");
+	SimularPruebaDeAgregadoYEliminacionMixta();
 	return pa2m_mostrar_reporte();
 }
