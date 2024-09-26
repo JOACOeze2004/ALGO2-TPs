@@ -27,7 +27,7 @@ make valgrind-alumno
 make valgrind-tp-lista
 ```
 
-- Para compilación y ejeccución con valgrind:
+- Para compilación y ejeccución con valgrind (version rapida):
 ```bash
 make correr-pruebas
 make correr-tp
@@ -36,7 +36,17 @@ make correr-tp
 ---
 
 ##  Funcionamiento
-El TP consta en hacer algo similar a lo que se hizo para el TP1, pero aca usamos listas simplemente enlazadas, en vez de usar vectores dinamicos. Lo que se pide hacer, es basicamente, leer un archivo csv, linea por linea, separar los elementos separados por el ";" o "," (depende del separador que le pasemos), irlo casteando/parseando esos datos e irlos guardando en una LSE (lista simeplemente enlazada). Y debemos darle la opcion al usuario de listar los pokemones que se leyeron de ese .csv (netamente lo hecho en el tp1) o darle la opcion de buscar X pokemon y que aparezca por pantalla el nombre, el tipo y las estadisticas, si se lo encuentra claro. 
+El TP consta en hacer algo similar a lo que se hizo para el TP1, pero aca usamos listas simplemente enlazadas, en vez de usar vectores dinamicos. Lo que se pide hacer, es basicamente, leer un archivo csv, linea por linea, separar los elementos separados por el ";" o "," (depende del separador que le pasemos), irlo casteando/parseando esos datos e irlos guardando en una LSE (lista simeplemente enlazada). Y debemos darle la opcion al usuario de listar los pokemones que se leyeron de ese .csv (netamente lo hecho en el tp1) o darle la opcion de buscar X pokemon y que aparezca por pantalla el nombre, el tipo y las estadisticas, si se lo encuentra claro. Y se imprimiria estas dos opciones:
+
+<div align="center">
+<img width="70%" src="img/listar.png">
+</div>
+
+
+<div align="center">
+<img width="70%" src="img/buscar.png">
+</div>
+
 La idea es ir escribiendo sobre la implementacion de la lista (no tendria mucha gracia explicar que hace pila y cola porque son casos muy similares a la lista y en la parte teorica se habla mas sobre sus funcionalidades y complejidades), algunos problemas presentados, sobre los campos elegids para las estructuras usadas, y un caso particular del main, que creo necesario explicar.
 
 Para empezar, podemos empezar en los campos del TDA lista, en nuestro caso tenemos dos ya definidos y uno que es "auxiliar".  
@@ -56,6 +66,11 @@ typedef struct lista_iterador {
 	Nodo *nodo_actual_iterador;
 } lista_iterador;
 ```
+
+<div align="center">
+<img width="70%" src="img/DiagramaMemoriaLista.png">
+</div>
+
 Vamos por el mas "elemental" que es el de nodo, en nodo vamos a guardar un void* a un elemento ya que ahi almacenariamos el elemento que hay en ese nodo; sea un struct, un numero, etc. Y luego tenemos otro que es otro struct nodo* al siguiente. Este fue una de esas cosas que no las tenes muy claro al empezar, mas que nada porque no estas acostumbrado a tener un struct del mismo tipo dentro del mismo struct, o sea no es muy comun (al menos en fundamentos) tener un struct nodo y dentor tener otro struct. Pero luego de pensarlo tenes en claro que si creas un nodo, necesitas que tenga un siguiente para que esten elazadaos los elementos y asi formar la lista enlazada, entonces un puntero a siguiente vas a necesitar pero ¿A qué?, termine concluyendo que lo obvio seria tener otro puntero para mantener el enlazamiento entre nodos. De todas formas, no es algo trivial, pero tiene sentido que el campo *siguiente dentro de un nodo, sea otro nodo. 
 
 Luego tenemos el struct lista, este no fue tan dificil porque ya lo tenia anotado de la clase que lo vimos que era lo necesario para este struct; una cantidad, muy util para la funcion de "lista_cantidad_elementos" ya que podriamos devolver el campo en si, y para validaciones en los casos de querer buscar y/o eliminar en una lista que tuviera cantidad 0 (porque el programa pincharia porque no podrias buscar o eliminar en una lista que no tiene nada). Despues tenemos el puntero al nodo inicial y un puntero al nodo final, el puntero inicila, lo usamos mucho para recorrer la lista, o sea lo que hacemos es algo de este estilo en la mayotia de operaciones que tengan que ver con el medio o el final de la lista:
@@ -69,11 +84,9 @@ Luego tenemos el struct lista, este no fue tan dificil porque ya lo tenia anotad
 	nodo_anterior->siguiente = nodo_nuevo;
 ```
 Donde seteamos el nodo que usamos para recorrer, seteandolo o acomodandolo para que apunte al nodo inicila y que recorra hasta X veces. Auqnue tambien lo usamos para agregar o eliminar en la posicioon 0 porque necesitamos reajustar el nodo inicial ya que se ve "perturbado" el nodo inicial. 
-POr ultimo tendriamos nodo_final, que es un puntero al ultimo nodo de la lista, al principio dude de que fuera de utilidad, pero lo termina usando en situaciones muy concretas pero que al tener limitaciones de la complejidad computacional, concretamente de la cola en encolar (ya que agregamos al final), para no recorrer toda la lsita, y que caiga en O(n), ese puntero al nodo final, nos salva de eso. Pero como dice el tio Ben:
+POr ultimo tendriamos nodo_final, que es un puntero al ultimo nodo de la lista, al principio dude de que fuera de utilidad, pero lo termina usando en situaciones muy concretas pero que al tener limitaciones de la complejidad computacional, concretamente de la cola en encolar (ya que agregamos al final), para no recorrer toda la lsita, y que caiga en O(n), ese puntero al nodo final, nos salva de eso. 
 
-"With great power comes great responsibility"
-
-Y es algo que no tome en cuenta, algo que me ocurria es que en las pruebas de agregar y eliminar y buscar ( las mixtas) ocurria algo "peculiar" y es que al agregar y eliminar hasta que quedara vacia, llegaba un puntto que el nodo final quedaba desajustado entonces valgrind chillaba y el iterador se atontaba y no iteraba correctamente devolviendo cualquier cosa, entonces debiamos recorrer la lista hasta el final y acomodar que el puntero al nodo final, sea realmente el ultimo y setear el siguiente de ese como null para marcar el final de la lista. ¿A qué quiero llegar con esto? es que al tener ese campo, se mas complejo, no tanto para la maquina sino para el programador porque debes ocuparte de un puntero adicional y setear correctamente todo y verificar este tipo de casos bordes.
+Algo que no tome en cuenta, algo que me ocurria es que en las pruebas de agregar y eliminar y buscar (las mixtas) ocurria algo "peculiar" y es que al agregar y eliminar hasta que quedara vacia, llegaba un puntto que el nodo final quedaba desajustado entonces valgrind chillaba y el iterador se atontaba y no iteraba correctamente devolviendo cualquier cosa, entonces debiamos recorrer la lista hasta el final y acomodar que el puntero al nodo final, sea realmente el ultimo y setear el siguiente de ese como null para marcar el final de la lista. ¿A qué quiero llegar con esto? es que al tener ese campo, se mas complejo, no tanto para la maquina sino para el programador porque debes ocuparte de un puntero adicional y setear correctamente todo y verificar este tipo de casos bordes.
 
 Por ultimo tenemos el struct iterador_externo, que el unico campo que vi necesario era el de "nodo_actual_iterador" que vendria a ser un I en un for o while, auqnue cabe aclarar que el nombre largo se debe a que queria usar algo como "nodo_actual" pero en algunas funciones ya usaba variables con ese mismo nombre, entonces decidi cambiarlo a ese nombre para evitar confusiones.
 
@@ -91,7 +104,7 @@ Las funciones de lista_crear, se encargaria de pedir memoria para el struct list
 
 Donde mew guardo el siguiente del nodo_acual (o nodo I si lo queres ver asi) libero el nodo actual, y seteo al nodo actual como el nodo siguiente que seria el siguiente de nodo actual (asi el while avanzaria ya que vendria a ser el equivalente a hacer i++).Y luego liberamos lo pedido para la lista, la diferencia entre destruiy y destruir todo, es que antes de liberar el nodo, le aplicamos una funcion que libera lo pedido para el elemento del nodo.
 
-Ahoora pasamos a los pesos pesados y empezamos con lista_agregar_elemento,la idea de esta funcion es crear y agregar un nodo en la posicion que te pasan, y reacomodar los punteros a los nodos del struct lsita, asi que opte por dividirlo en dos casos. EL primero es que llame a agregar en la posicion 0, que llamo a mi funcion agregar_al_inicio que es esto basicamente:
+Ahora pasamos a los pesos pesados y empezamos con lista_agregar_elemento,la idea de esta funcion es crear y agregar un nodo en la posicion que te pasan, y reacomodar los punteros a los nodos del struct lsita, asi que opte por dividirlo en dos casos. EL primero es que llame a agregar en la posicion 0, que llamo a mi funcion agregar_al_inicio que es esto basicamente:
 ```c
 void agregar_al_inicio(Lista *lista, Nodo *nodo_nuevo)
 {
@@ -283,35 +296,10 @@ Por ultimo toca la parte del main, es mas que anda aclarar algo que puede parece
 ```c
     system("clear");
 ```
-Que lo queria usar para limpiar la pantalla cuando pasaras de una seccion a otra. Mas que anda porque mi main te muetratodos los pokemones como en el tp1, si pones la palabra "listar" y para buscar debes escribir la palabra "buscar" y te habre un mini manual de como usar el buscador, esta decision de poner listar o buscar, es mas que nada porque me parecia mejor dividir el problema en dos rutas posibles, y era mejor poner la palabra buscar  en vez de directamente poner el nombre y que lo busque porque se me hacia mejor y mas comodo trabajar asi. Entonces despues si podes el nombre lo busca y te devuelve solo ese pokemon. 
-Y la otra cosa a aclarar es que me vio obligado a meter un contador de fallos permitidos para ingresar una opcion al usuario, porque lo que yo tengo es un while que mientras la opcion sea -1  ( o sea no eligio una de las dos opciones preestablecidas), no te deje avanzar, y el bot no sabe que debe poner listar o buscar para avanzar, entonces se quedaba en un bucle infinito y tiraba time out, entonces si le metia un contador, iba a intentar 5 veces con cualquier entrada y depsues salia del programa y ahi me marcaba exito. 
-Honestamente, me "desagrada" tener que poner un contador porque por mi que usuario meta 80 veces mal la instruccion y se quede en el while, pasa que sino el bot no avanzaba y no marcaba exito. Es un detalle menor, pero si lo probas por tu cuenta, funciona:
-
-<div align="center">
-<img width="70%" src="img/listar.png">
-</div>
+Que lo queria usar para limpiar la pantalla cuando pasaras de una seccion a otra. Mas que anda porque mi main te muetratodos los pokemones como en el tp1, si pones 2 te lista y para buscar debes poner el numero 1 y te abre un mini manual de como usar el buscador.
 
 
-<div align="center">
-<img width="70%" src="img/buscar.png">
-</div>
-
-
-
-
-Explicación de cómo funcionan las estructuras desarrolladas en el TP y el funcionamiento general del mismo.
-
-Aclarar en esta parte todas las decisiones que se tomaron al realizar el TP, cosas que no se aclaren en el enunciado, fragmentos de código que necesiten explicación extra, etc.
-
-Incluír **EN TODOS LOS TPS** los diagramas relevantes al problema (mayormente diagramas de memoria para explicar las estructuras, pero se pueden utilizar otros diagramas si es necesario).
-
-### Por ejemplo:
-
-El programa funciona abriendo el archivo pasado como parámetro y leyendolo línea por línea. Por cada línea crea un registro e intenta agregarlo al vector. La función de lectura intenta leer todo el archivo o hasta encontrar el primer error. Devuelve un vector con todos los registros creados.
-
-<div align="center">
-<img width="70%" src="img/diagrama1.svg">
-</div>
+Cabe destacar una ultima cosa, es que antes tenias que meter la palabra buscar o listar, pero me di cuenta de que tenia una logica mas complicada (mas para el usuario), y tenia que meterle un contador de fallos para que el xanubot no me tire Time ot, pero volviendo a ver la clase, me di cuenta que debeia poner 1 o 2 como opciones, no lo que yo quisiera (igual estaba bueno para mi lo de poner la palabra).
 
 ## Respuestas a las preguntas teóricas
 1)  ¿Qué es una lista/pila/cola? Explicar con diagramas.
@@ -327,8 +315,6 @@ Para expandir más, hablemos un poco sobre los enlazados dobles. Como vimos los 
 <img width="70%" src="img/DiagramaLista.png">
 </div>
 
-
-
 Ahora pasando a la pila y la cola, estos son casos particulares de la lista ya que netamente son lo mismo pero cada uno sigue un "principio" o una restricción a diferencia de la lista. Vamos primero a la cola, esta tiene la característica FIFO, o sea si voy agregando elementos en la cola, el primero que debería eliminar o "irse" es el que primero metí, y luego se iría el segundo y así hasta que se quede vacía y para agregar, se van poniendo al final, como la cola del supermercado. En la lista no había estas restricciones, pero como hicimos en la implementación de la pila y la cola , se pueden readaptar las funciones de la lista para la pila y la cola, por ejemplo, en la cola podes apilar, llamando a una función de lista que agregue al final, y para eliminar, podes tener una función que elimine el primer elemento así respetarías la restricción de FIFO. 
 
 <div align="center">
@@ -337,7 +323,9 @@ Ahora pasando a la pila y la cola, estos son casos particulares de la lista ya q
 
 Para Pila, la restricción seria LIFO, que quiere decir que el ultimo que agregue es el primero en irse, como una pila de hojas, no sacas del final directamente, sino que apilas y cuando desapilas sacas el papel de más arriba y así con los que siguen. Aunque a diferencia de la cola, capaz acá si importa como lo veas, porque acá  importaría el orden si quieres que tus funciones primitivas sean O(1), como me paso a mí, es más conveniente ir apilando de forma tal que el último elemento que agregaste sea el primero así al eliminarlo, esa operación es O(1). 
 
-(meter diagrama de pila)
+<div align="center">
+<img width="70%" src="img/DiagramaPila.png">
+</div>
 
 2) Explica y analiza las diferencias de complejidad entre las implementaciones de lista simplemente enlazada, doblemente enlazada y vector dinámico para las operaciones:
 Insertar/obtener/eliminar al inicio

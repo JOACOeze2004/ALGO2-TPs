@@ -11,11 +11,8 @@
 #define TIPO_ELECTRICO 'E'
 #define TIPO_NORMAL 'N'
 #define TIPO_LUCHA 'L'
-#define BUSCAR "buscar"
-#define LISTAR "listar"
-#define OPCION_LISTAR 1
-#define OPCION_BUSCAR 0
-#define CANTIDAD_ENTRADAS_INVALIDAS_PERMITIDAS 5
+#define OPCION_BUSCAR 1
+#define OPCION_LISTAR 2
 
 struct pokemon {
 	char *nombre;
@@ -88,7 +85,7 @@ void setear_pokemon(struct pokemon *pokemon, char *nombre, char tipo,
 	pokemon->resistencia = resistencia;
 }
 
-//pre:	Asumimos que el puntero al struct pokemones  no es NULL, y que los campos e cada pokemon fuern completados exitosamente.
+//pre:	Asumimos que el puntero al struct pokemones  no es NULL, y que los campos en cada pokemon fueron completados exitosamente.
 //post:	Devolvemos true si pudimos pudimos imprimir cada campo correctamente.
 bool imprimir_pokemon(void *elemento, void *ctx)
 {
@@ -170,46 +167,33 @@ void imprimir_inicio_pokedex()
 	printf("\n");
 	printf("Bienvenido Ash, aqui estan todos los pokemones que cargaste, las estadisticas de los mismos y la cantidad que hay de cada tipo.\n");
 	printf("En esta version 1.2 de la pokedex, tienes dos opciones de momento, o buscar un pokemon de los que ingresaste o mostrarte todos los pokemones que haya\n");
-	printf("Entonces, si desea buscar un pokemon, debe insertar la palabra 'buscar, para listar los pokemones que haya en la pokedex con sus estadisticas \nponga la palabra 'listar'");
-	printf("Antes de dejarte elegir, hemos decidido ponerte 5 oportunidades para elegir una opcion, asi que por favor escriba bien la opcion a ejecutar\n");
+	printf("Entonces, si desea buscar un pokemon, debe insertar el numero 2, para listar los pokemones que haya en la pokedex con sus estadisticas \nponga el numero 1");
 }
 
-//pre:	Deberiamos tener inicializado el contador de errores.
-//post:	Resta el contador de errores que comete el usuario al equivocarse de entrada (sirve para que el bot no se quede inentando e intentando y tire "time out").
-void restar_contador_errores(int *contador_errores)
-{
-	(*contador_errores)--;
-}
-
-//pre:	La entrada deberia ser un string valido.
+//pre:	La entrada deberia ser un int valido.
 //post:	Si la entrada es listar, devolvemos la opcion como un 1, si es buscar devolvemos la opcion como un 0 para luego procesarla.
-int porcesar_entrada(char *entrada, int opcion, int *contador_errores)
+int porcesar_entrada(int entrada, int opcion)
 {
-	if (strcmp(entrada, LISTAR) == 0) {
+	if (entrada == OPCION_LISTAR) {
 		opcion = OPCION_LISTAR;
-	} else if ((strcmp(entrada, BUSCAR)) == 0) {
+	} else if (entrada == OPCION_BUSCAR) {
 		opcion = OPCION_BUSCAR;
 	} else {
 		printf("\nERROR 405, por favor ingrese una opcion correcta");
-		restar_contador_errores(contador_errores);
-		printf("\nte quedan: %i intentos\n", *contador_errores);
 	}
 	return opcion;
 }
 
-//pre:	La entrada deberia ser un string valido.
+//pre:	La entrada deberia ser un int valido. NO PASAR STRINGS
 //post:	Tenemos un while que mientras la entrada no sea la esperada (listar o buscar) persiste en que le des una entrada valida. Y retornamos la opcion que el usuario eligio (0 es buscar y 1 es listar).
-int definir_opcion(int *contador_errores)
+int definir_opcion()
 {
-	char entrada[20];
+	int entrada = 0;
 	int opcion = -1;
-	while (opcion == -1 && *contador_errores != 0) {
+	while (opcion == -1) {
 		printf("\nIngrese la opcion que quiera ------------> ");
-		if (scanf("%s", entrada) == 1) {
-			opcion = porcesar_entrada(entrada, opcion,
-						  contador_errores);
-		} else {
-			restar_contador_errores(contador_errores);
+		if (scanf("%i", &entrada) == 1) {
+			opcion = porcesar_entrada(entrada, opcion);
 		}
 	}
 	return opcion;
@@ -225,12 +209,12 @@ void imprimir_manual_busqueda()
 	printf("bien, ahora puedes usar el buscador de pokemones\n");
 }
 
-//pre:	La lista debe haberse inicializado con algun pokemon, sino no encontrariamos nunca nada. Ademas el nombre del pokemon no deberia superar los 20 caracteres (igual el nombre mas largo eran 17 caracteres creo) y no leeria nombre de pokemones separados por un espacio
+//pre:	La lista debe haberse inicializado con algun pokemon, sino no encontrariamos nunca nada. Ademas el nombre del pokemon no deberia superar los 20 caracteres (igual el nombre mas largo eran 17 caracteres creo) y no leeria nombre de pokemones separados por un espacio.
 //post:	Le pedimos un nombre al usuario y nos guardamos el nombre del pokemon en un struct pokemon auxiliar, le pasamos el buscado a la funcion de busar en la lista, si lo encuentra, devuelve el struct sino devuleve null.
 struct pokemon *buscar_pokemon_deseado(Lista *lista)
 {
 	char entrada[20];
-	printf("\nIngrese el nombre del pokemon a buscar -------------> ");
+	printf("\nIngrese el nombre del pokemon a buscar ------------->");
 	if (scanf("%s", entrada) != 1) {
 		printf("Hubo un error con la entrada.\n");
 	}
@@ -260,10 +244,9 @@ void procesar_pokemon_buscado(Lista *pokedex, void *ctx)
 
 //pre:	La lista, el contador y el ctx debn ser validos.
 //post:	Segun la entrada del usuario, definimso que hacemos, si es 0, llamamos a las funciones que se encarguen de buscar al pokemon, si la opcion fue 1, imprimimos los resultados que obtubimos de porcesar el archivo.
-void ejecutar_opciones(Lista *pokedex, size_t *contador_tipos, void *ctx,
-		       int *contador_errores)
+void ejecutar_opciones(Lista *pokedex, size_t *contador_tipos, void *ctx)
 {
-	int opcion = definir_opcion(contador_errores);
+	int opcion = definir_opcion();
 	if (opcion == OPCION_LISTAR) {
 		imprimir_resultados(pokedex, contador_tipos);
 	} else if (opcion == OPCION_BUSCAR) {
@@ -298,7 +281,6 @@ int main(int argc, const char *argv[])
 	char *nombre_pokemon = NULL;
 	char tipo;
 	int fuerza, destreza, resistencia;
-	int contador_errores = CANTIDAD_ENTRADAS_INVALIDAS_PERMITIDAS;
 	bool (*funciones[])(const char *,
 			    void *) = { crear_string_nuevo, castear_a_char,
 					castear_a_int, castear_a_int,
@@ -320,7 +302,7 @@ int main(int argc, const char *argv[])
 	}
 	cerrar_archivo_csv(archivo);
 	imprimir_inicio_pokedex();
-	ejecutar_opciones(pokedex, contador_tipos, ctx, &contador_errores);
+	ejecutar_opciones(pokedex, contador_tipos, ctx);
 	lista_destruir_todo(pokedex, liberar_pokemon);
 	return 0;
 }
