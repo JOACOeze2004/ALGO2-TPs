@@ -36,7 +36,17 @@ make correr-tp
 ---
 
 ##  Funcionamiento
-El TP consta en hacer algo similar a lo que se hizo para el TP1, pero aca usamos listas simplemente enlazadas, en vez de usar vectores dinamicos. Lo que se pide hacer, es basicamente, leer un archivo csv, linea por linea, separar los elementos separados por el ";" o "," (depende del separador que le pasemos), irlo casteando/parseando esos datos e irlos guardando en una LSE (lista simeplemente enlazada). Y debemos darle la opcion al usuario de listar los pokemones que se leyeron de ese .csv (netamente lo hecho en el tp1) o darle la opcion de buscar X pokemon y que aparezca por pantalla el nombre, el tipo y las estadisticas, si se lo encuentra claro. 
+El TP consta en hacer algo similar a lo que se hizo para el TP1, pero aca usamos listas simplemente enlazadas, en vez de usar vectores dinamicos. Lo que se pide hacer, es basicamente, leer un archivo csv, linea por linea, separar los elementos separados por el ";" o "," (depende del separador que le pasemos), irlo casteando/parseando esos datos e irlos guardando en una LSE (lista simeplemente enlazada). Y debemos darle la opcion al usuario de listar los pokemones que se leyeron de ese .csv (netamente lo hecho en el tp1) o darle la opcion de buscar X pokemon y que aparezca por pantalla el nombre, el tipo y las estadisticas, si se lo encuentra claro. Y se imprimiria estas dos opciones:
+
+<div align="center">
+<img width="70%" src="img/listar.png">
+</div>
+
+
+<div align="center">
+<img width="70%" src="img/buscar.png">
+</div>
+
 La idea es ir escribiendo sobre la implementacion de la lista (no tendria mucha gracia explicar que hace pila y cola porque son casos muy similares a la lista y en la parte teorica se habla mas sobre sus funcionalidades y complejidades), algunos problemas presentados, sobre los campos elegids para las estructuras usadas, y un caso particular del main, que creo necesario explicar.
 
 Para empezar, podemos empezar en los campos del TDA lista, en nuestro caso tenemos dos ya definidos y uno que es "auxiliar".  
@@ -286,18 +296,10 @@ Por ultimo toca la parte del main, es mas que anda aclarar algo que puede parece
 ```c
     system("clear");
 ```
-Que lo queria usar para limpiar la pantalla cuando pasaras de una seccion a otra. Mas que anda porque mi main te muetratodos los pokemones como en el tp1, si pones la palabra "listar" y para buscar debes escribir la palabra "buscar" y te habre un mini manual de como usar el buscador, esta decision de poner listar o buscar, es mas que nada porque me parecia mejor dividir el problema en dos rutas posibles, y era mejor poner la palabra buscar  en vez de directamente poner el nombre y que lo busque porque se me hacia mejor y mas comodo trabajar asi. Entonces despues si podes el nombre lo busca y te devuelve solo ese pokemon. 
-Y la otra cosa a aclarar es que me vio obligado a meter un contador de fallos permitidos para ingresar una opcion al usuario, porque lo que yo tengo es un while que mientras la opcion sea -1  ( o sea no eligio una de las dos opciones preestablecidas), no te deje avanzar, y el bot no sabe que debe poner listar o buscar para avanzar, entonces se quedaba en un bucle infinito y tiraba time out, entonces si le metia un contador, iba a intentar 5 veces con cualquier entrada y depsues salia del programa y ahi me marcaba exito. 
-Honestamente, me "desagrada" tener que poner un contador porque por mi que usuario meta 80 veces mal la instruccion y se quede en el while, pasa que sino el bot no avanzaba y no marcaba exito. Es un detalle menor, pero si lo probas por tu cuenta, funciona:
-
-<div align="center">
-<img width="70%" src="img/listar.png">
-</div>
+Que lo queria usar para limpiar la pantalla cuando pasaras de una seccion a otra. Mas que anda porque mi main te muetratodos los pokemones como en el tp1, si pones 2 te lista y para buscar debes poner el numero 1 y te abre un mini manual de como usar el buscador.
 
 
-<div align="center">
-<img width="70%" src="img/buscar.png">
-</div>
+Cabe destacar, que tuve un "dilema" entre las entradas, originalmente, tenia la opcion de que el usuario escriba la operacion a realizar (listar o buscar), pero el xanubot tiraba 1 y 2 para probar esos dos entradas, entonces se quedaba en Time out, entonces le meti un contador de errores donde si llegaba a 5 errores, saliera de while, pero no me gustaba mucho que el usuario quede limitado a 5 errores.Asi que lo cambie a que procese enteros asi si recibia 1 o 2 haga la operacion en cuestion, pero si ponia un string o un char, al scanf no ser capaz de tratar string o chars si espera un int, se quedaba en un bucle infinito. Entonces se me ocurrio la idea de combinar ambas cosas, podes meter listar, o buscar o el numero 1 y 2 para que haga la operacion, asi elimino los problemas de ambas alternativas y quedo satisfecho con lo que queria (que era poder meterle la palabra y que el xanu no se queje). 
 
 ## Respuestas a las preguntas teóricas
 1)  ¿Qué es una lista/pila/cola? Explicar con diagramas.
