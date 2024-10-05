@@ -1,6 +1,7 @@
 VALGRIND_FLAGS=--leak-check=full --track-origins=yes --show-reachable=yes --error-exitcode=2 --show-leak-kinds=all --trace-children=yes
 CFLAGS =-std=c99 -Wall -Wconversion -Wtype-limits -pedantic -Werror -O2 -g
 CC = gcc
+CLANG_FORMAT = clang-format
 
 all: clean valgrind-alumno
 

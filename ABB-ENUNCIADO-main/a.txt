@@ -1,0 +1,81 @@
+size_t contar_iteraciones_inorder(nodo_t *nodo,bool (*f)(void*,void*), void* ctx)
+{    
+    if (nodo == NULL)
+    {
+        return 0;
+    }    
+    size_t cantidad = 0;
+    cantidad += contar_iteraciones_inorder(nodo->izq,f,ctx);
+    if (!f(nodo->elemento,ctx))
+    {
+        return 0;
+    }
+    cantidad++;
+    cantidad += contar_iteraciones_inorder(nodo->der,f,ctx);
+    return cantidad;
+}
+
+size_t abb_iterar_inorden(abb_t* abb, bool (*f)(void*,void*), void* ctx)
+{
+    if (abb == NULL || f == NULL)   
+    {
+        return 0;
+    }
+    return contar_iteraciones_inorder(abb->raiz,f,ctx);    
+}
+
+//pre:
+//post:
+size_t contar_iteraciones_preorden(nodo_t *nodo,bool (*f)(void*,void*), void* ctx)
+{    
+    if (nodo == NULL)
+    {
+        return 0;
+    }  
+    size_t cantidad = 0;
+    if (!f(nodo->elemento,ctx))
+    {
+        return 0;
+    }
+    cantidad++;
+    cantidad += contar_iteraciones_preorden(nodo->izq,f,ctx);
+    cantidad += contar_iteraciones_preorden(nodo->der,f,ctx);
+    return cantidad;
+}
+
+size_t abb_iterar_preorden(abb_t* abb, bool (*f)(void*,void*), void* ctx)
+{
+    if (abb == NULL || f == NULL)
+    {
+        return 0;
+    }
+    return contar_iteraciones_preorden(abb->raiz,f,ctx); 
+}
+
+//pre:
+//post:
+size_t contar_iteraciones_postorden(nodo_t *nodo,bool (*f)(void*,void*), void* ctx)
+{    
+    if (nodo == NULL)
+    {
+        return 0;
+    }  
+    size_t cantidad = 0;
+    cantidad += contar_iteraciones_postorden(nodo->izq,f,ctx);
+    cantidad += contar_iteraciones_postorden(nodo->der,f,ctx);
+    if (!f(nodo->elemento,ctx))
+    {
+        return 0;
+    }
+    cantidad++;
+    return cantidad;
+}
+
+size_t abb_iterar_postorden(abb_t* abb, bool (*f)(void*,void*), void* ctx)
+{
+    if (abb == NULL || f == NULL)
+    {
+        return 0;
+    }
+    return contar_iteraciones_postorden(abb->raiz,f,ctx); 
+}

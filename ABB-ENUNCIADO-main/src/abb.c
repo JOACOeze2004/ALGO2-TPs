@@ -35,13 +35,13 @@ void destruir_nodo(nodo_t* nodo, void (*destructor)(void*)){
     if(nodo == NULL){
         return;
     }
-    if(nodo->izq){
+    if(nodo->izq != NULL){
         destruir_nodo(nodo->izq, destructor);
     }
-    if(nodo->der){
+    if(nodo->der != NULL){
         destruir_nodo(nodo->der, destructor);
     }
-    if(destructor){
+    if(destructor != NULL){
         destructor(nodo->elemento);
     }
    free(nodo);
@@ -80,22 +80,22 @@ void insertar_raiz(abb_t *abb,nodo_t *nodo)
 bool insertar_abb_no_vacio(nodo_t *nodo_actual,nodo_t *nuevo_nodo, int (*comparador)(void*,void*))  //SUJETA A DEBATE !!
 {
     int resultado_comparacion = comparador(nodo_actual->elemento, nuevo_nodo->elemento);
-    if (resultado_comparacion >= 0)
-    {
-        if (nodo_actual->der == NULL)
-        {
-            nodo_actual->der = nuevo_nodo;
-        }
-        else{
-            insertar_abb_no_vacio(nodo_actual->der,nuevo_nodo,comparador);
-        }  
-    }else
+    if (resultado_comparacion < 0)
     {
         if (nodo_actual->izq == NULL)
         {
             nodo_actual->izq = nuevo_nodo;
-        }else{
+        }
+        else{
             insertar_abb_no_vacio(nodo_actual->izq,nuevo_nodo,comparador);
+        }  
+    }else
+    {
+        if (nodo_actual->der == NULL)
+        {
+            nodo_actual->der = nuevo_nodo;
+        }else{
+            insertar_abb_no_vacio(nodo_actual->der,nuevo_nodo,comparador);
         }        
     }
     return true;
@@ -172,47 +172,193 @@ size_t abb_cantidad(abb_t* abb)
     return abb == NULL ? 0 : abb->nodos;    
 }
 
-/**
- * Recorre los elementos del abb en el orden específico y aplica la función f a
- * cada uno.
- *
- * Si la función f devuelve false, se deja de iterar.
- *
- * Devuelve la cantidad de veces que fue invocada la función f.
-*/
-
+//pre:
+//post:
 size_t contar_iteraciones_inorder(nodo_t *nodo,bool (*f)(void*,void*), void* ctx)
 {    
     if (nodo == NULL)
     {
         return 0;
     }    
-    size_t cantidad = contar_iteraciones_inorder(nodo->izq,f,ctx);
+    size_t cantidad = 0;
+    cantidad += contar_iteraciones_inorder(nodo->izq,f,ctx);
     if (!f(nodo->elemento,ctx))
     {
-        return cantidad;
+        return 0;
     }
-    return cantidad +1 +contar_iteraciones_inorder(nodo->der,f,ctx);
+    cantidad++;
+    cantidad += contar_iteraciones_inorder(nodo->der,f,ctx);
+    return cantidad;
 }
 
 size_t abb_iterar_inorden(abb_t* abb, bool (*f)(void*,void*), void* ctx)
 {
-    if (abb == NULL || abb->raiz == NULL)   //Innecesaria la segunda validacion??
+    if (abb == NULL || f == NULL)   
     {
         return 0;
     }
     return contar_iteraciones_inorder(abb->raiz,f,ctx);    
 }
-// size_t abb_iterar_preorden(abb_t* abb, bool (*f)(void*,void*), void* ctx);
-// size_t abb_iterar_postorden(abb_t* abb, bool (*f)(void*,void*), void* ctx);
 
-/**
- * Rellena el vector de punteros con los elementos del abb siguiendo un orden
- * dado. Tamaño indica la capacidad del vector.
- *
- * Devuelve la cantidad de elementos guardados en el vector.
- */
-// size_t abb_vectorizar_inorden(abb_t* abb, void** vector, size_t tamaño);
-// size_t abb_vectorizar_preorden(abb_t* abb, void** vector, size_t tamaño);
-// size_t abb_vectorizar_postorden(abb_t* abb, void** vector, size_t tamaño);
+//pre:
+//post:
+size_t contar_iteraciones_preorden(nodo_t *nodo,bool (*f)(void*,void*), void* ctx)
+{    
+    if (nodo == NULL)
+    {
+        return 0;
+    }  
+    size_t cantidad = 0;
+    if (!f(nodo->elemento,ctx))
+    {
+        return 0;
+    }
+    cantidad++;
+    cantidad += contar_iteraciones_preorden(nodo->izq,f,ctx);
+    cantidad += contar_iteraciones_preorden(nodo->der,f,ctx);
+    return cantidad;
+}
 
+size_t abb_iterar_preorden(abb_t* abb, bool (*f)(void*,void*), void* ctx)
+{
+    if (abb == NULL || f == NULL)
+    {
+        return 0;
+    }
+    return contar_iteraciones_preorden(abb->raiz,f,ctx); 
+}
+
+//pre:
+//post:
+size_t contar_iteraciones_postorden(nodo_t *nodo,bool (*f)(void*,void*), void* ctx)
+{    
+    if (nodo == NULL)
+    {
+        return 0;
+    }  
+    size_t cantidad = 0;
+    cantidad += contar_iteraciones_postorden(nodo->izq,f,ctx);
+    cantidad += contar_iteraciones_postorden(nodo->der,f,ctx);
+    if (!f(nodo->elemento,ctx))
+    {
+        return 0;
+    }
+    cantidad++;
+    return cantidad;
+}
+
+size_t abb_iterar_postorden(abb_t* abb, bool (*f)(void*,void*), void* ctx)
+{
+    if (abb == NULL || f == NULL)
+    {
+        return 0;
+    }
+    return contar_iteraciones_postorden(abb->raiz,f,ctx); 
+}
+
+//pre:
+//post:
+void agregar_elemento_al_vector(void* elemento, size_t* i, void** vector){
+
+    vector[*i] = elemento;
+    (*i)++;
+}
+
+//pre:
+//post:
+void rellenar_vector_inorden_actualizar_i_recu(nodo_t* nodo, void** vector, size_t tamaño, size_t* i)
+{
+    if (*i == tamaño || nodo == NULL)
+    {
+        return; 
+    }
+    if (nodo->izq != NULL)
+    {
+        rellenar_vector_inorden_actualizar_i_recu(nodo->izq,vector,tamaño,i);
+    }
+    if (*i < tamaño)
+    {
+        agregar_elemento_al_vector(nodo->elemento,i,vector);
+    }
+    if (nodo->der != NULL)
+    {
+        rellenar_vector_inorden_actualizar_i_recu(nodo->der,vector,tamaño,i);
+    }
+}
+
+size_t abb_vectorizar_inorden(abb_t* abb, void** vector, size_t tamaño)
+{
+    if (abb == NULL || vector == NULL)
+    {
+        return 0;
+    }
+    size_t i = 0;    
+    rellenar_vector_inorden_actualizar_i_recu(abb->raiz,vector,tamaño,&i);
+    return i;
+}
+
+
+//pre:
+//post
+void rellenar_vector_preorden_actualizar_i_recu(nodo_t* nodo, void** vector, size_t tamaño, size_t* i)
+{
+    if (*i == tamaño || nodo == NULL)
+    {
+        return; 
+    }
+    if (*i < tamaño)
+    {
+        agregar_elemento_al_vector(nodo->elemento,i,vector);
+    }
+    if (nodo->izq != NULL)
+    {
+        rellenar_vector_preorden_actualizar_i_recu(nodo->izq,vector,tamaño,i);
+    }
+    if (nodo->der != NULL)
+    {
+        rellenar_vector_preorden_actualizar_i_recu(nodo->der,vector,tamaño,i);
+    }
+}
+
+size_t abb_vectorizar_preorden(abb_t* abb, void** vector, size_t tamaño)
+{
+        if (abb == NULL || vector == NULL)
+    {
+        return 0;
+    }
+    size_t i = 0;    
+    rellenar_vector_preorden_actualizar_i_recu(abb->raiz,vector,tamaño,&i);
+    return i;
+}
+
+void rellenar_vector_postorden_actualizar_i_recu(nodo_t* nodo, void** vector, size_t tamaño, size_t* i)
+{
+    if (*i == tamaño || nodo == NULL)
+    {
+        return; 
+    }
+    if (nodo->izq != NULL)
+    {
+        rellenar_vector_postorden_actualizar_i_recu(nodo->izq,vector,tamaño,i);
+    }
+    if (nodo->der != NULL)
+    {
+        rellenar_vector_postorden_actualizar_i_recu(nodo->der,vector,tamaño,i);
+    }
+    if (*i < tamaño)
+    {
+        agregar_elemento_al_vector(nodo->elemento,i,vector);
+    }
+}
+
+
+size_t abb_vectorizar_postorden(abb_t* abb, void** vector, size_t tamaño)
+{
+    if (abb == NULL || vector == NULL)
+    {
+        return 0;
+    }
+    size_t i = 0;    
+    rellenar_vector_postorden_actualizar_i_recu(abb->raiz,vector,tamaño,&i);
+    return i;
+}
