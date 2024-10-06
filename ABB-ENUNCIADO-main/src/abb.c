@@ -80,7 +80,7 @@ void insertar_raiz(abb_t *abb,nodo_t *nodo)
 bool insertar_abb_no_vacio(nodo_t *nodo_actual,nodo_t *nuevo_nodo, int (*comparador)(void*,void*))  //SUJETA A DEBATE !!
 {
     int resultado_comparacion = comparador(nodo_actual->elemento, nuevo_nodo->elemento);
-    if (resultado_comparacion < 0)
+    if (resultado_comparacion <= 0)
     {
         if (nodo_actual->izq == NULL)
         {
@@ -123,13 +123,47 @@ bool abb_insertar(abb_t *abb, void* elemento)
     return true;   
 }
 
-/**
- * Quita el elemento buscado del arbol. Si lo encuentra y encontrado no es NULL,
- * almacena el puntero.
- *
- * Devuelve true si pudo quitar el elemento.
- */
-//bool abb_quitar(abb_t* abb, void* buscado, void** encontrado);
+//pre:
+//post:
+nodo_t *eliminar_nodo(nodo_t *nodo,void* buscado, void** encontrado,int (*comparador)(void*,void*))
+{
+    if (nodo == NULL)
+    {
+        return NULL;
+    }
+    int resultado_comparacion = comparador(nodo->elemento,buscado); 
+    if (resultado_comparacion == 0)
+    {
+        *encontrado = nodo->elemento;
+        free(nodo);
+        return NULL;
+    }
+    if(resultado_comparacion > 0)
+    {
+        nodo->der = eliminar_nodo(nodo->der,buscado,encontrado,comparador);
+    }
+    else{
+        nodo->izq = eliminar_nodo(nodo->izq,buscado,encontrado,comparador);
+    } 
+    return nodo;
+}
+
+bool abb_quitar(abb_t* abb, void* buscado, void** encontrado)
+{
+    if (abb == NULL || buscado == NULL)
+    {
+        return false;
+    }
+    *encontrado = NULL;
+    nodo_t *nodo_a_eliminar = eliminar_nodo(abb->raiz,buscado,encontrado,abb->comparador);
+    if (*encontrado != NULL)
+    {
+        abb->raiz = nodo_a_eliminar;
+        *encontrado = encontrado;
+        return true;
+    }
+    return false; 
+}
 
 //pre:
 //post:
@@ -167,6 +201,8 @@ void* abb_obtener(abb_t* abb, void* elemento)
     return NULL;    
 }
 
+
+
 size_t abb_cantidad(abb_t* abb)
 {
     return abb == NULL ? 0 : abb->nodos;    
@@ -182,11 +218,10 @@ size_t contar_iteraciones_inorder(nodo_t *nodo,bool (*f)(void*,void*), void* ctx
     }    
     size_t cantidad = 0;
     cantidad += contar_iteraciones_inorder(nodo->izq,f,ctx);
-    if (!f(nodo->elemento,ctx))
+    if (f(nodo->elemento,ctx))
     {
-        return 0;
-    }
-    cantidad++;
+        cantidad++;
+    }    
     cantidad += contar_iteraciones_inorder(nodo->der,f,ctx);
     return cantidad;
 }
@@ -209,11 +244,10 @@ size_t contar_iteraciones_preorden(nodo_t *nodo,bool (*f)(void*,void*), void* ct
         return 0;
     }  
     size_t cantidad = 0;
-    if (!f(nodo->elemento,ctx))
+    if (f(nodo->elemento,ctx))
     {
-        return 0;
+        cantidad++;
     }
-    cantidad++;
     cantidad += contar_iteraciones_preorden(nodo->izq,f,ctx);
     cantidad += contar_iteraciones_preorden(nodo->der,f,ctx);
     return cantidad;
@@ -239,11 +273,10 @@ size_t contar_iteraciones_postorden(nodo_t *nodo,bool (*f)(void*,void*), void* c
     size_t cantidad = 0;
     cantidad += contar_iteraciones_postorden(nodo->izq,f,ctx);
     cantidad += contar_iteraciones_postorden(nodo->der,f,ctx);
-    if (!f(nodo->elemento,ctx))
+    if (f(nodo->elemento,ctx))
     {
-        return 0;
+        cantidad++;
     }
-    cantidad++;
     return cantidad;
 }
 
@@ -297,7 +330,6 @@ size_t abb_vectorizar_inorden(abb_t* abb, void** vector, size_t tamaño)
     return i;
 }
 
-
 //pre:
 //post
 void rellenar_vector_preorden_actualizar_i_recu(nodo_t* nodo, void** vector, size_t tamaño, size_t* i)
@@ -350,7 +382,6 @@ void rellenar_vector_postorden_actualizar_i_recu(nodo_t* nodo, void** vector, si
         agregar_elemento_al_vector(nodo->elemento,i,vector);
     }
 }
-
 
 size_t abb_vectorizar_postorden(abb_t* abb, void** vector, size_t tamaño)
 {

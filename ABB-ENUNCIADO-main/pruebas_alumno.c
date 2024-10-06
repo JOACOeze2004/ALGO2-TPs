@@ -280,6 +280,191 @@ void BuscarPokemonInexistenteEnABBVaciaDevuelveNULL()
 	abb_destruir(abb);
 }
 
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//pruebas de eliminar
+
+void EliminarElementoNULLDevuelveFalse()
+{
+	abb_t *abb = abb_crear(comparador);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+	struct pokemon blastoise = { "Blastoise", 'A', 8, 167, 220 };
+
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &charizard);
+	abb_insertar(abb, &venusaur);
+	abb_insertar(abb, &blastoise);
+	void *encontrado = NULL;
+
+	pa2m_afirmar(!abb_quitar(abb, NULL ,&encontrado),
+		     "Intentar quitar un pokemon inexistente devuelve false");
+	pa2m_afirmar(encontrado == NULL,
+		     "El elemento eliminado es NULL (porque no lo puedo eliminar)");
+	abb_destruir(abb);
+}
+
+void EliminarPokemonInexistenteDevuelveFalse()
+{
+	abb_t *abb = abb_crear(comparador);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+	struct pokemon mewtwo = { "Mewtwo", 'P', 541, 654, 320 };
+
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &charizard);
+	abb_insertar(abb, &venusaur);
+
+	struct pokemon *elemento_guardado = &mewtwo;
+
+	void *encontrado = NULL;
+
+	pa2m_afirmar(abb_obtener(abb, elemento_guardado) == NULL,
+		     "No existe Mewtwo");
+	pa2m_afirmar(!abb_quitar(abb, elemento_guardado ,&encontrado),
+		     "Intentar quitar un pokemon NULL devuelve false");
+	pa2m_afirmar(encontrado == NULL,
+		     "El elemento eliminado es NULL (porque no lo puedo eliminar)");
+	abb_destruir(abb);
+}
+
+void EliminarElementoUnicoDevuelveTrue()
+{
+	abb_t *abb = abb_crear(comparador);
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	abb_insertar(abb, &pikachu);
+	void *encontrado = NULL;
+
+	pa2m_afirmar(abb_quitar(abb, &pikachu, &encontrado),
+		     "Quitar Pikachu devuelve true");
+	pa2m_afirmar(encontrado != NULL,
+		     "El elemento eliminado no es NULL (debería ser Pikachu)");
+	pa2m_afirmar(abb_obtener(abb, &pikachu) == NULL,
+		     "Pikachu ya no existe en el árbol");
+	abb_destruir(abb);
+}
+
+void EliminarElementoExistenteDevuelveTrue()
+{
+	abb_t *abb = abb_crear(comparador);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+	struct pokemon blastoise = { "Blastoise", 'A', 8, 167, 220 };
+
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &charizard);
+	abb_insertar(abb, &venusaur);
+	abb_insertar(abb, &blastoise);
+	
+	void *encontrado = NULL;
+
+	pa2m_afirmar(abb_quitar(abb, &blastoise ,&encontrado),
+		     "Quitar A Blastoise devuelve true");
+	pa2m_afirmar(encontrado != NULL,
+		     "El elemento eliminado no es NULL (posiblemente sea Blastoise)");
+	abb_destruir(abb);
+}
+
+void EliminarElementoYVolverAInsertarDevulveTrue()
+{
+	abb_t *abb = abb_crear(comparador);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+	struct pokemon blastoise = { "Blastoise", 'A', 8, 167, 220 };
+
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &charizard);
+	abb_insertar(abb, &venusaur);
+	abb_insertar(abb, &blastoise);
+	
+	void *encontrado = NULL;
+
+	pa2m_afirmar(abb_quitar(abb, &blastoise ,&encontrado),
+		     "Quitar a Blastoise devuelve true");
+	pa2m_afirmar(abb_insertar(abb, &blastoise),
+		     "Puedo agregar a Blastoise de nuevo y devuelve true");
+	pa2m_afirmar(abb_quitar(abb, &venusaur ,&encontrado),
+		     "Quitar a venusaur devuelve true");
+	pa2m_afirmar(abb_insertar(abb, &venusaur),
+		     "Puedo agregar a Venusaur de nuevo y devuelve true");
+	abb_destruir(abb);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //pruebas de iterar inorder 
 
@@ -597,6 +782,13 @@ void VectorizarInorderDevuelveCantidadCorrectamente()
 
 	pa2m_afirmar(abb_vectorizar_inorden(abb, (void**)vector, 4) == 4,
 		     "Vectorizar Inorder en un ABB con 4 pokemones devuelve 4");
+
+
+	for (size_t i = 0; i < 4; i++)
+	{
+		printf("nombre inorden:%s\n",vector[i]->nombre);
+	}
+	
 	pa2m_afirmar(vector[0]->tipo == 'P',
 		     "El primer elemento del vector tiene tipo esperado (de Venusaur)");
 	pa2m_afirmar(vector[1]->tipo == 'E',
@@ -927,6 +1119,15 @@ int main()
 	VectorizarPostorderConVectorNULLDevuelve0();
 	VectorizarPostorderConTamañoExcedidoDevuelveLaCantidadDeAgregados();
 	VectorizarPostorderConTAmañoInvalidoDevuelveLaCantidadDeAgregados();
+
+
+	pa2m_nuevo_grupo("Pruebas de Eliminar");
+	EliminarElementoNULLDevuelveFalse();
+	EliminarPokemonInexistenteDevuelveFalse();
+	EliminarElementoNULLDevuelveFalse();
+	EliminarElementoUnicoDevuelveTrue();
+	EliminarElementoExistenteDevuelveTrue();
+	EliminarElementoYVolverAInsertarDevulveTrue();
 
 	return pa2m_mostrar_reporte();
 }
