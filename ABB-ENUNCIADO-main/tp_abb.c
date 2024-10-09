@@ -85,7 +85,6 @@ bool mostrar_pokemones( void *a, void *ctx)
 	       poke->nombre, poke->tipo, poke->fuerza, poke->destreza,
 	       poke->resistencia);
 	return true;
-	
 }
 
 
@@ -96,27 +95,40 @@ int main(int argc, char *argv[])
 	struct pokemon pikachu = { "Pikachu", 'E', 8, 40, 50 };
 	//struct pokemon pikachu2 = { "Pikachu2", 'E', 55000, 40, 50 };
 	//struct pokemon blas2 = { "Blastoise2", 'E', 55000, 40, 50 };
+	struct pokemon bulbasur = { "Bulbasur", 'P', 59, 24, 71 };
+
 
 	
 	struct pokemon charizard = { "Charizard", 'F', 10, 143, 239 };
 	struct pokemon venusaur = { "Venusaur", 'P', 5, 109, 301 };
 	struct pokemon blastoise = { "Blastoise", 'A', 8, 167, 220 };
 
+	struct pokemon wartortle = { "Wartortle", 'A', 8, 167, 220 };
+
+	struct pokemon raichu = { "Raichu", 'A', 8, 167, 220 };
+	struct pokemon psyduck = { "Psyduck", 'A', 8, 167, 220 };
+
+
+
 	abb_insertar(abb,&pikachu);
+	abb_insertar(abb,&bulbasur);
+
 	abb_insertar(abb,&charizard);
 	abb_insertar(abb,&venusaur);
 	abb_insertar(abb,&blastoise);
-	// abb_insertar(abb,&pikachu2);
-	// abb_insertar(abb,&blas2);
+
+	abb_insertar(abb,&wartortle);
+	abb_insertar(abb,&raichu);
+	abb_insertar(abb,&psyduck);
 
 	void *enocntado = NULL;
 
 
 	imprimir_abb(abb->raiz);	
 
-	printf("despues de sacar un nodo hoja");
+	printf("despues de sacar un nodo con dos hijos");
 
-	abb_quitar(abb, &blastoise ,&enocntado);
+	abb_quitar(abb, &venusaur ,&enocntado);
 
 	imprimir_abb(abb->raiz);	
 

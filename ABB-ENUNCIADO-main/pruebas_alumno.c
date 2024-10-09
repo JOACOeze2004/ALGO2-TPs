@@ -397,6 +397,94 @@ void EliminarElementoYVolverAInsertarDevulveTrue()
 	abb_destruir(abb);
 }
 
+void EliminarRaizYVuelvoAInsertarOtraRaizDevulveTrue()
+{
+	abb_t *abb = abb_crear(comparador);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+
+	abb_insertar(abb, &pikachu);
+	
+	void *encontrado = NULL;
+
+	pa2m_afirmar(abb_quitar(abb, &pikachu ,&encontrado),
+		     "Quitar a pikachu (raiz) devuelve true");
+	abb_insertar(abb, &pikachu);
+	pa2m_afirmar(abb_obtener(abb, &pikachu) != NULL,
+		     "Obtengo la raiz de nuevo");
+	abb_destruir(abb);
+}
+
+
+void EliminarElementoConUnHijoDevuelveTrue()
+{
+	abb_t *abb = abb_crear(comparador);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+	struct pokemon blastoise = { "Blastoise", 'A', 8, 167, 220 };
+
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &charizard);
+	abb_insertar(abb, &venusaur);
+	abb_insertar(abb, &blastoise);	
+	void *encontrado = NULL;
+
+	pa2m_afirmar(abb_quitar(abb, &charizard ,&encontrado),
+		     "Quitar a Charizard (que tiene como hijo a Blastoise) devuelve true");
+	abb_destruir(abb);
+}
+
+void EliminarElementoConUnHijoYAgregarOtraVezDevuelveTrue()
+{
+	abb_t *abb = abb_crear(comparador);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+	struct pokemon blastoise = { "Blastoise", 'A', 8, 167, 220 };
+
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &charizard);
+	abb_insertar(abb, &venusaur);
+	abb_insertar(abb, &blastoise);	
+	void *encontrado = NULL;
+
+	pa2m_afirmar(abb_quitar(abb, &charizard ,&encontrado),
+		     "Quitar a Charizard (que tiene como hijo a Blastoise) devuelve true");
+	pa2m_afirmar(abb_cantidad(abb) == 3,
+		     "Tenemos 3 elementos luego de eliminar a Charizard");	
+	pa2m_afirmar(abb_insertar(abb, &charizard),
+		     "Agregamos a charizard correctamente");
+	pa2m_afirmar(abb_cantidad(abb) == 4,
+		     "Tenemos 4 elementos luego de agregar nuevamente a Charizard");
+	abb_destruir(abb);
+}
+
+void EliminarElementoConDosHijosDevuelveTrue()
+{
+	abb_t *abb = abb_crear(comparador);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon bulbasur = { "Bulbasur", 'P', 59, 24, 71 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+	struct pokemon blastoise = { "Blastoise", 'A', 8, 167, 220 };
+
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &bulbasur);
+	abb_insertar(abb, &charizard);
+	abb_insertar(abb, &venusaur);
+	abb_insertar(abb, &blastoise);	
+	void *encontrado = NULL;
+
+	pa2m_afirmar(abb_quitar(abb, &bulbasur ,&encontrado),
+		     "Quitar a Bulbasur (que tiene como hijo a Blastoise y Charizard) devuelve true");
+	pa2m_afirmar(abb_cantidad(abb) == 4,
+		     "Tenemos 4 elementos luego de eliminar a Bulbasur");	
+	abb_destruir(abb);
+}
 
 
 
@@ -1077,7 +1165,6 @@ int main()
 
 	pa2m_nuevo_grupo("Pruebas de quitar en el ABB");
 
-
 	pa2m_nuevo_grupo("Pruebas de Iterar Inorder");
 	IterarInorderConPtrsNULLSDevuelve0();
 	IterarInorderConFuncionNULLSDevuelve0();
@@ -1120,7 +1207,6 @@ int main()
 	VectorizarPostorderConTamañoExcedidoDevuelveLaCantidadDeAgregados();
 	VectorizarPostorderConTAmañoInvalidoDevuelveLaCantidadDeAgregados();
 
-
 	pa2m_nuevo_grupo("Pruebas de Eliminar");
 	EliminarElementoNULLDevuelveFalse();
 	EliminarPokemonInexistenteDevuelveFalse();
@@ -1128,6 +1214,10 @@ int main()
 	EliminarElementoUnicoDevuelveTrue();
 	EliminarElementoExistenteDevuelveTrue();
 	EliminarElementoYVolverAInsertarDevulveTrue();
+	EliminarRaizYVuelvoAInsertarOtraRaizDevulveTrue();
+	EliminarElementoConUnHijoDevuelveTrue();
+	EliminarElementoConUnHijoYAgregarOtraVezDevuelveTrue();
+	EliminarElementoConDosHijosDevuelveTrue();
 
 	return pa2m_mostrar_reporte();
 }

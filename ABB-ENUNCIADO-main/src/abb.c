@@ -1,7 +1,6 @@
 #include "abb.h"
 #include "abb_estructura_privada.h"
 
-
 //pre:	Idealmente, el elemento no deberia ser NULL, pero puede serlo, funcionaria de igual manera.
 //post:	Creo un nuevo nodo con el fin de poder agregar uno en los llamados para las funciones de agregar. Seteamos los campos del mismo y lo devolvemos inicializado y con memoria reservada.
 nodo_t *crear_nuevo_nodo(void *elemento)
@@ -103,7 +102,7 @@ bool insertar_abb_no_vacio(nodo_t *nodo_actual,nodo_t *nuevo_nodo, int (*compara
 
 bool abb_insertar(abb_t *abb, void* elemento)
 {
-    if (abb == NULL || elemento == NULL)
+    if (abb == NULL || elemento == NULL)        //perimito que sea null? romperia todo de todas formas.
     {
         return false;
     }
@@ -123,6 +122,15 @@ bool abb_insertar(abb_t *abb, void* elemento)
     return true;   
 }
 
+nodo_t *buscar_predecesor_inorden(nodo_t *nodo){
+    nodo_t *nodo_actual = nodo->izq;
+    while (nodo_actual->der != NULL)
+    {
+        nodo_actual= nodo_actual->der;
+    }
+    return nodo_actual;
+}
+
 //pre:
 //post:
 nodo_t *eliminar_nodo(nodo_t *nodo,void* buscado, void** encontrado,int (*comparador)(void*,void*))
@@ -135,8 +143,16 @@ nodo_t *eliminar_nodo(nodo_t *nodo,void* buscado, void** encontrado,int (*compar
     if (resultado_comparacion == 0)
     {
         *encontrado = nodo->elemento;
+        if (nodo->der != NULL && nodo->izq != NULL)
+        {
+            nodo_t *nodo_inorden = buscar_predecesor_inorden(nodo);
+            nodo->elemento = nodo_inorden->elemento;
+            nodo->izq = eliminar_nodo(nodo->izq,nodo_inorden->elemento,encontrado,comparador);
+            return nodo;
+        }        
+        nodo_t *hijo_no_null = nodo->der != NULL ? nodo->der : nodo->izq;       
         free(nodo);
-        return NULL;
+        return hijo_no_null;
     }
     if(resultado_comparacion > 0)
     {
@@ -160,6 +176,7 @@ bool abb_quitar(abb_t* abb, void* buscado, void** encontrado)
     {
         abb->raiz = nodo_a_eliminar;
         *encontrado = encontrado;
+        (abb->nodos)--;
         return true;
     }
     return false; 
@@ -200,8 +217,6 @@ void* abb_obtener(abb_t* abb, void* elemento)
     }
     return NULL;    
 }
-
-
 
 size_t abb_cantidad(abb_t* abb)
 {
