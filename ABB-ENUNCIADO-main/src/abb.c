@@ -28,8 +28,8 @@ abb_t* abb_crear(int (*comparador)(void*, void*))
     return abb;
 }
 
-//pre:
-//post:
+//pre:  Idealmente, deberia haber al menos un nodo en el ABB. Y el destructor no deberia ser NULL si sabemos que no se reservo memoria para los elementos del ABB, si no reservamos memoria para el elemento, pasarle NULL es lo optimo.
+//post: Recursivamente, vamos recorriendo el arbol y vamos liberando los nodos. En caso de que el destructor sea distinto de NULL,  le aplicamos la funcion al elemento en dicho nodo. 
 void destruir_nodo(nodo_t* nodo, void (*destructor)(void*)){
     if(nodo == NULL){
         return;
@@ -64,9 +64,9 @@ void abb_destruir_todo(abb_t* abb, void (*destructor)(void*))
     }
 }
 
-//pre:
-//post:
-void insertar_raiz(abb_t *abb,nodo_t *nodo)
+//pre:  El ABB no deberia ser NULL al igual que el nodo
+//post: Netamente, seteamos los punteros derecha e izquierda de la raiz como NULL ya que seria el pirmer nodo ademas de setear el campo razi como el nodo que le pasamos, ademas de incrementar la cantidad de nodos/elementos en el ABB.
+void insertar_raiz(abb_t *abb, nodo_t *nodo)
 {
     nodo->der = NULL;
     nodo->izq = NULL;
@@ -182,8 +182,9 @@ bool abb_quitar(abb_t* abb, void* buscado, void** encontrado)
     return false; 
 }
 
-//pre:
-//post:
+//pre:  Idealmente no deberiamos pasarle un NULL al parametro elemento. 
+//post: Buscamos el elemento hasta que el resultado de la comparacion entre el elemento que este en el nodo I (o nodo que estemos recorriendo) 
+// y el elemento que buscamos, sea igual a 0 (que seria que lo encontramos). Si es mayor, recorreriamos el lado derecho del arbol sino vamos a la izquierda.
 void* abb_obtener_elemento_recursivo(nodo_t *nodo, void* elemento, int (*comparador)(void*,void*))
 {
     if (nodo == NULL)

@@ -10,7 +10,6 @@ struct pokemon {
 	int resistencia;
 };
 
-
 bool continuar_iteracion(void *elemento, void *ctx)
 {
 	struct pokemon *p = (struct pokemon *)elemento;
@@ -281,7 +280,7 @@ void BuscarPokemonInexistenteEnABBVaciaDevuelveNULL()
 }
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//pruebas de eliminar
+//pruebas de eliminar con 0 o 1 hijo
 
 void EliminarElementoNULLDevuelveFalse()
 {
@@ -298,10 +297,11 @@ void EliminarElementoNULLDevuelveFalse()
 	abb_insertar(abb, &blastoise);
 	void *encontrado = NULL;
 
-	pa2m_afirmar(!abb_quitar(abb, NULL ,&encontrado),
+	pa2m_afirmar(!abb_quitar(abb, NULL, &encontrado),
 		     "Intentar quitar un pokemon inexistente devuelve false");
-	pa2m_afirmar(encontrado == NULL,
-		     "El elemento eliminado es NULL (porque no lo puedo eliminar)");
+	pa2m_afirmar(
+		encontrado == NULL,
+		"El elemento eliminado es NULL (porque no lo puedo eliminar)");
 	abb_destruir(abb);
 }
 
@@ -324,10 +324,11 @@ void EliminarPokemonInexistenteDevuelveFalse()
 
 	pa2m_afirmar(abb_obtener(abb, elemento_guardado) == NULL,
 		     "No existe Mewtwo");
-	pa2m_afirmar(!abb_quitar(abb, elemento_guardado ,&encontrado),
+	pa2m_afirmar(!abb_quitar(abb, elemento_guardado, &encontrado),
 		     "Intentar quitar un pokemon NULL devuelve false");
-	pa2m_afirmar(encontrado == NULL,
-		     "El elemento eliminado es NULL (porque no lo puedo eliminar)");
+	pa2m_afirmar(
+		encontrado == NULL,
+		"El elemento eliminado es NULL (porque no lo puedo eliminar)");
 	abb_destruir(abb);
 }
 
@@ -360,13 +361,14 @@ void EliminarElementoExistenteDevuelveTrue()
 	abb_insertar(abb, &charizard);
 	abb_insertar(abb, &venusaur);
 	abb_insertar(abb, &blastoise);
-	
+
 	void *encontrado = NULL;
 
-	pa2m_afirmar(abb_quitar(abb, &blastoise ,&encontrado),
+	pa2m_afirmar(abb_quitar(abb, &blastoise, &encontrado),
 		     "Quitar A Blastoise devuelve true");
-	pa2m_afirmar(encontrado != NULL,
-		     "El elemento eliminado no es NULL (posiblemente sea Blastoise)");
+	pa2m_afirmar(
+		encontrado != NULL,
+		"El elemento eliminado no es NULL (posiblemente sea Blastoise)");
 	abb_destruir(abb);
 }
 
@@ -383,14 +385,14 @@ void EliminarElementoYVolverAInsertarDevulveTrue()
 	abb_insertar(abb, &charizard);
 	abb_insertar(abb, &venusaur);
 	abb_insertar(abb, &blastoise);
-	
+
 	void *encontrado = NULL;
 
-	pa2m_afirmar(abb_quitar(abb, &blastoise ,&encontrado),
+	pa2m_afirmar(abb_quitar(abb, &blastoise, &encontrado),
 		     "Quitar a Blastoise devuelve true");
 	pa2m_afirmar(abb_insertar(abb, &blastoise),
 		     "Puedo agregar a Blastoise de nuevo y devuelve true");
-	pa2m_afirmar(abb_quitar(abb, &venusaur ,&encontrado),
+	pa2m_afirmar(abb_quitar(abb, &venusaur, &encontrado),
 		     "Quitar a venusaur devuelve true");
 	pa2m_afirmar(abb_insertar(abb, &venusaur),
 		     "Puedo agregar a Venusaur de nuevo y devuelve true");
@@ -404,17 +406,16 @@ void EliminarRaizYVuelvoAInsertarOtraRaizDevulveTrue()
 	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
 
 	abb_insertar(abb, &pikachu);
-	
+
 	void *encontrado = NULL;
 
-	pa2m_afirmar(abb_quitar(abb, &pikachu ,&encontrado),
+	pa2m_afirmar(abb_quitar(abb, &pikachu, &encontrado),
 		     "Quitar a pikachu (raiz) devuelve true");
 	abb_insertar(abb, &pikachu);
 	pa2m_afirmar(abb_obtener(abb, &pikachu) != NULL,
 		     "Obtengo la raiz de nuevo");
 	abb_destruir(abb);
 }
-
 
 void EliminarElementoConUnHijoDevuelveTrue()
 {
@@ -428,11 +429,12 @@ void EliminarElementoConUnHijoDevuelveTrue()
 	abb_insertar(abb, &pikachu);
 	abb_insertar(abb, &charizard);
 	abb_insertar(abb, &venusaur);
-	abb_insertar(abb, &blastoise);	
+	abb_insertar(abb, &blastoise);
 	void *encontrado = NULL;
 
-	pa2m_afirmar(abb_quitar(abb, &charizard ,&encontrado),
-		     "Quitar a Charizard (que tiene como hijo a Blastoise) devuelve true");
+	pa2m_afirmar(
+		abb_quitar(abb, &charizard, &encontrado),
+		"Quitar a Charizard (que tiene como hijo a Blastoise) devuelve true");
 	abb_destruir(abb);
 }
 
@@ -448,19 +450,24 @@ void EliminarElementoConUnHijoYAgregarOtraVezDevuelveTrue()
 	abb_insertar(abb, &pikachu);
 	abb_insertar(abb, &charizard);
 	abb_insertar(abb, &venusaur);
-	abb_insertar(abb, &blastoise);	
+	abb_insertar(abb, &blastoise);
 	void *encontrado = NULL;
 
-	pa2m_afirmar(abb_quitar(abb, &charizard ,&encontrado),
-		     "Quitar a Charizard (que tiene como hijo a Blastoise) devuelve true");
+	pa2m_afirmar(
+		abb_quitar(abb, &charizard, &encontrado),
+		"Quitar a Charizard (que tiene como hijo a Blastoise) devuelve true");
 	pa2m_afirmar(abb_cantidad(abb) == 3,
-		     "Tenemos 3 elementos luego de eliminar a Charizard");	
+		     "Tenemos 3 elementos luego de eliminar a Charizard");
 	pa2m_afirmar(abb_insertar(abb, &charizard),
 		     "Agregamos a charizard correctamente");
-	pa2m_afirmar(abb_cantidad(abb) == 4,
-		     "Tenemos 4 elementos luego de agregar nuevamente a Charizard");
+	pa2m_afirmar(
+		abb_cantidad(abb) == 4,
+		"Tenemos 4 elementos luego de agregar nuevamente a Charizard");
 	abb_destruir(abb);
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//pruebas de eliminar con 2 hijos
 
 void EliminarElementoConDosHijosDevuelveTrue()
 {
@@ -476,85 +483,142 @@ void EliminarElementoConDosHijosDevuelveTrue()
 	abb_insertar(abb, &bulbasur);
 	abb_insertar(abb, &charizard);
 	abb_insertar(abb, &venusaur);
-	abb_insertar(abb, &blastoise);	
+	abb_insertar(abb, &blastoise);
 	void *encontrado = NULL;
 
-	pa2m_afirmar(abb_quitar(abb, &bulbasur ,&encontrado),
-		     "Quitar a Bulbasur (que tiene como hijo a Blastoise y Charizard) devuelve true");
+	pa2m_afirmar(
+		abb_quitar(abb, &bulbasur, &encontrado),
+		"Quitar a Bulbasur (que tiene como hijo a Blastoise y Charizard) devuelve true");
 	pa2m_afirmar(abb_cantidad(abb) == 4,
-		     "Tenemos 4 elementos luego de eliminar a Bulbasur");	
+		     "Tenemos 4 elementos luego de eliminar a Bulbasur");
 	abb_destruir(abb);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+void EliminarNodoConPredecesorInordenConHijoIzquierdo()
+{
+	abb_t *abb = abb_crear(comparador);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon bulbasur = { "Bulbasur", 'P', 59, 24, 71 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+	struct pokemon blastoise = { "Blastoise", 'A', 8, 167, 220 };
+	struct pokemon eevee = { "Eevee", 'N', 5, 10, 200 };
+
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &bulbasur);
+	abb_insertar(abb, &charizard);
+	abb_insertar(abb, &venusaur);
+	abb_insertar(abb, &blastoise);
+	abb_insertar(abb, &eevee);
+
+	void *encontrado = NULL;
+
+	pa2m_afirmar(
+		abb_quitar(abb, &bulbasur, &encontrado),
+		"Eliminar a Bulbasur con predecesor inorden que tiene hijo izquierdo devuelve true");
+	pa2m_afirmar(abb_cantidad(abb) == 5,
+		     "Hay 5 elementos en el ABB después de eliminar Bulbasur");
+	abb_destruir(abb);
+}
+
+void EliminarElementoConDosHijosYAgregoDeNuevoDevuelveTrue()
+{
+	abb_t *abb = abb_crear(comparador);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon bulbasur = { "Bulbasur", 'P', 59, 24, 71 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+	struct pokemon blastoise = { "Blastoise", 'A', 8, 167, 220 };
+
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &bulbasur);
+	abb_insertar(abb, &charizard);
+	abb_insertar(abb, &venusaur);
+	abb_insertar(abb, &blastoise);
+	void *encontrado = NULL;
+
+	pa2m_afirmar(
+		abb_quitar(abb, &bulbasur, &encontrado),
+		"Quitar a Bulbasur (que tiene como hijo a Blastoise y Charizard) devuelve true");
+	pa2m_afirmar(abb_cantidad(abb) == 4,
+		     "Tenemos 4 elementos luego de eliminar a Bulbasur");
+	pa2m_afirmar(abb_insertar(abb, &bulbasur),
+		     "Insertamos Correctamente a Bulbasur");
+	pa2m_afirmar(
+		abb_cantidad(abb) == 5,
+		"Tenemos 5 elementos luego de volver a agregar a Bulbasur");
+	abb_destruir(abb);
+}
+
+void EliminarRaizDevuleveTrue()
+{
+	abb_t *abb = abb_crear(comparador);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon bulbasur = { "Bulbasur", 'P', 59, 24, 71 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+	struct pokemon blastoise = { "Blastoise", 'A', 8, 167, 220 };
+
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &bulbasur);
+	abb_insertar(abb, &charizard);
+	abb_insertar(abb, &venusaur);
+	abb_insertar(abb, &blastoise);
+	void *encontrado = NULL;
+
+	pa2m_afirmar(
+		abb_quitar(abb, &pikachu, &encontrado),
+		"Quitar a Pikachu (que tiene como hijo a Venasur y Charizard) devuelve true sin romperse");
+	pa2m_afirmar(abb_cantidad(abb) == 4,
+		     "Tenemos 4 elementos luego de eliminar a Bulbasur");
+	abb_destruir(abb);
+}
+
+void EliminarTodoElABBDevulveTrue()
+{
+	abb_t *abb = abb_crear(comparador);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon bulbasur = { "Bulbasur", 'P', 59, 24, 71 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+	struct pokemon blastoise = { "Blastoise", 'A', 8, 167, 220 };
+
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &bulbasur);
+	abb_insertar(abb, &charizard);
+	abb_insertar(abb, &venusaur);
+	abb_insertar(abb, &blastoise);
+	void *encontrado = NULL;
+
+	pa2m_afirmar(
+		abb_quitar(abb, &charizard, &encontrado),
+		"Quitar a Charizard (que tiene como hijo a Blastoise) devuelve true sin romperse");
+	pa2m_afirmar(abb_cantidad(abb) == 4,
+		     "Tenemos 4 elementos luego de eliminar a Charizard");
+	pa2m_afirmar(abb_quitar(abb, &bulbasur, &encontrado),
+		     "Quitar a Bulbasur devuelve true sin romperse");
+	pa2m_afirmar(abb_cantidad(abb) == 3,
+		     "Tenemos 3 elementos luego de eliminar a Bulbasur");
+	pa2m_afirmar(abb_quitar(abb, &blastoise, &encontrado),
+		     "Quitar a Blastoise devuelve true sin romperse");
+	pa2m_afirmar(abb_cantidad(abb) == 2,
+		     "Tenemos 2 elementos luego de eliminar a Blastoise");
+	pa2m_afirmar(abb_quitar(abb, &pikachu, &encontrado),
+		     "Quitar a Pikachu (la raiz) devuelve true sin romperse");
+	pa2m_afirmar(abb_cantidad(abb) == 1,
+		     "Tenemos 1 elemento luego de eliminar a Pikachu");
+	pa2m_afirmar(abb_quitar(abb, &venusaur, &encontrado),
+		     "Quitar a Venusaur devuelve true sin romperse");
+	pa2m_afirmar(abb_cantidad(abb) == 0, "El ABB se vacio completamente");
+	abb_destruir(abb);
+}
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//pruebas de iterar inorder 
+//pruebas de iterar inorder
 
 void IterarInorderConPtrsNULLSDevuelve0()
 {
@@ -664,8 +728,9 @@ void IterarPreorderConPtrsNULLSDevuelve0()
 	abb_insertar(abb, &pikachu);
 	abb_insertar(abb, &charizard);
 
-	pa2m_afirmar(abb_iterar_preorden(NULL, NULL, NULL) == 0,
-		     "Iterar Preorder en un ABB con parametros NULL devuelve 0");
+	pa2m_afirmar(
+		abb_iterar_preorden(NULL, NULL, NULL) == 0,
+		"Iterar Preorder en un ABB con parametros NULL devuelve 0");
 	abb_destruir(abb);
 }
 
@@ -762,8 +827,9 @@ void IterarPostorderConPtrsNULLSDevuelve0()
 	abb_insertar(abb, &pikachu);
 	abb_insertar(abb, &charizard);
 
-	pa2m_afirmar(abb_iterar_postorden(NULL, NULL, NULL) == 0,
-		     "Iterar Postorder en un ABB con parametros NULL devuelve 0");
+	pa2m_afirmar(
+		abb_iterar_postorden(NULL, NULL, NULL) == 0,
+		"Iterar Postorder en un ABB con parametros NULL devuelve 0");
 	abb_destruir(abb);
 }
 
@@ -859,7 +925,7 @@ void VectorizarInorderDevuelveCantidadCorrectamente()
 	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
 	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
 	struct pokemon blastoise = { "Blastoise", 'A', 97, 167, 220 };
-	
+
 	abb_insertar(abb, &pikachu);
 	abb_insertar(abb, &charizard);
 	abb_insertar(abb, &venusaur);
@@ -868,23 +934,20 @@ void VectorizarInorderDevuelveCantidadCorrectamente()
 	size_t capacidad = abb_cantidad(abb);
 	struct pokemon *vector[capacidad];
 
-	pa2m_afirmar(abb_vectorizar_inorden(abb, (void**)vector, 4) == 4,
+	pa2m_afirmar(abb_vectorizar_inorden(abb, (void **)vector, 4) == 4,
 		     "Vectorizar Inorder en un ABB con 4 pokemones devuelve 4");
-
-
-	for (size_t i = 0; i < 4; i++)
-	{
-		printf("nombre inorden:%s\n",vector[i]->nombre);
-	}
-	
-	pa2m_afirmar(vector[0]->tipo == 'P',
-		     "El primer elemento del vector tiene tipo esperado (de Venusaur)");
-	pa2m_afirmar(vector[1]->tipo == 'E',
-		     "El segundo elemento del vector tiene tipo esperado (de Pikachu)");
-	pa2m_afirmar(vector[2]->tipo == 'F',
-		     "El tercer elemento del vector tiene tipo esperado (de Charizard)");
-	pa2m_afirmar(vector[3]->tipo == 'A',
-		     "El cuarto elemento del vector tiene tipo esperado (de Blastoise)");
+	pa2m_afirmar(
+		vector[0]->tipo == 'P',
+		"El primer elemento del vector tiene tipo esperado (de Venusaur)");
+	pa2m_afirmar(
+		vector[1]->tipo == 'E',
+		"El segundo elemento del vector tiene tipo esperado (de Pikachu)");
+	pa2m_afirmar(
+		vector[2]->tipo == 'F',
+		"El tercer elemento del vector tiene tipo esperado (de Charizard)");
+	pa2m_afirmar(
+		vector[3]->tipo == 'A',
+		"El cuarto elemento del vector tiene tipo esperado (de Blastoise)");
 	abb_destruir(abb);
 }
 
@@ -920,12 +983,13 @@ void VectorizarConTamañoExcedidoDevuelveLaCantidadDeAgregados()
 	abb_insertar(abb, &charizard);
 	abb_insertar(abb, &venusaur);
 	abb_insertar(abb, &blastoise);
-	
+
 	size_t capacidad = abb_cantidad(abb);
 	struct pokemon *vector[capacidad];
 
-	pa2m_afirmar(abb_vectorizar_inorden(abb, (void**)vector, 5) == 4,
-		     "Vectorizar Inorder en un ABB con 4 pokemones cuando le paso un tamaño que exdece el vector devuelvo la cantidad de pokemones que habia en el ABB");
+	pa2m_afirmar(
+		abb_vectorizar_inorden(abb, (void **)vector, 5) == 4,
+		"Vectorizar Inorder en un ABB con 4 pokemones cuando le paso un tamaño que exdece el vector devuelvo la cantidad de pokemones que habia en el ABB");
 	abb_destruir(abb);
 }
 
@@ -937,7 +1001,7 @@ void VectorizarConTAmañoInvalidoDevuelveLaCantidadDeAgregados()
 	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
 	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
 	struct pokemon blastoise = { "Blastoise", 'A', 97, 167, 220 };
-		
+
 	abb_insertar(abb, &pikachu);
 	abb_insertar(abb, &charizard);
 	abb_insertar(abb, &venusaur);
@@ -946,8 +1010,9 @@ void VectorizarConTAmañoInvalidoDevuelveLaCantidadDeAgregados()
 	size_t capacidad = abb_cantidad(abb);
 	struct pokemon *vector[capacidad];
 
-	pa2m_afirmar(abb_vectorizar_inorden(abb, (void**)vector, 2) == 2,
-		     "Vectorizar Inorder en un ABB con 4 pokemones cuando le paso un tamaño que exdece el vector devuelvo la cantidad de pokemones que habia en el ABB");
+	pa2m_afirmar(
+		abb_vectorizar_inorden(abb, (void **)vector, 2) == 2,
+		"Vectorizar Inorder en un ABB con 4 pokemones cuando le paso un tamaño que exdece el vector devuelvo la cantidad de pokemones que habia en el ABB");
 	abb_destruir(abb);
 }
 
@@ -962,7 +1027,7 @@ void VectorizarPreorderDevuelveCantidadCorrectamente()
 	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
 	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
 	struct pokemon blastoise = { "Blastoise", 'A', 97, 167, 220 };
-	
+
 	abb_insertar(abb, &pikachu);
 	abb_insertar(abb, &charizard);
 	abb_insertar(abb, &venusaur);
@@ -971,16 +1036,21 @@ void VectorizarPreorderDevuelveCantidadCorrectamente()
 	size_t capacidad = abb_cantidad(abb);
 	struct pokemon *vector[capacidad];
 
-	pa2m_afirmar(abb_vectorizar_preorden(abb, (void**)vector, 4) == 4,
-		     "Vectorizar Inorder en un ABB con 4 pokemones devuelve 4");
-	pa2m_afirmar(vector[0]->tipo == 'E',
-		     "El primer elemento del vector tiene tipo esperado (de Pikachu)");
-	pa2m_afirmar(vector[1]->tipo == 'P',
-		     "El segundo elemento del vector tiene tipo esperado (de venusaur)");
-	pa2m_afirmar(vector[2]->tipo == 'F',
-		     "El tercer elemento del vector tiene tipo esperado (de Charizard)");
-	pa2m_afirmar(vector[3]->tipo == 'A',
-		     "El cuarto elemento del vector tiene tipo esperado (de Blastoise)");
+	pa2m_afirmar(
+		abb_vectorizar_preorden(abb, (void **)vector, 4) == 4,
+		"Vectorizar Preorden en un ABB con 4 pokemones devuelve 4");
+	pa2m_afirmar(
+		vector[0]->tipo == 'E',
+		"El primer elemento del vector tiene tipo esperado (de Pikachu)");
+	pa2m_afirmar(
+		vector[1]->tipo == 'P',
+		"El segundo elemento del vector tiene tipo esperado (de venusaur)");
+	pa2m_afirmar(
+		vector[2]->tipo == 'F',
+		"El tercer elemento del vector tiene tipo esperado (de Charizard)");
+	pa2m_afirmar(
+		vector[3]->tipo == 'A',
+		"El cuarto elemento del vector tiene tipo esperado (de Blastoise)");
 	abb_destruir(abb);
 }
 
@@ -998,8 +1068,9 @@ void VectorizarPreorderConVectorNULLDevuelve0()
 	abb_insertar(abb, &venusaur);
 	abb_insertar(abb, &blastoise);
 
-	pa2m_afirmar(abb_vectorizar_preorden(abb, NULL, 4) == 0,
-		     "Vectorizar Inorder en un ABB con vector NULL devuelve 0");
+	pa2m_afirmar(
+		abb_vectorizar_preorden(abb, NULL, 4) == 0,
+		"Vectorizar Preorder en un ABB con vector NULL devuelve 0");
 	abb_destruir(abb);
 }
 
@@ -1016,12 +1087,13 @@ void VectorizarPreorderConTamañoExcedidoDevuelveLaCantidadDeAgregados()
 	abb_insertar(abb, &charizard);
 	abb_insertar(abb, &venusaur);
 	abb_insertar(abb, &blastoise);
-	
+
 	size_t capacidad = abb_cantidad(abb);
 	struct pokemon *vector[capacidad];
 
-	pa2m_afirmar(abb_vectorizar_preorden(abb, (void**)vector, 5) == 4,
-		     "Vectorizar Inorder en un ABB con 4 pokemones cuando le paso un tamaño que exdece el vector devuelvo la cantidad de pokemones que habia en el ABB");
+	pa2m_afirmar(
+		abb_vectorizar_preorden(abb, (void **)vector, 5) == 4,
+		"Vectorizar Preorder en un ABB con 4 pokemones cuando le paso un tamaño que exdece el vector devuelvo la cantidad de pokemones que habia en el ABB");
 	abb_destruir(abb);
 }
 
@@ -1033,7 +1105,7 @@ void VectorizarPreorderConTAmañoInvalidoDevuelveLaCantidadDeAgregados()
 	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
 	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
 	struct pokemon blastoise = { "Blastoise", 'A', 97, 167, 220 };
-		
+
 	abb_insertar(abb, &pikachu);
 	abb_insertar(abb, &charizard);
 	abb_insertar(abb, &venusaur);
@@ -1042,8 +1114,9 @@ void VectorizarPreorderConTAmañoInvalidoDevuelveLaCantidadDeAgregados()
 	size_t capacidad = abb_cantidad(abb);
 	struct pokemon *vector[capacidad];
 
-	pa2m_afirmar(abb_vectorizar_preorden(abb, (void**)vector, 2) == 2,
-		     "Vectorizar Inorder en un ABB con 4 pokemones cuando le paso un tamaño que exdece el vector devuelvo la cantidad de pokemones que habia en el ABB");
+	pa2m_afirmar(
+		abb_vectorizar_preorden(abb, (void **)vector, 2) == 2,
+		"Vectorizar Preorder en un ABB con 4 pokemones cuando le paso un tamaño que exdece el vector devuelvo la cantidad de pokemones que habia en el ABB");
 	abb_destruir(abb);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1057,7 +1130,7 @@ void VectorizarPostorderDevuelveCantidadCorrectamente()
 	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
 	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
 	struct pokemon blastoise = { "Blastoise", 'A', 97, 167, 220 };
-	
+
 	abb_insertar(abb, &pikachu);
 	abb_insertar(abb, &charizard);
 	abb_insertar(abb, &venusaur);
@@ -1066,16 +1139,21 @@ void VectorizarPostorderDevuelveCantidadCorrectamente()
 	size_t capacidad = abb_cantidad(abb);
 	struct pokemon *vector[capacidad];
 
-	pa2m_afirmar(abb_vectorizar_postorden(abb, (void**)vector, 4) == 4,
-		     "Vectorizar Inorder en un ABB con 4 pokemones devuelve 4");
-	pa2m_afirmar(vector[0]->tipo == 'P',
-		     "El primer elemento del vector tiene tipo esperado (de Venusaur)");
-	pa2m_afirmar(vector[1]->tipo == 'A',
-		     "El segundo elemento del vector tiene tipo esperado (de Blastoise)");
-	pa2m_afirmar(vector[2]->tipo == 'F',
-		     "El tercer elemento del vector tiene tipo esperado (de Charizard)");
-	pa2m_afirmar(vector[3]->tipo == 'E',
-		     "El cuarto elemento del vector tiene tipo esperado (de Pikachu)");
+	pa2m_afirmar(
+		abb_vectorizar_postorden(abb, (void **)vector, 4) == 4,
+		"Vectorizar Postorder en un ABB con 4 pokemones devuelve 4");
+	pa2m_afirmar(
+		vector[0]->tipo == 'P',
+		"El primer elemento del vector tiene tipo esperado (de Venusaur)");
+	pa2m_afirmar(
+		vector[1]->tipo == 'A',
+		"El segundo elemento del vector tiene tipo esperado (de Blastoise)");
+	pa2m_afirmar(
+		vector[2]->tipo == 'F',
+		"El tercer elemento del vector tiene tipo esperado (de Charizard)");
+	pa2m_afirmar(
+		vector[3]->tipo == 'E',
+		"El cuarto elemento del vector tiene tipo esperado (de Pikachu)");
 	abb_destruir(abb);
 }
 
@@ -1093,8 +1171,9 @@ void VectorizarPostorderConVectorNULLDevuelve0()
 	abb_insertar(abb, &venusaur);
 	abb_insertar(abb, &blastoise);
 
-	pa2m_afirmar(abb_vectorizar_postorden(abb, NULL, 4) == 0,
-		     "Vectorizar Inorder en un ABB con vector NULL devuelve 0");
+	pa2m_afirmar(
+		abb_vectorizar_postorden(abb, NULL, 4) == 0,
+		"Vectorizar Postorder en un ABB con vector NULL devuelve 0");
 	abb_destruir(abb);
 }
 
@@ -1111,12 +1190,13 @@ void VectorizarPostorderConTamañoExcedidoDevuelveLaCantidadDeAgregados()
 	abb_insertar(abb, &charizard);
 	abb_insertar(abb, &venusaur);
 	abb_insertar(abb, &blastoise);
-	
+
 	size_t capacidad = abb_cantidad(abb);
 	struct pokemon *vector[capacidad];
 
-	pa2m_afirmar(abb_vectorizar_postorden(abb, (void**)vector, 5) == 4,
-		     "Vectorizar Inorder en un ABB con 4 pokemones cuando le paso un tamaño que exdece el vector devuelvo la cantidad de pokemones que habia en el ABB");
+	pa2m_afirmar(
+		abb_vectorizar_postorden(abb, (void **)vector, 5) == 4,
+		"Vectorizar Postorder en un ABB con 4 pokemones cuando le paso un tamaño que exdece el vector devuelvo la cantidad de pokemones que habia en el ABB");
 	abb_destruir(abb);
 }
 
@@ -1128,7 +1208,7 @@ void VectorizarPostorderConTAmañoInvalidoDevuelveLaCantidadDeAgregados()
 	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
 	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
 	struct pokemon blastoise = { "Blastoise", 'A', 97, 167, 220 };
-		
+
 	abb_insertar(abb, &pikachu);
 	abb_insertar(abb, &charizard);
 	abb_insertar(abb, &venusaur);
@@ -1137,8 +1217,185 @@ void VectorizarPostorderConTAmañoInvalidoDevuelveLaCantidadDeAgregados()
 	size_t capacidad = abb_cantidad(abb);
 	struct pokemon *vector[capacidad];
 
-	pa2m_afirmar(abb_vectorizar_postorden(abb, (void**)vector, 2) == 2,
-		     "Vectorizar Inorder en un ABB con 4 pokemones cuando le paso un tamaño que exdece el vector devuelvo la cantidad de pokemones que habia en el ABB");
+	pa2m_afirmar(
+		abb_vectorizar_postorden(abb, (void **)vector, 2) == 2,
+		"Vectorizar Postorder en un ABB con 4 pokemones cuando le paso un tamaño que exdece el vector devuelvo la cantidad de pokemones que habia en el ABB");
+	abb_destruir(abb);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//Pruebas combinadas
+void VectorizarPirmeroPostordenLuegoPreordenYLuegoInorderTerminaConLosElementosDelVectorInorder()
+{
+	abb_t *abb = abb_crear(comparador);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+	struct pokemon blastoise = { "Blastoise", 'A', 97, 167, 220 };
+
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &charizard);
+	abb_insertar(abb, &venusaur);
+	abb_insertar(abb, &blastoise);
+
+	size_t capacidad = abb_cantidad(abb);
+	struct pokemon *vector[capacidad];
+
+	pa2m_afirmar(
+		abb_vectorizar_postorden(abb, (void **)vector, 4) == 4,
+		"Vectorizar Postorder en un ABB con 4 pokemones devuelve 4");
+	pa2m_afirmar(
+		vector[0]->tipo == 'P',
+		"El primer elemento del vector tiene tipo esperado (de Venusaur)");
+	pa2m_afirmar(
+		vector[1]->tipo == 'A',
+		"El segundo elemento del vector tiene tipo esperado (de Blastoise)");
+	pa2m_afirmar(
+		vector[2]->tipo == 'F',
+		"El tercer elemento del vector tiene tipo esperado (de Charizard)");
+	pa2m_afirmar(
+		vector[3]->tipo == 'E',
+		"El cuarto elemento del vector tiene tipo esperado (de Pikachu)");
+	pa2m_afirmar(
+		abb_vectorizar_preorden(abb, (void **)vector, 4) == 4,
+		"Vectorizar Preorden en un ABB con 4 pokemones devuelve 4");
+	pa2m_afirmar(
+		vector[0]->tipo == 'E',
+		"El primer elemento del vector tiene tipo esperado (de Pikachu)");
+	pa2m_afirmar(
+		vector[1]->tipo == 'P',
+		"El segundo elemento del vector tiene tipo esperado (de venusaur)");
+	pa2m_afirmar(
+		vector[2]->tipo == 'F',
+		"El tercer elemento del vector tiene tipo esperado (de Charizard)");
+	pa2m_afirmar(
+		vector[3]->tipo == 'A',
+		"El cuarto elemento del vector tiene tipo esperado (de Blastoise)");
+	pa2m_afirmar(
+		abb_vectorizar_inorden(abb, (void **)vector, 4) == 4,
+		"Vectorizar Inorder en un ABB con 4 pokemones devuelve 4 ");
+	pa2m_afirmar(
+		vector[0]->tipo == 'P',
+		"El primer elemento del vector tiene tipo esperado (de Venusaur)");
+	pa2m_afirmar(
+		vector[1]->tipo == 'E',
+		"El segundo elemento del vector tiene tipo esperado (de Pikachu)");
+	pa2m_afirmar(
+		vector[2]->tipo == 'F',
+		"El tercer elemento del vector tiene tipo esperado (de Charizard)");
+	pa2m_afirmar(
+		vector[3]->tipo == 'A',
+		"El cuarto elemento del vector tiene tipo esperado (de Blastoise)");
+	abb_destruir(abb);
+}
+
+void VectorizarInorderYLuegoEliminarAlgunElementoDevuelveTrue()
+{
+	abb_t *abb = abb_crear(comparador);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+	struct pokemon blastoise = { "Blastoise", 'A', 97, 167, 220 };
+
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &charizard);
+	abb_insertar(abb, &venusaur);
+	abb_insertar(abb, &blastoise);
+
+	size_t capacidad = abb_cantidad(abb);
+	struct pokemon *vector[capacidad];
+	void *encontrado = NULL;
+
+	pa2m_afirmar(abb_vectorizar_inorden(abb, (void **)vector, 4) == 4,
+		     "Vectorizar Inorder en un ABB con 4 pokemones devuelve 4");
+	pa2m_afirmar(
+		vector[0]->tipo == 'P',
+		"El primer elemento del vector tiene tipo esperado (de Venusaur)");
+	pa2m_afirmar(
+		vector[1]->tipo == 'E',
+		"El segundo elemento del vector tiene tipo esperado (de Pikachu)");
+	pa2m_afirmar(
+		vector[2]->tipo == 'F',
+		"El tercer elemento del vector tiene tipo esperado (de Charizard)");
+	pa2m_afirmar(
+		vector[3]->tipo == 'A',
+		"El cuarto elemento del vector tiene tipo esperado (de Blastoise)");
+	pa2m_afirmar(
+		abb_quitar(abb, &charizard, &encontrado),
+		"Quitar a Charizard (que tiene como hijo a Blastoise) devuelve true");
+	pa2m_afirmar(
+		abb_vectorizar_inorden(abb, (void **)vector, 4) == 3,
+		"Vectorizar Inorder en un ABB con 3 pokemones (eliminando a Charizard) devuelve 3");
+	pa2m_afirmar(
+		vector[0]->tipo == 'P',
+		"El primer elemento del vector tiene tipo esperado (de Venusaur)");
+	pa2m_afirmar(
+		vector[1]->tipo == 'E',
+		"El segundo elemento del vector tiene tipo esperado (de Pikachu)");
+	pa2m_afirmar(
+		vector[2]->tipo == 'A',
+		"El tercer elemento del vector tiene tipo esperado (de Blastoise)");
+	pa2m_afirmar(abb_obtener(abb, &blastoise) != NULL,
+		     "Encontre al ultimo elemento del vector (Blastoise)");
+	abb_destruir(abb);
+}
+
+void VectorizarInorderYLuegoEliminarTodoElArbolNoDevuelveNada()
+{
+	abb_t *abb = abb_crear(comparador);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+	struct pokemon blastoise = { "Blastoise", 'A', 97, 167, 220 };
+
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &charizard);
+	abb_insertar(abb, &venusaur);
+	abb_insertar(abb, &blastoise);
+
+	size_t capacidad = abb_cantidad(abb);
+	struct pokemon *vector[capacidad];
+	void *encontrado = NULL;
+
+	pa2m_afirmar(abb_vectorizar_inorden(abb, (void **)vector, 4) == 4,
+		     "Vectorizar Inorder en un ABB con 4 pokemones devuelve 4");
+	pa2m_afirmar(
+		vector[0]->tipo == 'P',
+		"El primer elemento del vector tiene tipo esperado (de Venusaur)");
+	pa2m_afirmar(
+		vector[1]->tipo == 'E',
+		"El segundo elemento del vector tiene tipo esperado (de Pikachu)");
+	pa2m_afirmar(
+		vector[2]->tipo == 'F',
+		"El tercer elemento del vector tiene tipo esperado (de Charizard)");
+	pa2m_afirmar(
+		vector[3]->tipo == 'A',
+		"El cuarto elemento del vector tiene tipo esperado (de Blastoise)");
+	pa2m_afirmar(
+		abb_quitar(abb, &charizard, &encontrado),
+		"Quitar a Charizard (que tiene como hijo a Blastoise) devuelve true");
+	pa2m_afirmar(
+		abb_quitar(abb, &blastoise, &encontrado),
+		"Quitar a Blastoise (que tiene como hijo a Blastoise) devuelve true");
+	pa2m_afirmar(
+		abb_quitar(abb, &venusaur, &encontrado),
+		"Quitar a venusaur (que tiene como hijo a Blastoise) devuelve true");
+	pa2m_afirmar(
+		abb_quitar(abb, &pikachu, &encontrado),
+		"Quitar a pikachu (que tiene como hijo a Blastoise) devuelve true");
+	pa2m_afirmar(abb_vectorizar_inorden(abb, (void **)vector, 4) == 0,
+		     "Vectorizar Inorder en un ABB con 0 pokemones devuelve 0");
+	pa2m_afirmar(abb_obtener(abb, &blastoise) == NULL,
+		     "No encontre a Blastoise dentro del ABB");
+	pa2m_afirmar(abb_obtener(abb, &pikachu) == NULL,
+		     "No encontre a Pikachu dentro del ABB");
+	pa2m_afirmar(abb_obtener(abb, &charizard) == NULL,
+		     "No encontre a Charizard dentro del ABB");
+	pa2m_afirmar(abb_obtener(abb, &venusaur) == NULL,
+		     "No encontre a Venusaur dentro del ABB");
 	abb_destruir(abb);
 }
 
@@ -1163,7 +1420,23 @@ int main()
 	BuscarPokemonInexistenteDevuelveNULL();
 	BuscarPokemonInexistenteEnABBVaciaDevuelveNULL();
 
-	pa2m_nuevo_grupo("Pruebas de quitar en el ABB");
+	pa2m_nuevo_grupo("Pruebas de Eliminar/quitar con 0 o 1 hijo");
+	EliminarElementoNULLDevuelveFalse();
+	EliminarPokemonInexistenteDevuelveFalse();
+	EliminarElementoNULLDevuelveFalse();
+	EliminarElementoUnicoDevuelveTrue();
+	EliminarElementoExistenteDevuelveTrue();
+	EliminarElementoYVolverAInsertarDevulveTrue();
+	EliminarRaizYVuelvoAInsertarOtraRaizDevulveTrue();
+	EliminarElementoConUnHijoDevuelveTrue();
+	EliminarElementoConUnHijoYAgregarOtraVezDevuelveTrue();
+
+	pa2m_nuevo_grupo("Pruebas de Eliminar/quitar con 2 hijos");
+	EliminarElementoConDosHijosDevuelveTrue();
+	EliminarElementoConDosHijosYAgregoDeNuevoDevuelveTrue();
+	EliminarNodoConPredecesorInordenConHijoIzquierdo();
+	EliminarRaizDevuleveTrue();
+	EliminarTodoElABBDevulveTrue();
 
 	pa2m_nuevo_grupo("Pruebas de Iterar Inorder");
 	IterarInorderConPtrsNULLSDevuelve0();
@@ -1196,7 +1469,7 @@ int main()
 	VectorizarConTAmañoInvalidoDevuelveLaCantidadDeAgregados();
 
 	pa2m_nuevo_grupo("Pruebas de vectorizar Preorder");
- 	VectorizarPreorderDevuelveCantidadCorrectamente();
+	VectorizarPreorderDevuelveCantidadCorrectamente();
 	VectorizarPreorderConVectorNULLDevuelve0();
 	VectorizarPreorderConTamañoExcedidoDevuelveLaCantidadDeAgregados();
 	VectorizarPreorderConTAmañoInvalidoDevuelveLaCantidadDeAgregados();
@@ -1207,17 +1480,10 @@ int main()
 	VectorizarPostorderConTamañoExcedidoDevuelveLaCantidadDeAgregados();
 	VectorizarPostorderConTAmañoInvalidoDevuelveLaCantidadDeAgregados();
 
-	pa2m_nuevo_grupo("Pruebas de Eliminar");
-	EliminarElementoNULLDevuelveFalse();
-	EliminarPokemonInexistenteDevuelveFalse();
-	EliminarElementoNULLDevuelveFalse();
-	EliminarElementoUnicoDevuelveTrue();
-	EliminarElementoExistenteDevuelveTrue();
-	EliminarElementoYVolverAInsertarDevulveTrue();
-	EliminarRaizYVuelvoAInsertarOtraRaizDevulveTrue();
-	EliminarElementoConUnHijoDevuelveTrue();
-	EliminarElementoConUnHijoYAgregarOtraVezDevuelveTrue();
-	EliminarElementoConDosHijosDevuelveTrue();
+	pa2m_nuevo_grupo("Pruebas de funciones combinadas");
+	VectorizarPirmeroPostordenLuegoPreordenYLuegoInorderTerminaConLosElementosDelVectorInorder();
+	VectorizarInorderYLuegoEliminarAlgunElementoDevuelveTrue();
+	VectorizarInorderYLuegoEliminarTodoElArbolNoDevuelveNada();
 
 	return pa2m_mostrar_reporte();
 }
