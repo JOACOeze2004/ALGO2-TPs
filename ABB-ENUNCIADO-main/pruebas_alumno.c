@@ -383,7 +383,7 @@ void EliminarPokemonInexistenteDevuelveFalse()
 	pa2m_afirmar(abb_cantidad(abb) == 3, "La canidad de pokemones es 3");
 	pa2m_afirmar(abb_obtener(abb, elemento_guardado) == NULL,
 		     "No existe Mewtwo");
-	pa2m_afirmar(!abb_quitar(abb, elemento_guardado, (void*)&encontrado),
+	pa2m_afirmar(!abb_quitar(abb, elemento_guardado, (void *)&encontrado),
 		     "Intentar quitar un pokemon que no existe devuelve false");
 	pa2m_afirmar(
 		encontrado == NULL,
@@ -1030,17 +1030,17 @@ void VectorizarInorderDevuelveCantidadCorrectamente()
 	pa2m_afirmar(abb_vectorizar_inorden(abb, (void **)vector, 4) == 4,
 		     "Vectorizar Inorder en un ABB con 4 pokemones devuelve 4");
 	pa2m_afirmar(
-		vector[0]->tipo == 'P',
-		"El primer elemento del vector tiene tipo esperado (de Venusaur)");
+		vector[0]->tipo == 'A',
+		"El primer elemento del vector tiene tipo esperado (de Blastoise)");
 	pa2m_afirmar(
-		vector[1]->tipo == 'E',
-		"El segundo elemento del vector tiene tipo esperado (de Pikachu)");
+		vector[1]->tipo == 'F',
+		"El segundo elemento del vector tiene tipo esperado (de Charizard)");
 	pa2m_afirmar(
-		vector[2]->tipo == 'F',
-		"El tercer elemento del vector tiene tipo esperado (de Charizard)");
+		vector[2]->tipo == 'E',
+		"El tercer elemento del vector tiene tipo esperado (de Pikachu)");
 	pa2m_afirmar(
-		vector[3]->tipo == 'A',
-		"El cuarto elemento del vector tiene tipo esperado (de Blastoise)");
+		vector[3]->tipo == 'P',
+		"El cuarto elemento del vector tiene tipo esperado (de Venusaur)");
 	abb_destruir(abb);
 }
 
@@ -1137,14 +1137,14 @@ void VectorizarPreorderDevuelveCantidadCorrectamente()
 		vector[0]->tipo == 'E',
 		"El primer elemento del vector tiene tipo esperado (de Pikachu)");
 	pa2m_afirmar(
-		vector[1]->tipo == 'P',
-		"El segundo elemento del vector tiene tipo esperado (de venusaur)");
+		vector[1]->tipo == 'F',
+		"El segundo elemento del vector tiene tipo esperado (de Charizard)");
 	pa2m_afirmar(
-		vector[2]->tipo == 'F',
-		"El tercer elemento del vector tiene tipo esperado (de Charizard)");
+		vector[2]->tipo == 'A',
+		"El tercer elemento del vector tiene tipo esperado (de Blastoise)");
 	pa2m_afirmar(
-		vector[3]->tipo == 'A',
-		"El cuarto elemento del vector tiene tipo esperado (de Blastoise)");
+		vector[3]->tipo == 'P',
+		"El cuarto elemento del vector tiene tipo esperado (de Venusaur)");
 	abb_destruir(abb);
 }
 
@@ -1237,14 +1237,14 @@ void VectorizarPostorderDevuelveCantidadCorrectamente()
 		abb_vectorizar_postorden(abb, (void **)vector, 4) == 4,
 		"Vectorizar Postorder en un ABB con 4 pokemones devuelve 4");
 	pa2m_afirmar(
-		vector[0]->tipo == 'P',
-		"El primer elemento del vector tiene tipo esperado (de Venusaur)");
+		vector[0]->tipo == 'A',
+		"El primer elemento del vector tiene tipo esperado (de Blastoise)");
 	pa2m_afirmar(
-		vector[1]->tipo == 'A',
-		"El segundo elemento del vector tiene tipo esperado (de Blastoise)");
+		vector[1]->tipo == 'F',
+		"El segundo elemento del vector tiene tipo esperado (de Charizard)");
 	pa2m_afirmar(
-		vector[2]->tipo == 'F',
-		"El tercer elemento del vector tiene tipo esperado (de Charizard)");
+		vector[2]->tipo == 'P',
+		"El tercer elemento del vector tiene tipo esperado (de Venusaur)");
 	pa2m_afirmar(
 		vector[3]->tipo == 'E',
 		"El cuarto elemento del vector tiene tipo esperado (de Pikachu)");
@@ -1341,14 +1341,14 @@ void VectorizarPirmeroPostordenLuegoPreordenYLuegoInorderTerminaConLosElementosD
 		abb_vectorizar_postorden(abb, (void **)vector, 4) == 4,
 		"Vectorizar Postorder en un ABB con 4 pokemones devuelve 4");
 	pa2m_afirmar(
-		vector[0]->tipo == 'P',
-		"El primer elemento del vector tiene tipo esperado (de Venusaur)");
+		vector[0]->tipo == 'A',
+		"El primer elemento del vector tiene tipo esperado (de Blastoise)");
 	pa2m_afirmar(
-		vector[1]->tipo == 'A',
-		"El segundo elemento del vector tiene tipo esperado (de Blastoise)");
+		vector[1]->tipo == 'F',
+		"El segundo elemento del vector tiene tipo esperado (de Charizard)");
 	pa2m_afirmar(
-		vector[2]->tipo == 'F',
-		"El tercer elemento del vector tiene tipo esperado (de Charizard)");
+		vector[2]->tipo == 'P',
+		"El tercer elemento del vector tiene tipo esperado (de Venusaur)");
 	pa2m_afirmar(
 		vector[3]->tipo == 'E',
 		"El cuarto elemento del vector tiene tipo esperado (de Pikachu)");
@@ -1359,29 +1359,29 @@ void VectorizarPirmeroPostordenLuegoPreordenYLuegoInorderTerminaConLosElementosD
 		vector[0]->tipo == 'E',
 		"El primer elemento del vector tiene tipo esperado (de Pikachu)");
 	pa2m_afirmar(
-		vector[1]->tipo == 'P',
-		"El segundo elemento del vector tiene tipo esperado (de venusaur)");
+		vector[1]->tipo == 'F',
+		"El segundo elemento del vector tiene tipo esperado (de Charizard)");
 	pa2m_afirmar(
-		vector[2]->tipo == 'F',
-		"El tercer elemento del vector tiene tipo esperado (de Charizard)");
+		vector[2]->tipo == 'A',
+		"El tercer elemento del vector tiene tipo esperado (de Blastoise)");
 	pa2m_afirmar(
-		vector[3]->tipo == 'A',
-		"El cuarto elemento del vector tiene tipo esperado (de Blastoise)");
+		vector[3]->tipo == 'P',
+		"El cuarto elemento del vector tiene tipo esperado (de venusaur)");
 	pa2m_afirmar(
 		abb_vectorizar_inorden(abb, (void **)vector, 4) == 4,
 		"Vectorizar Inorder en un ABB con 4 pokemones devuelve 4 ");
 	pa2m_afirmar(
-		vector[0]->tipo == 'P',
-		"El primer elemento del vector tiene tipo esperado (de Venusaur)");
+		vector[0]->tipo == 'A',
+		"El primer elemento del vector tiene tipo esperado (de Blastoise)");
 	pa2m_afirmar(
-		vector[1]->tipo == 'E',
-		"El segundo elemento del vector tiene tipo esperado (de Pikachu)");
+		vector[1]->tipo == 'F',
+		"El segundo elemento del vector tiene tipo esperado (de Charizard)");
 	pa2m_afirmar(
-		vector[2]->tipo == 'F',
-		"El tercer elemento del vector tiene tipo esperado (de Charizard)");
+		vector[2]->tipo == 'E',
+		"El tercer elemento del vector tiene tipo esperado (de Pikachu)");
 	pa2m_afirmar(
-		vector[3]->tipo == 'A',
-		"El cuarto elemento del vector tiene tipo esperado (de Blastoise)");
+		vector[3]->tipo == 'P',
+		"El cuarto elemento del vector tiene tipo esperado (de Venusaur)");
 	abb_destruir(abb);
 }
 
@@ -1406,17 +1406,17 @@ void VectorizarInorderYLuegoEliminarAlgunElementoDevuelveTrue()
 	pa2m_afirmar(abb_vectorizar_inorden(abb, (void **)vector, 4) == 4,
 		     "Vectorizar Inorder en un ABB con 4 pokemones devuelve 4");
 	pa2m_afirmar(
-		vector[0]->tipo == 'P',
-		"El primer elemento del vector tiene tipo esperado (de Venusaur)");
+		vector[0]->tipo == 'A',
+		"El primer elemento del vector tiene tipo esperado (de Blastoise)");
 	pa2m_afirmar(
-		vector[1]->tipo == 'E',
-		"El segundo elemento del vector tiene tipo esperado (de Pikachu)");
+		vector[1]->tipo == 'F',
+		"El segundo elemento del vector tiene tipo esperado (de Charizard)");
 	pa2m_afirmar(
-		vector[2]->tipo == 'F',
-		"El tercer elemento del vector tiene tipo esperado (de Charizard)");
+		vector[2]->tipo == 'E',
+		"El tercer elemento del vector tiene tipo esperado (de Pikachu)");
 	pa2m_afirmar(
-		vector[3]->tipo == 'A',
-		"El cuarto elemento del vector tiene tipo esperado (de Blastoise)");
+		vector[3]->tipo == 'P',
+		"El cuarto elemento del vector tiene tipo esperado (de Venusaur)");
 	pa2m_afirmar(
 		abb_quitar(abb, &charizard, &encontrado),
 		"Quitar a Charizard (que tiene como hijo a Blastoise) devuelve true");
@@ -1424,14 +1424,14 @@ void VectorizarInorderYLuegoEliminarAlgunElementoDevuelveTrue()
 		abb_vectorizar_inorden(abb, (void **)vector, 4) == 3,
 		"Vectorizar Inorder en un ABB con 3 pokemones (eliminando a Charizard) devuelve 3");
 	pa2m_afirmar(
-		vector[0]->tipo == 'P',
-		"El primer elemento del vector tiene tipo esperado (de Venusaur)");
+		vector[0]->tipo == 'A',
+		"El primer elemento del vector tiene tipo esperado (de Blastoise)");
 	pa2m_afirmar(
 		vector[1]->tipo == 'E',
 		"El segundo elemento del vector tiene tipo esperado (de Pikachu)");
 	pa2m_afirmar(
-		vector[2]->tipo == 'A',
-		"El tercer elemento del vector tiene tipo esperado (de Blastoise)");
+		vector[2]->tipo == 'P',
+		"El tercer elemento del vector tiene tipo esperado (de Venusaur)");
 	pa2m_afirmar(abb_obtener(abb, &blastoise) != NULL,
 		     "Encontre al ultimo elemento del vector (Blastoise)");
 	abb_destruir(abb);
@@ -1458,17 +1458,17 @@ void VectorizarInorderYLuegoEliminarTodoElArbolNoDevuelveNada()
 	pa2m_afirmar(abb_vectorizar_inorden(abb, (void **)vector, 4) == 4,
 		     "Vectorizar Inorder en un ABB con 4 pokemones devuelve 4");
 	pa2m_afirmar(
-		vector[0]->tipo == 'P',
-		"El primer elemento del vector tiene tipo esperado (de Venusaur)");
+		vector[0]->tipo == 'A',
+		"El primer elemento del vector tiene tipo esperado (de Blastoise)");
 	pa2m_afirmar(
-		vector[1]->tipo == 'E',
-		"El segundo elemento del vector tiene tipo esperado (de Pikachu)");
+		vector[1]->tipo == 'F',
+		"El segundo elemento del vector tiene tipo esperado (de Charizard)");
 	pa2m_afirmar(
-		vector[2]->tipo == 'F',
-		"El tercer elemento del vector tiene tipo esperado (de Charizard)");
+		vector[2]->tipo == 'E',
+		"El tercer elemento del vector tiene tipo esperado (de Pikachu)");
 	pa2m_afirmar(
-		vector[3]->tipo == 'A',
-		"El cuarto elemento del vector tiene tipo esperado (de Blastoise)");
+		vector[3]->tipo == 'P',
+		"El cuarto elemento del vector tiene tipo esperado (de Venusaur)");
 	pa2m_afirmar(
 		abb_quitar(abb, &charizard, &encontrado),
 		"Quitar a Charizard (que tiene como hijo a Blastoise) devuelve true");
@@ -1536,6 +1536,22 @@ void EliminarRaizDevuleveLaRaiz()
 		"El elemento quitado tiene la misma resistencia que el pokemon que queriamos quitamos (de pikachu)");
 	pa2m_afirmar(abb_obtener(abb, &pikachu) == NULL,
 		     "Pikachu ya no existe en el árbol");
+
+	pa2m_afirmar(abb_quitar(abb, &charizard, (void *)&encontrado),
+		     "Quitar Charizard devuelve true");
+	pa2m_afirmar(
+		strcmp(encontrado->nombre, "Charizard") == 0,
+		"El elemento quitado tiene el mismo nombre que el pokemon que queriamos quitamos (de Charizard)");
+	pa2m_afirmar(abb_quitar(abb, &blastoise, (void *)&encontrado),
+		     "Quitar Blastoise devuelve true");
+	pa2m_afirmar(
+		strcmp(encontrado->nombre, "Blastoise") == 0,
+		"El elemento quitado tiene el mismo nombre que el pokemon que queriamos quitamos (de Blastoise)");
+	pa2m_afirmar(abb_quitar(abb, &venusaur, (void *)&encontrado),
+		     "Quitar Venusaur devuelve true");
+	pa2m_afirmar(
+		strcmp(encontrado->nombre, "Venusaur") == 0,
+		"El elemento quitado tiene el mismo nombre que el pokemon que queriamos quitamos (de Venusaur)");
 	abb_destruir(abb);
 }
 

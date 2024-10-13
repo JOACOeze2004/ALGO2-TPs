@@ -137,7 +137,9 @@ nodo_t *eliminar_nodo(nodo_t *nodo, void *buscado, void **encontrado,
 	}
 	int resultado_comparacion = comparador(buscado, nodo->elemento);
 	if (resultado_comparacion == 0) {
-		*encontrado = nodo->elemento;
+		if (*encontrado == NULL) {
+			*encontrado = nodo->elemento;
+		}
 		if (nodo->der != NULL && nodo->izq != NULL) {
 			nodo_t *nodo_inorden = buscar_predecesor_inorden(nodo);
 			nodo->elemento = nodo_inorden->elemento;
@@ -225,7 +227,7 @@ size_t contar_iteraciones_inorder(nodo_t *nodo, bool (*f)(void *, void *),
 {
 	if (nodo == NULL) {
 		return 0;
-	}	
+	}
 	size_t cantidad = 0;
 	cantidad += contar_iteraciones_inorder(nodo->izq, f, ctx);
 	if (!f(nodo->elemento, ctx)) {
