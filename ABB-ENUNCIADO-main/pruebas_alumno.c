@@ -378,12 +378,12 @@ void EliminarPokemonInexistenteDevuelveFalse()
 
 	struct pokemon *elemento_guardado = &mewtwo;
 
-	void *encontrado = NULL;
+	struct pokemon *encontrado = NULL;
 
 	pa2m_afirmar(abb_cantidad(abb) == 3, "La canidad de pokemones es 3");
 	pa2m_afirmar(abb_obtener(abb, elemento_guardado) == NULL,
 		     "No existe Mewtwo");
-	pa2m_afirmar(!abb_quitar(abb, elemento_guardado, &encontrado),
+	pa2m_afirmar(!abb_quitar(abb, elemento_guardado, (void*)&encontrado),
 		     "Intentar quitar un pokemon que no existe devuelve false");
 	pa2m_afirmar(
 		encontrado == NULL,
@@ -1516,7 +1516,7 @@ void EliminarRaizDevuleveLaRaiz()
 		     "Pikachu existe en el ABB");
 	pa2m_afirmar(abb_quitar(abb, &pikachu, (void *)&encontrado),
 		     "Quitar Pikachu devuelve true");
-	printf("nombre:%i",encontrado->fuerza);
+	printf("nombre:%i", encontrado->fuerza);
 	pa2m_afirmar(encontrado != NULL,
 		     "El elemento eliminado no es NULL (debería ser Pikachu)");
 	pa2m_afirmar(
@@ -1543,17 +1543,15 @@ void A()
 {
 	abb_t *abb = abb_crear(comparador);
 	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
-	// struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
-	// struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
-	// struct pokemon blastoise = { "Blastoise", 'A', 97, 167, 220 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+	struct pokemon blastoise = { "Blastoise", 'A', 97, 167, 220 };
 
 	abb_insertar(abb, &pikachu);
-	abb_insertar(abb, &pikachu);
-	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &charizard);
+	abb_insertar(abb, &venusaur);
 
-	// abb_insertar(abb, &charizard);
-	// abb_insertar(abb, &venusaur);
-	// abb_insertar(abb, &blastoise);
+	abb_insertar(abb, &blastoise);
 
 	abb_destruir(abb);
 }

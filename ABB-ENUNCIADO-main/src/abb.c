@@ -77,23 +77,23 @@ void insertar_raiz(abb_t *abb, nodo_t *nodo)
 //post: En caso de que el resultado entre comparar el elemento del nodo I (el nodo_actual) y el elemento del nodo nuevo, es menor o igual que 0, vamos a recorrer el subarbol
 // izquierdo hasta que el nodo izquierdo sea igual a NULL (que tendriamos via libre para agregar sin problemas). Caso contrario, hacemos lo msimo pero del lado derecho. Asi
 // garantisamos que los elementos menores on iguales a la raiz van del lado izquierdo y los mayores al lado derecho
-nodo_t *insertar_abb_no_vacio(nodo_t *nodo_actual, nodo_t *nuevo_nodo,
+nodo_t *insertar_abb_no_vacio(nodo_t *raiz, nodo_t *nuevo_nodo,
 			      int (*comparador)(void *,
 						void *)) //SUJETA A DEBATE !!
 {
-	if (nodo_actual == NULL) {
+	if (raiz == NULL || nuevo_nodo == NULL) {
 		return nuevo_nodo;
 	}
 	int resultado_comparacion =
-		comparador(nodo_actual->elemento, nuevo_nodo->elemento);
+		comparador(nuevo_nodo->elemento, raiz->elemento);
 	if (resultado_comparacion <= 0) {
-		nodo_actual->izq = insertar_abb_no_vacio(
-			nodo_actual->izq, nuevo_nodo, comparador);
+		raiz->izq = insertar_abb_no_vacio(raiz->izq, nuevo_nodo,
+						  comparador);
 	} else {
-		nodo_actual->der = insertar_abb_no_vacio(
-			nodo_actual->der, nuevo_nodo, comparador);
+		raiz->der = insertar_abb_no_vacio(raiz->der, nuevo_nodo,
+						  comparador);
 	}
-	return nodo_actual;
+	return raiz;
 }
 
 bool abb_insertar(abb_t *abb, void *elemento)
@@ -135,9 +135,9 @@ nodo_t *eliminar_nodo(nodo_t *nodo, void *buscado, void **encontrado,
 	if (nodo == NULL) {
 		return NULL;
 	}
-	int resultado_comparacion = comparador(nodo->elemento, buscado);
-	if (resultado_comparacion == 0) {		
-		*encontrado = nodo->elemento; 
+	int resultado_comparacion = comparador(buscado, nodo->elemento);
+	if (resultado_comparacion == 0) {
+		*encontrado = nodo->elemento;
 		if (nodo->der != NULL && nodo->izq != NULL) {
 			nodo_t *nodo_inorden = buscar_predecesor_inorden(nodo);
 			nodo->elemento = nodo_inorden->elemento;
@@ -186,7 +186,7 @@ void *abb_obtener_elemento_recursivo(nodo_t *nodo, void *elemento,
 	if (nodo == NULL) {
 		return NULL;
 	}
-	int resultado_comparacion = comparador(nodo->elemento, elemento);
+	int resultado_comparacion = comparador(elemento, nodo->elemento);
 	if (resultado_comparacion == 0) {
 		return nodo->elemento;
 	}
@@ -225,12 +225,13 @@ size_t contar_iteraciones_inorder(nodo_t *nodo, bool (*f)(void *, void *),
 {
 	if (nodo == NULL) {
 		return 0;
-	}
+	}	
 	size_t cantidad = 0;
 	cantidad += contar_iteraciones_inorder(nodo->izq, f, ctx);
-	if (f(nodo->elemento, ctx)) {
-		cantidad++;
+	if (!f(nodo->elemento, ctx)) {
+		return cantidad;
 	}
+	cantidad++;
 	cantidad += contar_iteraciones_inorder(nodo->der, f, ctx);
 	return cantidad;
 }
@@ -253,9 +254,10 @@ size_t contar_iteraciones_preorden(nodo_t *nodo, bool (*f)(void *, void *),
 		return 0;
 	}
 	size_t cantidad = 0;
-	if (f(nodo->elemento, ctx)) {
-		cantidad++;
+	if (!f(nodo->elemento, ctx)) {
+		return cantidad;
 	}
+	cantidad++;
 	cantidad += contar_iteraciones_preorden(nodo->izq, f, ctx);
 	cantidad += contar_iteraciones_preorden(nodo->der, f, ctx);
 	return cantidad;
@@ -281,9 +283,10 @@ size_t contar_iteraciones_postorden(nodo_t *nodo, bool (*f)(void *, void *),
 	size_t cantidad = 0;
 	cantidad += contar_iteraciones_postorden(nodo->izq, f, ctx);
 	cantidad += contar_iteraciones_postorden(nodo->der, f, ctx);
-	if (f(nodo->elemento, ctx)) {
-		cantidad++;
+	if (!f(nodo->elemento, ctx)) {
+		return cantidad;
 	}
+	cantidad++;
 	return cantidad;
 }
 

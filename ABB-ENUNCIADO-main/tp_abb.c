@@ -32,7 +32,7 @@ int comparar_nombre_pokemon(void *_p1, void *_p2)
 {
 	struct pokemon *p1 = _p1;
 	struct pokemon *p2 = _p2;
-	return -strcmp(p1->nombre, p2->nombre);
+	return strcmp(p1->nombre, p2->nombre);
 }
 
 bool castear_a_int(const char *str, void *ctx)
