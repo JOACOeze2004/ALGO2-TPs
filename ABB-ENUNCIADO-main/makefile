@@ -13,6 +13,13 @@ pruebas_alumno: src/*.c pruebas_alumno.c
 	
 correr-pruebas:
 	$(CC) $(CFLAGS) src/*.c pruebas_alumno.c -o pruebas_alumno && valgrind $(VALGRIND_FLAGS) ./pruebas_alumno
+	
+	
+tp-abb: src/*.c tp_abb.c
+	$(CC) $(CFLAGS) src/*.c tp_abb.c -o tp_abb
+	
+valgrind-tp-abb: tp_abb
+	valgrind $(VALGRIND_FLAGS) ./tp_abb ejemplos/pokedex.csv
 
 valgrind-ejemplo: ejemplo
 	valgrind $(VALGRIND_FLAGS) ./ejemplo
