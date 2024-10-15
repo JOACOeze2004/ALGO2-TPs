@@ -132,7 +132,8 @@ nodo_t *buscar_predecesor_inorden(nodo_t *nodo)
 //pre:
 //post:
 nodo_t *eliminar_nodo(nodo_t *nodo, void *buscado, void **encontrado,
-		      int (*comparador)(void *, void *))
+		      int (*comparador)(void *, void *),
+		      bool *se_encontro_elemnto)
 {
 	if (nodo == NULL) {
 		return NULL;
@@ -141,13 +142,15 @@ nodo_t *eliminar_nodo(nodo_t *nodo, void *buscado, void **encontrado,
 	if (resultado_comparacion == 0) {
 		if (*encontrado == NULL) {
 			*encontrado = nodo->elemento;
+			*se_encontro_elemnto = true;
 		}
 		if (nodo->der != NULL && nodo->izq != NULL) {
 			nodo_t *nodo_inorden = buscar_predecesor_inorden(nodo);
 			nodo->elemento = nodo_inorden->elemento;
 			nodo->izq = eliminar_nodo(nodo->izq,
 						  nodo_inorden->elemento,
-						  encontrado, comparador);
+						  encontrado, comparador,
+						  se_encontro_elemnto);
 			return nodo;
 		}
 		nodo_t *hijo_no_null = nodo->der != NULL ? nodo->der :
@@ -157,10 +160,10 @@ nodo_t *eliminar_nodo(nodo_t *nodo, void *buscado, void **encontrado,
 	}
 	if (resultado_comparacion > 0) {
 		nodo->der = eliminar_nodo(nodo->der, buscado, encontrado,
-					  comparador);
+					  comparador, se_encontro_elemnto);
 	} else {
 		nodo->izq = eliminar_nodo(nodo->izq, buscado, encontrado,
-					  comparador);
+					  comparador, se_encontro_elemnto);
 	}
 	return nodo;
 }
@@ -171,9 +174,11 @@ bool abb_quitar(abb_t *abb, void *buscado, void **encontrado)
 		return false;
 	}
 	*encontrado = NULL;
-	abb->raiz =
-		eliminar_nodo(abb->raiz, buscado, encontrado, abb->comparador);
-	if (*encontrado != NULL) {
+	bool se_encontro_elemento = false;
+	abb->raiz = eliminar_nodo(abb->raiz, buscado, encontrado,
+				  abb->comparador, &se_encontro_elemento);
+	if (*encontrado != NULL ||
+	    (se_encontro_elemento && *encontrado == NULL)) {
 		(abb->nodos)--;
 		return true;
 	}
