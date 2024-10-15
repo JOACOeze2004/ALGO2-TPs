@@ -29,17 +29,13 @@ abb_t *abb_crear(int (*comparador)(void *, void *))
 //pre:  Idealmente, deberia haber al menos un nodo en el ABB. Y el destructor no deberia ser NULL si sabemos que no se reservo memoria para los elementos del ABB, si
 // no reservamos memoria para el elemento, pasarle NULL es lo optimo.
 //post: Recursivamente, vamos recorriendo el arbol y vamos liberando los nodos. En caso de que el destructor sea distinto de NULL, le aplicamos la funcion al elemento en dicho nodo.
-void destruir_nodo(nodo_t *nodo, void (*destructor)(void *))
+void destruir_nodos(nodo_t *nodo, void (*destructor)(void *))
 {
 	if (nodo == NULL) {
 		return;
 	}
-	if (nodo->izq != NULL) {
-		destruir_nodo(nodo->izq, destructor);
-	}
-	if (nodo->der != NULL) {
-		destruir_nodo(nodo->der, destructor);
-	}
+	destruir_nodos(nodo->izq, destructor);
+	destruir_nodos(nodo->der, destructor);
 	if (destructor != NULL) {
 		destructor(nodo->elemento);
 	}
@@ -49,15 +45,15 @@ void destruir_nodo(nodo_t *nodo, void (*destructor)(void *))
 void abb_destruir(abb_t *abb)
 {
 	if (abb != NULL) {
-		destruir_nodo(abb->raiz, NULL);
+		destruir_nodos(abb->raiz, NULL);
 		free(abb);
 	}
 }
 
 void abb_destruir_todo(abb_t *abb, void (*destructor)(void *))
 {
-	if (abb != NULL && destructor != NULL) {
-		destruir_nodo(abb->raiz, destructor);
+	if (abb != NULL) {
+		destruir_nodos(abb->raiz, destructor);
 		free(abb);
 	}
 }
