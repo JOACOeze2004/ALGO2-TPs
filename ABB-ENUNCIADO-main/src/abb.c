@@ -56,7 +56,7 @@ void abb_destruir(abb_t *abb)
 
 void abb_destruir_todo(abb_t *abb, void (*destructor)(void *))
 {
-	if (abb != NULL) {
+	if (abb != NULL && destructor != NULL) {
 		destruir_nodo(abb->raiz, destructor);
 		free(abb);
 	}
@@ -78,8 +78,7 @@ void insertar_raiz(abb_t *abb, nodo_t *nodo)
 // izquierdo hasta que el nodo izquierdo sea igual a NULL (que tendriamos via libre para agregar sin problemas). Caso contrario, hacemos lo msimo pero del lado derecho. Asi
 // garantisamos que los elementos menores on iguales a la raiz van del lado izquierdo y los mayores al lado derecho
 nodo_t *insertar_abb_no_vacio(nodo_t *raiz, nodo_t *nuevo_nodo,
-			      int (*comparador)(void *,
-						void *)) //SUJETA A DEBATE !!
+			      int (*comparador)(void *, void *))
 {
 	if (raiz == NULL || nuevo_nodo == NULL) {
 		return nuevo_nodo;
@@ -120,6 +119,9 @@ bool abb_insertar(abb_t *abb, void *elemento)
 //post:
 nodo_t *buscar_predecesor_inorden(nodo_t *nodo)
 {
+	if (nodo == NULL) {
+		return NULL;
+	}
 	nodo_t *nodo_actual = nodo->izq;
 	while (nodo_actual->der != NULL) {
 		nodo_actual = nodo_actual->der;
@@ -165,14 +167,13 @@ nodo_t *eliminar_nodo(nodo_t *nodo, void *buscado, void **encontrado,
 
 bool abb_quitar(abb_t *abb, void *buscado, void **encontrado)
 {
-	if (abb == NULL || buscado == NULL) {
+	if (abb == NULL || encontrado == NULL) {
 		return false;
 	}
 	*encontrado = NULL;
-	nodo_t *nodo_a_eliminar =
+	abb->raiz =
 		eliminar_nodo(abb->raiz, buscado, encontrado, abb->comparador);
 	if (*encontrado != NULL) {
-		abb->raiz = nodo_a_eliminar;
 		(abb->nodos)--;
 		return true;
 	}
@@ -223,18 +224,23 @@ size_t abb_cantidad(abb_t *abb)
 //post: Recursivamente, recorremos primero a la izquierda, sumamos todas las iteraciones siempre que el nodo donde estemos parados no sea NULL, luego le sumamos uno al contador
 //  por la raiz, y luego volvemos a recorrer pero del lado derecho y vamos aumentando el contador a medida que el nodo que estamos parados no sea NULL.
 size_t contar_iteraciones_inorder(nodo_t *nodo, bool (*f)(void *, void *),
-				  void *ctx)
+				  void *ctx, bool *continua_iteracion)
 {
-	if (nodo == NULL) {
+	if (nodo == NULL || !(*continua_iteracion)) {
 		return 0;
 	}
 	size_t cantidad = 0;
-	cantidad += contar_iteraciones_inorder(nodo->izq, f, ctx);
-	if (!f(nodo->elemento, ctx)) {
-		return cantidad;
+	cantidad += contar_iteraciones_inorder(nodo->izq, f, ctx,
+					       continua_iteracion);
+
+	if (*continua_iteracion) {
+		if (!f(nodo->elemento, ctx)) {
+			*continua_iteracion = false;
+		}
+		cantidad++;
 	}
-	cantidad++;
-	cantidad += contar_iteraciones_inorder(nodo->der, f, ctx);
+	cantidad += contar_iteraciones_inorder(nodo->der, f, ctx,
+					       continua_iteracion);
 	return cantidad;
 }
 
@@ -243,25 +249,31 @@ size_t abb_iterar_inorden(abb_t *abb, bool (*f)(void *, void *), void *ctx)
 	if (abb == NULL || f == NULL) {
 		return 0;
 	}
-	return contar_iteraciones_inorder(abb->raiz, f, ctx);
+	bool continuar_iteracion = true;
+	return contar_iteraciones_inorder(abb->raiz, f, ctx,
+					  &continuar_iteracion);
 }
 
 //pre:  Deberiamos pasarle un nodo valido (o mejor dicho la raiz) y la funcion no puede ser NULL.
 //post: Recursivamente, aumentamos en uno el contador por la raiz (si la funcion devolvio true), luego recorremos a la izquierda, sumamos todas las iteraciones siempre
 // que el nodo donde estemos parados no sea NULL, y por ultimo recorremos el lado derecho y vamos aumentando el contador a medida que el nodo que estamos parados no sea NULL.
 size_t contar_iteraciones_preorden(nodo_t *nodo, bool (*f)(void *, void *),
-				   void *ctx)
+				   void *ctx, bool *continua_iteracion)
 {
-	if (nodo == NULL) {
+	if (nodo == NULL || !(*continua_iteracion)) {
 		return 0;
 	}
 	size_t cantidad = 0;
-	if (!f(nodo->elemento, ctx)) {
-		return cantidad;
+	if (*continua_iteracion) {
+		if (!f(nodo->elemento, ctx)) {
+			*continua_iteracion = false;
+		}
+		cantidad++;
 	}
-	cantidad++;
-	cantidad += contar_iteraciones_preorden(nodo->izq, f, ctx);
-	cantidad += contar_iteraciones_preorden(nodo->der, f, ctx);
+	cantidad += contar_iteraciones_preorden(nodo->izq, f, ctx,
+						continua_iteracion);
+	cantidad += contar_iteraciones_preorden(nodo->der, f, ctx,
+						continua_iteracion);
 	return cantidad;
 }
 
@@ -270,25 +282,31 @@ size_t abb_iterar_preorden(abb_t *abb, bool (*f)(void *, void *), void *ctx)
 	if (abb == NULL || f == NULL) {
 		return 0;
 	}
-	return contar_iteraciones_preorden(abb->raiz, f, ctx);
+	bool continuar_iteracion = true;
+	return contar_iteraciones_preorden(abb->raiz, f, ctx,
+					   &continuar_iteracion);
 }
 
 //pre:  Deberiamos pasarle un nodo valido (o mejor dicho la raiz) y la funcion no puede ser NULL.
 //post: Recursivamente, primero recorremos a la izquierda, sumamos todas las iteraciones siempre que el nodo donde estemos parados no sea NULL, luego recorremos el
 // lado derecho y vamos aumentando el contador a medida que el nodo que estamos parados no sea NULL y por ultimo aumentamos en uno el contador por la raiz (si la funcion devolvio true)
 size_t contar_iteraciones_postorden(nodo_t *nodo, bool (*f)(void *, void *),
-				    void *ctx)
+				    void *ctx, bool *continua_iteracion)
 {
-	if (nodo == NULL) {
+	if (nodo == NULL || !(*continua_iteracion)) {
 		return 0;
 	}
 	size_t cantidad = 0;
-	cantidad += contar_iteraciones_postorden(nodo->izq, f, ctx);
-	cantidad += contar_iteraciones_postorden(nodo->der, f, ctx);
-	if (!f(nodo->elemento, ctx)) {
-		return cantidad;
+	cantidad += contar_iteraciones_postorden(nodo->izq, f, ctx,
+						 continua_iteracion);
+	cantidad += contar_iteraciones_postorden(nodo->der, f, ctx,
+						 continua_iteracion);
+	if (*continua_iteracion) {
+		if (!f(nodo->elemento, ctx)) {
+			*continua_iteracion = false;
+		}
+		cantidad++;
 	}
-	cantidad++;
 	return cantidad;
 }
 
@@ -297,7 +315,9 @@ size_t abb_iterar_postorden(abb_t *abb, bool (*f)(void *, void *), void *ctx)
 	if (abb == NULL || f == NULL) {
 		return 0;
 	}
-	return contar_iteraciones_postorden(abb->raiz, f, ctx);
+	bool continuar_iteracion = true;
+	return contar_iteraciones_postorden(abb->raiz, f, ctx,
+					    &continuar_iteracion);
 }
 
 //pre:  El elemento y el vector que le pasamos no son NULL. Y el Indice o I, deberia haverse inicializado con 0.
