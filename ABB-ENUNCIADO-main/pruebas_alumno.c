@@ -1665,20 +1665,43 @@ void EliminarPokemonYBuscarloDevuelveNULL()
 	abb_insertar(abb, &pikachu);
 	abb_insertar(abb, &charizard);
 	abb_insertar(abb, &venusaur);
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &pikachu);
+	abb_insertar(abb, &venusaur);
+	abb_insertar(abb, &venusaur);
+	abb_insertar(abb, &charizard);
 
 	struct pokemon *encontrado = NULL;
 
-	pa2m_afirmar(abb_cantidad(abb) == 3, "La canidad de pokemones es 4");
+	pa2m_afirmar(abb_cantidad(abb) == 9, "La canidad de pokemones es 9");
 	pa2m_afirmar(abb_quitar(abb, &pikachu, (void *)&encontrado),
 		     "Intentar quitar un pokemon que existe devuelve true");
-	pa2m_afirmar(encontrado != NULL,
-		     "El elemento eliminado es distinto de NULL");
-	pa2m_afirmar(abb_cantidad(abb) == 2,
-		     "La canidad de pokemones baja a 2 si elimino a Pikachu");
+	pa2m_afirmar(abb_obtener(abb, &pikachu) != NULL,
+		     "Intentar buscar a Pikachu no devuelve NULL");
+	pa2m_afirmar(abb_quitar(abb, &pikachu, (void *)&encontrado),
+		     "Intentar quitar un pokemon que existe devuelve true");
+	pa2m_afirmar(abb_quitar(abb, &pikachu, (void *)&encontrado),
+		     "Intentar quitar un pokemon que existe devuelve true");
+	pa2m_afirmar(abb_quitar(abb, &pikachu, (void *)&encontrado),
+		     "Intentar quitar un pokemon que existe devuelve true");
+	pa2m_afirmar(
+		abb_cantidad(abb) == 5,
+		"La canidad de pokemones baja a 5 si elimino a todos los Pikachu");
 	pa2m_afirmar(abb_obtener(abb, &charizard) != NULL,
 		     "Intentar buscar a Charizard no devuelve NULL");
-	pa2m_afirmar(abb_obtener(abb, &pikachu) == NULL,
-		     "Intentar buscar a Pikachu devuelve NULL");
+	pa2m_afirmar(abb_quitar(abb, &charizard, (void *)&encontrado),
+		     "Intentar quitar un pokemon que existe devuelve true");
+	pa2m_afirmar(abb_obtener(abb, &charizard) != NULL,
+		     "Intentar buscar a charizard no devuelve NULL");
+	pa2m_afirmar(abb_quitar(abb, &charizard, (void *)&encontrado),
+		     "Intentar quitar un pokemon que existe devuelve true");
+	pa2m_afirmar(abb_obtener(abb, &charizard) == NULL,
+		     "Intentar buscar a charizard devuelve NULL");
+	pa2m_afirmar(abb_quitar(abb, &venusaur, (void *)&encontrado),
+		     "Intentar quitar un pokemon que existe devuelve true");
+	pa2m_afirmar(abb_obtener(abb, &venusaur) != NULL,
+		     "Intentar buscar a venusaur no devuelve NULL");
 	abb_destruir(abb);
 }
 
@@ -1701,7 +1724,6 @@ void EliminarElementoNullDevuelveTrue()
 
 	pa2m_afirmar(abb_cantidad(abb) == 3,
 		     "La cantidad de pokemones es 3 (incluyendo NULL)");
-
 	pa2m_afirmar(abb_quitar(abb, pokemon_null, (void *)&encontrado),
 		     "Eliminar un pokemon que es NULL devuelve true");
 	pa2m_afirmar(encontrado == NULL,
@@ -1802,7 +1824,7 @@ int main()
 	pa2m_nuevo_grupo("Pruebas Extra");
 	EliminarRaizDevuleveLaRaiz();
 	IterarYCortarPrematuramenteDevulveCantidadCorrecta();
-	//EliminarAlMismoPokemonDevuelveTrueYDespuesFalse();
+	EliminarAlMismoPokemonDevuelveTrueYDespuesFalse();
 	EliminarABBConElMismoElementoDevulveTrueSiempre();
 	EliminarElementoNullDevuelveTrue();
 	EliminarPokemonYBuscarloDevuelveNULL();

@@ -197,23 +197,17 @@ void *abb_obtener_elemento_recursivo(nodo_t *nodo, void *elemento,
 	if (resultado_comparacion > 0) {
 		return abb_obtener_elemento_recursivo(nodo->der, elemento,
 						      comparador);
-	} else {
-		return abb_obtener_elemento_recursivo(nodo->izq, elemento,
-						      comparador);
 	}
+	return abb_obtener_elemento_recursivo(nodo->izq, elemento, comparador);
 }
 
 void *abb_obtener(abb_t *abb, void *elemento)
 {
-	if (abb == NULL || elemento == NULL) {
+	if (abb == NULL || abb->nodos == 0) {
 		return NULL;
 	}
-	void *elemento_buscado = abb_obtener_elemento_recursivo(
-		abb->raiz, elemento, abb->comparador);
-	if (elemento_buscado != NULL) {
-		return elemento_buscado;
-	}
-	return NULL;
+	return abb_obtener_elemento_recursivo(abb->raiz, elemento,
+					      abb->comparador);
 }
 
 size_t abb_cantidad(abb_t *abb)
