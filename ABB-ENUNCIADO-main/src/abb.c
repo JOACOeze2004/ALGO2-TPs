@@ -1,5 +1,6 @@
 #include "abb.h"
 #include "abb_estructura_privada.h"
+#include <stdio.h>
 
 //pre:	Idealmente, el elemento no deberia ser NULL, pero puede serlo, funcionaria de igual manera.
 //post:	Creo un nuevo nodo con el fin de poder agregar uno en los llamados para las funciones de agregar. Seteamos los campos del mismo y lo devolvemos inicializado y con memoria reservada.
@@ -111,8 +112,8 @@ bool abb_insertar(abb_t *abb, void *elemento)
 	return true;
 }
 
-//pre:
-//post:
+//pre:	El nodo pasado es balido y tiene dos hijos al enos (obvio)
+//post:	devuelve el nodo que esta mas a la derecha del subarbol izquierdo (o el predecesor_inorden)
 nodo_t *buscar_predecesor_inorden(nodo_t *nodo)
 {
 	if (nodo == NULL) {
@@ -192,6 +193,7 @@ void *abb_obtener_elemento_recursivo(nodo_t *nodo, void *elemento,
 	}
 	int resultado_comparacion = comparador(elemento, nodo->elemento);
 	if (resultado_comparacion == 0) {
+		printf("elemento encontrado: %p\n", elemento);
 		return nodo->elemento;
 	}
 	if (resultado_comparacion > 0) {
