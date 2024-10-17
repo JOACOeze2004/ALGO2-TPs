@@ -1755,13 +1755,14 @@ void EliminarRaizYBuscarlaDevuelveNULL()
 	pa2m_afirmar(abb_obtener(abb, &venusaur) != NULL,
 		     "Intentar buscar a Venusaur no devuelve NULL");
 	pa2m_afirmar(abb_quitar(abb, &venusaur, (void *)&encontrado),
-		     "Intentar quitar la raiz devuelve true");
+		     "Intentar quitar a venusaur devuelve true");
 	pa2m_afirmar(abb_quitar(abb, &venusaur, (void *)&encontrado),
-		     "Intentar quitar la raiz devuelve true");
+		     "Intentar quitar a venusaur devuelve true");
 	pa2m_afirmar(abb_obtener(abb, &venusaur) == NULL,
-		     "Intentar buscar a Pikachu no devuelve NULL");
+		     "Intentar buscar a venusaur no devuelve NULL");
 	abb_destruir(abb);
 }
+
 
 int main()
 {
@@ -1857,6 +1858,6 @@ int main()
 	EliminarElementoNullDevuelveTrue();
 	EliminarPokemonYBuscarloDevuelveNULL();
 	EliminarRaizYBuscarlaDevuelveNULL();
-
+	
 	return pa2m_mostrar_reporte();
 }

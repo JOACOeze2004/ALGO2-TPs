@@ -27,8 +27,8 @@ abb_t *abb_crear(int (*comparador)(void *, void *))
 	return abb;
 }
 
-//pre:  Idealmente, deberia haber al menos un nodo en el ABB. Y el destructor no deberia ser NULL si sabemos que no se reservo memoria para los elementos del ABB, si
-// no reservamos memoria para el elemento, pasarle NULL es lo optimo.
+//pre:  Idealmente, deberia haber al menos un nodo en el ABB. Y el destructor deberia ser NULL si se reservo memoria para los elementos del ABB, si no reservamos memoria
+//  para los elementos, pasarle NULL es lo optimo.
 //post: Recursivamente, vamos recorriendo el arbol y vamos liberando los nodos. En caso de que el destructor sea distinto de NULL, le aplicamos la funcion al elemento en dicho nodo.
 void destruir_nodos(nodo_t *nodo, void (*destructor)(void *))
 {
@@ -38,6 +38,8 @@ void destruir_nodos(nodo_t *nodo, void (*destructor)(void *))
 	destruir_nodos(nodo->izq, destructor);
 	destruir_nodos(nodo->der, destructor);
 	if (destructor != NULL) {
+		printf("llamamos a destructor con el elemnto:%p\n",
+		       nodo->elemento);
 		destructor(nodo->elemento);
 	}
 	free(nodo);
@@ -54,6 +56,7 @@ void abb_destruir(abb_t *abb)
 void abb_destruir_todo(abb_t *abb, void (*destructor)(void *))
 {
 	if (abb != NULL) {
+		printf("cantidad de elementos actuales:%zu\n", abb->nodos);
 		destruir_nodos(abb->raiz, destructor);
 		free(abb);
 	}
@@ -77,7 +80,7 @@ void insertar_raiz(abb_t *abb, nodo_t *nodo)
 nodo_t *insertar_abb_no_vacio(nodo_t *raiz, nodo_t *nuevo_nodo,
 			      int (*comparador)(void *, void *))
 {
-	if (raiz == NULL || nuevo_nodo == NULL) {
+	if (raiz == NULL) {
 		return nuevo_nodo;
 	}
 	int resultado_comparacion =
@@ -109,10 +112,12 @@ bool abb_insertar(abb_t *abb, void *elemento)
 						  abb->comparador);
 		abb->nodos++;
 	}
+	printf("elemento insertado: %p\n", elemento);
+	printf("cantidad de elementos actuales:%zu\n", abb->nodos);
 	return true;
 }
 
-//pre:	El nodo pasado es balido y tiene dos hijos al enos (obvio)
+//pre:	El nodo pasado es balido y tiene dos hijos al menos (obvio)
 //post:	devuelve el nodo que esta mas a la derecha del subarbol izquierdo (o el predecesor_inorden)
 nodo_t *buscar_predecesor_inorden(nodo_t *nodo)
 {
@@ -130,16 +135,16 @@ nodo_t *buscar_predecesor_inorden(nodo_t *nodo)
 //post:
 nodo_t *eliminar_nodo(nodo_t *nodo, void *buscado, void **encontrado,
 		      int (*comparador)(void *, void *),
-		      bool *se_encontro_elemnto)
+		      bool *se_encontro_elemento)
 {
 	if (nodo == NULL) {
 		return NULL;
 	}
 	int resultado_comparacion = comparador(buscado, nodo->elemento);
 	if (resultado_comparacion == 0) {
-		if (*encontrado == NULL) {
+		if (!(*se_encontro_elemento)) {
 			*encontrado = nodo->elemento;
-			*se_encontro_elemnto = true;
+			*se_encontro_elemento = true;
 		}
 		if (nodo->der != NULL && nodo->izq != NULL) {
 			nodo_t *nodo_inorden = buscar_predecesor_inorden(nodo);
@@ -147,20 +152,19 @@ nodo_t *eliminar_nodo(nodo_t *nodo, void *buscado, void **encontrado,
 			nodo->izq = eliminar_nodo(nodo->izq,
 						  nodo_inorden->elemento,
 						  encontrado, comparador,
-						  se_encontro_elemnto);
+						  se_encontro_elemento);
 			return nodo;
 		}
-		nodo_t *hijo_no_null = nodo->der != NULL ? nodo->der :
-							   nodo->izq;
+		nodo_t *hijo_no_null = (nodo->der != NULL) ? nodo->der :
+							     nodo->izq;
 		free(nodo);
 		return hijo_no_null;
-	}
-	if (resultado_comparacion > 0) {
+	} else if (resultado_comparacion > 0) {
 		nodo->der = eliminar_nodo(nodo->der, buscado, encontrado,
-					  comparador, se_encontro_elemnto);
+					  comparador, se_encontro_elemento);
 	} else {
 		nodo->izq = eliminar_nodo(nodo->izq, buscado, encontrado,
-					  comparador, se_encontro_elemnto);
+					  comparador, se_encontro_elemento);
 	}
 	return nodo;
 }
@@ -174,8 +178,7 @@ bool abb_quitar(abb_t *abb, void *buscado, void **encontrado)
 	bool se_encontro_elemento = false;
 	abb->raiz = eliminar_nodo(abb->raiz, buscado, encontrado,
 				  abb->comparador, &se_encontro_elemento);
-	if (*encontrado != NULL ||
-	    (se_encontro_elemento && *encontrado == NULL)) {
+	if (se_encontro_elemento) {
 		(abb->nodos)--;
 		return true;
 	}
