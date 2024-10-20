@@ -170,8 +170,11 @@ void imprimir_inicio_pokedex()
 {
 	printf("\n");
 	printf("Bienvenido Ash, aqui estan todos los pokemones que cargaste, las estadisticas de los mismos y la cantidad que hay de cada tipo.\n");
-	printf("En esta version 1.3 de la pokedex, tienes dos opciones de momento, o buscar un pokemon de los que ingresaste o mostrarte todos los pokemones que haya\n");
-	printf("Entonces, si desea buscar un pokemon, debe insertar la palabra 'buscar' o el numero 1, para listar los pokemones que haya en la pokedex con sus estadisticas\n ponga la palabra 'listar' o el numero 2, si quieres salir coloca el numero 0 o la palabra 'salir");
+	printf("En esta version 1.3 de la pokedex, tienes tres opciones de momento, buscar un pokemon de los que ingresaste, mostrarte todos los pokemones que haya o salir de la pokedex\n");
+	printf("Entonces, si desea buscar un pokemon, debe insertar la palabra 'buscar' o el numero 1, para listar los pokemones que haya en la pokedex con sus estadisticas\n ponga la palabra 'listar' o el numero 2, si quieres salir coloca el numero 0 o la palabra 'salir\n");
+	printf("Presiona 0 o 'salir' para salir de la pokedex\n");
+	printf("Presiona 1 o 'buscar' para buscar un pokemon\n");
+	printf("Presiona 2 o 'listar' para listar la pokedex\n");
 }
 
 //pre:	La entrada deberia ser valida.

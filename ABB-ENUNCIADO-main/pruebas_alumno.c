@@ -1745,24 +1745,33 @@ void EliminarRaizYBuscarlaDevuelveNULL()
 	abb_insertar(abb, &pikachu);
 	abb_insertar(abb, &charizard);
 	abb_insertar(abb, &venusaur);
-	abb_insertar(abb, &charizard);
-	abb_insertar(abb, &pikachu);
-	abb_insertar(abb, &venusaur);
 	abb_insertar(abb, &pikachu);
 	struct pokemon *encontrado = NULL;
 
-	pa2m_afirmar(abb_cantidad(abb) == 7, "La canidad de pokemones es 7");
+	pa2m_afirmar(abb_cantidad(abb) == 4, "La canidad de pokemones es 4");
 	pa2m_afirmar(abb_obtener(abb, &venusaur) != NULL,
 		     "Intentar buscar a Venusaur no devuelve NULL");
-	pa2m_afirmar(abb_quitar(abb, &venusaur, (void *)&encontrado),
-		     "Intentar quitar a venusaur devuelve true");
+	pa2m_afirmar(abb_obtener(abb, &pikachu) != NULL,
+		     "Intentar buscar a Pikachu no devuelve NULL");
+	pa2m_afirmar(abb_obtener(abb, &charizard) != NULL,
+		     "Intentar buscar a Charizard no devuelve NULL");
+
+	pa2m_afirmar(abb_quitar(abb, &pikachu, (void *)&encontrado),
+		     "Intentar quitar a Pikachu devuelve true");
+	pa2m_afirmar(abb_quitar(abb, &pikachu, (void *)&encontrado),
+		     "Intentar quitar a Pikachu devuelve true");
+	pa2m_afirmar(abb_obtener(abb, &pikachu) == NULL,
+		     "Intentar buscar a Pikachu no devuelve NULL");
 	pa2m_afirmar(abb_quitar(abb, &venusaur, (void *)&encontrado),
 		     "Intentar quitar a venusaur devuelve true");
 	pa2m_afirmar(abb_obtener(abb, &venusaur) == NULL,
-		     "Intentar buscar a venusaur no devuelve NULL");
+		     "Intentar buscar a Venusaur devuelve NULL");
+	pa2m_afirmar(abb_quitar(abb, &charizard, (void *)&encontrado),
+		     "Intentar quitar a Charizard devuelve true");
+	pa2m_afirmar(abb_obtener(abb, &charizard) == NULL,
+		     "Intentar buscar a Charizard no devuelve NULL");
 	abb_destruir(abb);
 }
-
 
 int main()
 {
@@ -1858,6 +1867,5 @@ int main()
 	EliminarElementoNullDevuelveTrue();
 	EliminarPokemonYBuscarloDevuelveNULL();
 	EliminarRaizYBuscarlaDevuelveNULL();
-	
 	return pa2m_mostrar_reporte();
 }

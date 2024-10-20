@@ -1,6 +1,5 @@
 #include "abb.h"
 #include "abb_estructura_privada.h"
-#include <stdio.h>
 
 //pre:	Idealmente, el elemento no deberia ser NULL, pero puede serlo, funcionaria de igual manera.
 //post:	Creo un nuevo nodo con el fin de poder agregar uno en los llamados para las funciones de agregar. Seteamos los campos del mismo y lo devolvemos inicializado y con memoria reservada.
@@ -38,8 +37,6 @@ void destruir_nodos(nodo_t *nodo, void (*destructor)(void *))
 	destruir_nodos(nodo->izq, destructor);
 	destruir_nodos(nodo->der, destructor);
 	if (destructor != NULL) {
-		printf("llamamos a destructor con el elemnto:%p\n",
-		       nodo->elemento);
 		destructor(nodo->elemento);
 	}
 	free(nodo);
@@ -56,7 +53,6 @@ void abb_destruir(abb_t *abb)
 void abb_destruir_todo(abb_t *abb, void (*destructor)(void *))
 {
 	if (abb != NULL) {
-		printf("cantidad de elementos actuales:%zu\n", abb->nodos);
 		destruir_nodos(abb->raiz, destructor);
 		free(abb);
 	}
@@ -112,12 +108,10 @@ bool abb_insertar(abb_t *abb, void *elemento)
 						  abb->comparador);
 		abb->nodos++;
 	}
-	printf("elemento insertado: %p\n", elemento);
-	printf("cantidad de elementos actuales:%zu\n", abb->nodos);
 	return true;
 }
 
-//pre:	El nodo pasado es balido y tiene dos hijos al menos (obvio)
+//pre:	El nodo pasado es valido y tiene dos hijos al menos (obvio)
 //post:	devuelve el nodo que esta mas a la derecha del subarbol izquierdo (o el predecesor_inorden)
 nodo_t *buscar_predecesor_inorden(nodo_t *nodo)
 {
@@ -131,8 +125,8 @@ nodo_t *buscar_predecesor_inorden(nodo_t *nodo)
 	return nodo_actual;
 }
 
-//pre:
-//post:
+//pre:	Seria optimo no pasarle encontrado como NULL pero funciona de todas formas.
+//post:	Elimina el nodo dependiendo de si tiene 0/1 o 2 hijos, y lo retornamos.
 nodo_t *eliminar_nodo(nodo_t *nodo, void *buscado, void **encontrado,
 		      int (*comparador)(void *, void *),
 		      bool *se_encontro_elemento)
@@ -143,7 +137,9 @@ nodo_t *eliminar_nodo(nodo_t *nodo, void *buscado, void **encontrado,
 	int resultado_comparacion = comparador(buscado, nodo->elemento);
 	if (resultado_comparacion == 0) {
 		if (!(*se_encontro_elemento)) {
-			*encontrado = nodo->elemento;
+			if (encontrado != NULL) {
+				*encontrado = nodo->elemento;
+			}
 			*se_encontro_elemento = true;
 		}
 		if (nodo->der != NULL && nodo->izq != NULL) {
@@ -171,10 +167,12 @@ nodo_t *eliminar_nodo(nodo_t *nodo, void *buscado, void **encontrado,
 
 bool abb_quitar(abb_t *abb, void *buscado, void **encontrado)
 {
-	if (abb == NULL || encontrado == NULL) {
+	if (abb == NULL) {
 		return false;
 	}
-	*encontrado = NULL;
+	if (encontrado != NULL) {
+		*encontrado = NULL;
+	}
 	bool se_encontro_elemento = false;
 	abb->raiz = eliminar_nodo(abb->raiz, buscado, encontrado,
 				  abb->comparador, &se_encontro_elemento);
@@ -196,7 +194,6 @@ void *abb_obtener_elemento_recursivo(nodo_t *nodo, void *elemento,
 	}
 	int resultado_comparacion = comparador(elemento, nodo->elemento);
 	if (resultado_comparacion == 0) {
-		printf("elemento encontrado: %p\n", elemento);
 		return nodo->elemento;
 	}
 	if (resultado_comparacion > 0) {
@@ -328,7 +325,7 @@ void agregar_elemento_al_vector(void *elemento, size_t *i, void **vector)
 	(*i)++;
 }
 
-//pre:
+//pre:	El tamaño pasado es valido al igual que el vector debe haberse inicialziado antes de llamar a la funcion.
 //post:	Los elementos del ABB se guardan, recursivamente y recorremos inorden, en el vector que le pasamos hasta llenar el vector o hasta que se recorre todo el ABB.
 void rellenar_vector_inorden_recu(nodo_t *nodo, void **vector, size_t tamaño,
 				  size_t *i)
@@ -357,7 +354,7 @@ size_t abb_vectorizar_inorden(abb_t *abb, void **vector, size_t tamaño)
 	return i;
 }
 
-//pre:
+//pre:	El tamaño pasado es valido al igual que el vector debe haberse inicialziado antes de llamar a la funcion.
 //post:	Los elementos del ABB se guardan, recursivamente y recorremos preorden, en el vector que le pasamos hasta llenar el vector o hasta que se recorre todo el ABB.
 void rellenar_vector_preorden_recu(nodo_t *nodo, void **vector, size_t tamaño,
 				   size_t *i)
@@ -386,7 +383,7 @@ size_t abb_vectorizar_preorden(abb_t *abb, void **vector, size_t tamaño)
 	return i;
 }
 
-//pre:
+//pre:	El tamaño pasado es valido al igual que el vector debe haberse inicialziado antes de llamar a la funcion.
 //post:	Los elementos del ABB se guardan, recursivamente y recorremos postorden, en el vector que le pasamos hasta llenar el vector o hasta que se recorre todo el ABB.
 void rellenar_vector_postorden_recu(nodo_t *nodo, void **vector, size_t tamaño,
 				    size_t *i)

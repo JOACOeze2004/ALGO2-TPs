@@ -42,4 +42,8 @@ formatear-tp:
 correr-tp:
 	$(CC) $(CFLAGS) src/*.c tp_abb.c -o tp_abb && valgrind $(VALGRIND_FLAGS) ./tp_abb ejemplos/pokedex.csv
 	
+	
+zipear:
+	cd ../ && zip -r ABB-ENUNCIADO-main.zip ABB-ENUNCIADO-main
+	
 
