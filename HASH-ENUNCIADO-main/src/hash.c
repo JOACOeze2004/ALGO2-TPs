@@ -28,9 +28,10 @@ size_t funcion_hash(const char *clave, size_t capacidad) {
     size_t hash_posicion = 0;
     size_t i = 0;
     while (clave[i] != '\0') {
-        hash_posicion = (hash_posicion * 31 + (unsigned char)clave[i]) % capacidad;
+        hash_posicion = (hash_posicion * 73 + (unsigned char)clave[i]) % capacidad;
         i++;
     }
+    //printf("valor hash:%zu\n",hash_posicion);
     return hash_posicion; 
 }
 
@@ -73,20 +74,6 @@ size_t hash_cantidad(hash_t* hash){
     return hash == NULL ? 0 : hash->cantidad;
 }
 
-//insertar/agregar
-/**
- *
- * Inserta un elemento asociado a la clave en la tabla de hash.
- *
- * Si la clave ya existe en la tabla, modificamos el valor y ponemos el nuevo.
- * Si encontrado no es NULL, se almacena el elemento reemplazado en el mismo.
- *
- * Esta funcion almacena una copia de la clave.
- *
- * No se admiten claves nulas.
- *
- * Devuelve true si se pudo almacenar el valor.
- **/
 bool hash_insertar(hash_t* hash, char* clave, void* valor, void** encontrado){
     if (hash == NULL || clave == NULL ){
         return false;
@@ -154,30 +141,70 @@ bool hash_contiene(hash_t* hash, char* clave){
 /**
  * Quita el elemento asociado a la clave de la tabla y lo devuelve.
  */
-//void* hash_quitar(hash_t* hash, char* clave);
+void* hash_quitar(hash_t* hash, char* clave){
+    if (hash == NULL || clave == NULL || hash->cantidad == 0){
+        return NULL;
+    }
+    size_t indice = funcion_hash(clave,hash->capacidad);
+    par_t *par_actual = hash->pares[indice];
+    if (par_actual == NULL){
+        return NULL;
+    }
+    void *encontrado = NULL;
+    bool elimine_par = false;
+    par_t *par_aux = NULL;
+    while (par_actual != NULL && !elimine_par){
+        if (strcmp(par_actual->clave,clave) == 0){
+            encontrado = par_actual->valor;
+            if (par_aux == NULL){
+                hash->pares[indice]= par_actual->siguiente;
+            }else{
+                par_aux->siguiente = par_actual->siguiente;
+            }
+            free(par_actual->clave);
+            free(par_actual);
+            hash->cantidad--;
+            elimine_par = true;
+        }
+        par_aux = par_actual;
+        par_actual = par_actual->siguiente;
+    }
+    return encontrado;
+}
 
-/**
- * Itera cada elemento del hash y aplica la función f.
- *
- * La iteración se corta al completar el total de elementos o cuando la función devuelve false.
- *
- * Devuelve la cantidad de veces que se aplica la función.
- */
-//size_t hash_iterar(hash_t* hash, bool (*f)(char*, void*, void*), void* ctx);
+
+size_t hash_iterar(hash_t* hash, bool (*f)(char*, void*, void*), void* ctx){
+    if (hash == NULL ){
+        return 0;
+    }
+    size_t cantidad_iteraciones = 0;
+    bool finalizar_iteracion = false;
+    for (size_t i = 0; i < hash->capacidad && !finalizar_iteracion; i++){
+        par_t *par_actual = hash->pares[i];
+        while (par_actual != NULL && !finalizar_iteracion){
+            if (!f(par_actual->clave,par_actual->valor,ctx))
+            {
+                finalizar_iteracion = true;
+            }
+            cantidad_iteraciones++;
+            par_actual = par_actual->siguiente;
+        }        
+    }
+    return cantidad_iteraciones;
+}
 
 void destruir_todo(hash_t *hash,  void (*destructor)(void *)){
-    if (hash != NULL)
-    {
+    if (hash != NULL){
         for (size_t i = 0; i < hash->capacidad; i++){
             par_t *par_actual = hash->pares[i];
             while (par_actual != NULL){
-                par_t *par_a_eliminar = par_actual;
-                par_actual = par_actual->siguiente;
+                par_t *par_siguiente = par_actual->siguiente;
                 if (destructor != NULL){
-                    destructor(par_a_eliminar);  
+                    destructor(par_actual);  
                 }
-                free(par_a_eliminar->clave);
-                free(par_a_eliminar);
+                free(par_actual->clave);
+                free(par_actual);
+                par_actual = par_siguiente;
             }
         }
         free(hash->pares);
