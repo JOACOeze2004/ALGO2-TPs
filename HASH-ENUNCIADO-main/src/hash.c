@@ -5,6 +5,7 @@
 
 #define FACTOR_CARGA_MAX 0.75
 #define CAPACIDAD_BORDE 3
+#define FACTOR_CRECIMIENTO 2
 
 typedef struct par par_t;
 
@@ -23,7 +24,6 @@ struct hash{
 /*
 Reeveer despues funcion hash
 */
-
 size_t funcion_hash(const char *clave, size_t capacidad) {
     size_t hash_posicion = 0;
     size_t i = 0;
@@ -69,6 +69,53 @@ hash_t* hash_crear(size_t capacidad_inicial)
     return hash;
 }
 
+bool agregar_par(hash_t* hash, char* clave, void* valor, void** encontrado){
+    size_t indice_hash = funcion_hash(clave,hash->capacidad);
+    par_t *pos_actual = hash->pares[indice_hash];
+    bool clave_repetida_insertada = false;
+    while (pos_actual != NULL && !clave_repetida_insertada){
+        if (strcmp(clave,pos_actual->clave) == 0){
+            if (encontrado != NULL){
+                *encontrado = pos_actual->valor;
+            }
+            pos_actual->valor = valor;
+            clave_repetida_insertada = true;
+        }
+        pos_actual = pos_actual->siguiente;        
+    }
+    if (!clave_repetida_insertada){
+        par_t *par_nuevo = crear_nuevo_par(clave,valor);
+        if (par_nuevo == NULL){
+            return false;
+        }
+        par_nuevo->siguiente = hash->pares[indice_hash];
+        hash->pares[indice_hash] = par_nuevo;
+        hash->cantidad++;
+    }
+    return true;
+}
+
+hash_t *rehash(hash_t *hash){
+    par_t **tabla_vieja = hash->pares;
+    hash->capacidad *= FACTOR_CRECIMIENTO; 
+    hash->pares = calloc(hash->capacidad,sizeof(par_t));
+    if (hash->pares == NULL){
+        return NULL;
+    }
+    hash->cantidad = 0;
+    for (size_t i = 0; i < hash->capacidad; i++){
+        par_t *par_actual = tabla_vieja[i];
+        while (par_actual != NULL){
+            par_t *par_aux = par_actual->siguiente;
+            agregar_par(hash,par_actual->clave,par_actual->valor,NULL);
+            free(par_actual->clave);
+            free(par_actual);
+            par_actual = par_aux;
+        }        
+    }
+    free(tabla_vieja);
+    return hash;
+}
 
 size_t hash_cantidad(hash_t* hash){
     return hash == NULL ? 0 : hash->cantidad;
@@ -83,31 +130,17 @@ bool hash_insertar(hash_t* hash, char* clave, void* valor, void** encontrado){
     }
     if ((float)hash->cantidad / (float)hash->capacidad >= FACTOR_CARGA_MAX)
     {
-        //hash = rehash(hash);
-    }
-    size_t indice_hash = funcion_hash(clave,hash->capacidad);
-    par_t *pos_actual = hash->pares[indice_hash];
-    bool clave_repetida_insertada = false;
-    while (pos_actual != NULL && !clave_repetida_insertada){
-        if (strcmp(clave,pos_actual->clave) == 0){
-            if (encontrado != NULL){
-                *encontrado = pos_actual->valor;
-            }
-            pos_actual->valor = valor;
-            clave_repetida_insertada = true;
-        }
-        pos_actual = pos_actual->siguiente;        
-    }
-    
-    if (!clave_repetida_insertada){
-        par_t *par_nuevo = crear_nuevo_par(clave,valor);
-        if (par_nuevo == NULL){
+        printf("capacidad a modificar:%zu\n",hash->capacidad);
+        if (rehash(hash) == NULL)
+        {
             return false;
         }
-        par_nuevo->siguiente = hash->pares[indice_hash];
-        hash->pares[indice_hash] = par_nuevo;
-        hash->cantidad++;
-    } 
+        hash = rehash(hash);
+        printf("capacidad actual:%zu\n",hash->capacidad);
+    }
+    if (!agregar_par(hash,clave,valor,encontrado)){
+        return false;
+    }
     return true;
 }
 
