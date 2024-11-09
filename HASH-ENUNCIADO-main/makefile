@@ -32,7 +32,7 @@ clean:
 formatear-pruebas:
 	$(CLANG_FORMAT) -i -style=file pruebas_alumno.c
 	
-formatear-abb:
+formatear-hash:
 	$(CLANG_FORMAT) -i -style=file src/hash.c
 	
 formatear-tp:
