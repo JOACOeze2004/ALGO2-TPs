@@ -911,8 +911,95 @@ void Insertar1000VecesConClavesigualesFuncionoBien()
 			insercciones++;
 		}
 	}
-	pa2m_afirmar(insercciones == 1000,
-		     "Se insertaron 1000 elementos aunque con claves iguales");
+	pa2m_afirmar(
+		insercciones == 1000,
+		"Se insertaron 1000 elementos aunque algunos con claves iguales");
+	hash_destruir(hash);
+}
+
+void ContieneClaveEnHashValido()
+{
+	hash_t *hash = hash_crear(3);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+
+	char *clave1 = pikachu.nombre;
+	void *valor1 = &(pikachu.fuerza);
+
+	char *clave2 = charizard.nombre;
+	void *valor2 = &(charizard.fuerza);
+
+	char *clave3 = venusaur.nombre;
+	void *valor3 = &(venusaur.fuerza);
+
+	void *encontrado = NULL;
+
+	hash_insertar(hash, clave1, valor1, &encontrado);
+	hash_insertar(hash, clave2, valor2, &encontrado);
+	hash_insertar(hash, clave3, valor3, &encontrado);
+
+	pa2m_afirmar(hash_contiene(hash, clave1), "Existe la clave");
+
+	hash_destruir(hash);
+}
+
+void NoContieneClaveEnHashNULL()
+{
+	hash_t *hash = hash_crear(3);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+
+	char *clave1 = pikachu.nombre;
+	void *valor1 = &(pikachu.fuerza);
+
+	char *clave2 = charizard.nombre;
+	void *valor2 = &(charizard.fuerza);
+
+	char *clave3 = venusaur.nombre;
+	void *valor3 = &(venusaur.fuerza);
+
+	void *encontrado = NULL;
+
+	hash_insertar(hash, clave1, valor1, &encontrado);
+	hash_insertar(hash, clave2, valor2, &encontrado);
+	hash_insertar(hash, clave3, valor3, &encontrado);
+
+	pa2m_afirmar(!hash_contiene(NULL, clave1),
+		     "No existe la clave en un hash NULl");
+
+	hash_destruir(hash);
+}
+
+void NoContieneClaveNULLEnHashValido()
+{
+	hash_t *hash = hash_crear(3);
+
+	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+
+	char *clave1 = pikachu.nombre;
+	void *valor1 = &(pikachu.fuerza);
+
+	char *clave2 = charizard.nombre;
+	void *valor2 = &(charizard.fuerza);
+
+	char *clave3 = venusaur.nombre;
+	void *valor3 = &(venusaur.fuerza);
+
+	void *encontrado = NULL;
+
+	hash_insertar(hash, clave1, valor1, &encontrado);
+	hash_insertar(hash, clave2, valor2, &encontrado);
+	hash_insertar(hash, clave3, valor3, &encontrado);
+
+	pa2m_afirmar(!hash_contiene(hash, NULL),
+		     "No existe la clave si esta es NULL en un hash valido");
+
 	hash_destruir(hash);
 }
 
@@ -963,6 +1050,9 @@ int main()
 	pa2m_nuevo_grupo("Pruebas Combinadas");
 	Insertar1000VecesElMismoParNoRompe();
 	Insertar1000VecesConClavesigualesFuncionoBien();
+	ContieneClaveEnHashValido();
+	NoContieneClaveEnHashNULL();
+	NoContieneClaveNULLEnHashValido();
 
 	return pa2m_mostrar_reporte();
 }

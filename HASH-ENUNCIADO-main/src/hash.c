@@ -1,7 +1,6 @@
 #include "hash.h"
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #define FACTOR_CARGA_MAX 0.75
 #define CAPACIDAD_BORDE 3
@@ -32,7 +31,6 @@ size_t funcion_hash(const char *clave, size_t capacidad)
 				capacidad;
 		i++;
 	}
-	//printf("valor hash:%zu\n",hash_posicion);
 	return hash_posicion;
 }
 
@@ -220,7 +218,7 @@ void *hash_buscar(hash_t *hash, char *clave)
 
 bool hash_contiene(hash_t *hash, char *clave)
 {
-	return (hash != NULL || clave != NULL ||
+	return (hash != NULL && clave != NULL &&
 		hash_buscar(hash, clave) != NULL) ?
 		       true :
 		       false;
@@ -277,7 +275,7 @@ void *hash_quitar(hash_t *hash, char *clave)
 
 size_t hash_iterar(hash_t *hash, bool (*f)(char *, void *, void *), void *ctx)
 {
-	if (hash == NULL) {
+	if (hash == NULL || f == NULL) {
 		return 0;
 	}
 	size_t cantidad_iteraciones = 0;
