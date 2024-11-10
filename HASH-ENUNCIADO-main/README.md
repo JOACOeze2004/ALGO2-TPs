@@ -61,7 +61,32 @@ Despues tenemos la estructura de par que vendria a ser un nodo donde guardamos e
 <img width="70%" src="img/DiagramaMemoria(convectextra).png">
 </div>
 
+Bien, capaz ahora si se entende esto de verificar con el contador_pares (array en celeste) que va aumentando el contador en esa posicion (que es la misma que el vector rojo que seria lo que nos devuelve la funcion  hash). Entonces el vector celeste seria el que verifica que no haya determinada cantidad de pares en X posicion, porque por ejemplo supongamos que nuestro hash tiene 100 elementos en la posicion 0 y el resto quedo vacia (un poco improbable), sin el contador de pares en esa posicion, buscar ya seria O(n) porque puede haber N elementos en esa posicion, pero con los contadores, podria ser una operacion O(n) pero acotada a un cierto N; en mi implementacion le puse un tope de 10 pares por posicion, entonces el pero caso seria recorrer esos 10 elementos, por lo tanto ya no es un problema de tamaño variable sino de fijo, recorrer 10 elementos como mucho (en esa posicion claro). Auqnue claro, en mi caso seria 10, vos prodias poner 20 y otra persona 50 como topes para la cantidad de pares,  entonces bie podria ser O(n) pero es amortizado a una constante que seria ese N que elijas. A lo que quiero llegar, es que si bien es un O(n) porque vos podes elegir cuantos pares aceptas por el primer vector de pares (el rojo o el que representa lo devuelto por la funcio hash), tiene un limite que es constante, entonces en el peor caso deberias recorrer un rpoblema que, a priori no sabes que tan largo sera, pero al estar limitado a un tope, sabes que no vas a recorrer mas alla de ese tope.
 
+
+Bueno, una vez explicada la estructura, podemos darle una ojeada a lo que hicimos en la implementacion, particularmente me interesa hablar de insertar, la operacion del rehash y este tema de meterle un contador a la cantidad de pares que hay por posicion hash, mas que nada las ventajas y desventajas que veo con hacer esto. 
+
+Vamos con la funcion que mas usamos que es la de buscar, que depende de la funcion de dict_buscar_par;
+```c
+par_t *dict_buscar_par(hash_t *hash, char *clave)
+{
+	size_t indice = funcion_hash(clave, hash->capacidad);
+	par_t *par_actual = hash->pares[indice];
+	bool clave_encontrada = false;
+	void *par_buscado = NULL;
+	while (par_actual != NULL && !clave_encontrada) {
+		if (strcmp(clave, par_actual->clave) == 0) {
+			par_buscado = par_actual;
+			clave_encontrada = true;
+		}
+		par_actual = par_actual->siguiente;
+	}
+	return par_buscado;
+}
+
+```
+
+Basicamente lo que hace es, primero se para en la psocion del hash que me de de hacer la clave que busco, luego itero "hacia abajo" (o itero los nodos que esten en esa posicion del hash) hasta que la clave del par_actual (o par en i si lo queres ver asi) y la clave que bsuco sean iguales, cortamos la iteracion y retornamos su par
 
 
 ### Por ejemplo:
