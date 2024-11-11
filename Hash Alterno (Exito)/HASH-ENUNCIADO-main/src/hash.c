@@ -35,7 +35,6 @@ size_t funcion_hash(const char *clave, size_t capacidad)
 				capacidad;
 		i++;
 	}
-	// printf("valor hash:%zu\n",hash_posicion);
 	return hash_posicion;
 }
 
@@ -226,15 +225,15 @@ par_t *dict_buscar_par(hash_t *hash, char *clave)
 	size_t indice = funcion_hash(clave, hash->capacidad);
 	par_t *par_actual = hash->pares[indice];
 	bool clave_encontrada = false;
-	void *elemento = NULL;
+	void *par_buscado = NULL;
 	while (par_actual != NULL && !clave_encontrada) {
 		if (strcmp(clave, par_actual->clave) == 0) {
-			elemento = par_actual;
+			par_buscado = par_actual;
 			clave_encontrada = true;
 		}
 		par_actual = par_actual->siguiente;
 	}
-	return elemento;
+	return par_buscado;
 }
 
 void *hash_buscar(hash_t *hash, char *clave)
