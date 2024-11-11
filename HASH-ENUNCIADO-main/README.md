@@ -331,12 +331,24 @@ Ahora bien, ¿Qué necesita una buena función de hash?
 Tenemos 3 formas de resolver las colisiones:
 
 + El **encadenamiento**, que es básicamente lo implementado en el tp, tenemos un vector dinámico que representa la tabla hash, y cada elemento de ese vector apunta a una estructura de soporte, sea una lista simplemente enlazada, nodos simples o dobles, incluso un árbol binario. Es decir, las colisiones se resuelven aceptando que haya pares en la misma posición de la tabla hash e irlos apilando. Ya vimos lo que esto con lleva, en cuanto a complejidad y vimos algunas formas de combatir los casos bordes de apilamiento en una posición de hash.
-(meter dibujito de encadenamiento)
+	Aca un dibujo de como podria ser un hash que soluciona las colisiones con el encadenamiento:
+<div align="center">
+<img width="70%" src="img/DibujoEncadenamiento.png">
+</div>
+
 + Esta también el **probing** (con sus derivados) que es no meter una estructura de soporte, sino que podes buscar la siguiente posición libre del vector de las posiciones hash; tendríamos 3 metros para buscar el siguiente espacio libre del has:
     + **Probing lineal** que como dice su nombre recorre linealmente el vector hasta que encuentre un espacio libre en el mismo para meter el nuevo par.
-    + **Probing cuadrático** que es similar al anterior pero en vez de recorrer linealmente, lo que hace es tener un contador de intentos fallidos e ir haciendo por cada iteración (cant de intentos fallidos)^2, es decir que pega saltos hasta que encuentre un espacio vacío. Igual es medio ineficiente porque podría tener en la siguiente posición nada, y si salta podría tener un elemento ahí y podría seguir así. Además depende de la tabla sea lo suficientemente grande porque si no tendría que arrancar desde la posición cero hasta que encuentre algún espacio vacío.
-    + **Hash doble** donde usamos una segunda función hash para recalcular el índice donde pondríamos el nuevo par, pero también es medio ineficiente porque ponerle que también te de una posición ocupada y ¿qué haces después, te calculas con una tercera función? además tendrías que tener otra función de hash lo cual agrega complejidad ya que debe calcular una vez, buscar si está ocupado y volverlo a calcular y verificar que no esté ocupado.
-(meter dibujito)
+	<div align="center">
+	<img width="70%" src="img/probingLineal.png">
+	</div>
++ **Probing cuadrático** que es similar al anterior pero en vez de recorrer linealmente, lo que hace es tener un contador de intentos fallidos e ir haciendo por cada iteración (cant de intentos fallidos)^2, es decir que pega saltos hasta que encuentre un espacio vacío. Igual es medio ineficiente porque podría tener en la siguiente posición nada, y si salta podría tener un elemento ahí y podría seguir así. Además depende de la tabla sea lo suficientemente grande porque si no tendría que arrancar desde la posición cero hasta que encuentre algún espacio vacío.
+	<div align="center">
+	<img width="70%" src="img/probingCuadratico.png">
+	</div>
++ **Hash doble** donde usamos una segunda función hash para recalcular el índice donde pondríamos el nuevo par, pero también es medio ineficiente porque ponerle que también te de una posición ocupada y ¿qué haces después, te calculas con una tercera función? además tendrías que tener otra función de hash lo cual agrega complejidad ya que debe calcular una vez, buscar si está ocupado y volverlo a calcular y verificar que no esté ocupado.
+	<div align="center">
+	<img width="70%" src="img/probingDobleHash.png">
+	</div>
 
 + Por ultimo tenemos el **rehashing**, que ya hablamos un montón sobre esto, pero consta en que si superamos un cierto factor, entre la cantidad de pare que hay en el vector y la capacidad del mismo, creamos un nuevo vector con más capacidad y reinsertamos los elementos pero esta vez van a dar posiciones distintas ya que la capacidad del vector se aumentó. No hay mucho más que agregar que no se haya hablado previamente.
 
