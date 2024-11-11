@@ -48,7 +48,7 @@ struct par {
 
 struct hash {
 	par_t **pares;
-	size_t *contador_pares;     //Podria ser opcional
+	size_t *contador_pares;     //Podria ser opcional 
 	size_t capacidad;
 	size_t cantidad;
 };
@@ -57,7 +57,7 @@ Entonces el Hash vendría a ser la estructura principal, que tiene un vector de 
 Después tenemos la estructura de par que vendría a ser un nodo donde guardamos el par clave-valor (de ahí los campos que tenemos) y un puntero a un siguiente par, entrenos es un nodo que almacena una clave en vez de solo el valor. Bien, ahora vamos con el diagrama:
 
 <div align="center">
-<img width="70%" src="img/DiagramaMemoria(convectextra).png">
+<img width="70%" src="img/DiagramaMemoria.png">
 </div>
 
 Bien, capaz ahora si se entiende esto de verificar con el contador_pares (array en celeste) que va aumentando el contador en esa posición (que es la misma que el vector rojo que sería lo que nos devuelve la función hash). Entonces el vector celeste seria el que verifica que no haya determinada cantidad de pares en X posición, porque por ejemplo supongamos que nuestro hash tiene 100 elementos en la posición 0 y el resto quedo vacía (un poco improbable), sin el contador de pares en esa posición, buscar ya seria O(n) porque puede haber N elementos en esa posición, pero con los contadores, podría ser una operación O(n) pero acotada a un cierto N; en mi implementación le puse un tope de 10 pares por posición, entonces el pero caso sería recorrer esos 10 elementos, por lo tanto ya no es un problema de tamaño variable sino de fijo, recorrer 10 elementos como mucho (en esa posición claro). Aunque claro, en mi caso seria 10, vos podrías poner 20 y otra persona 50 como topes para la cantidad de pares,  entonces bien podría ser O(n) pero es amortizado a una constante que sería ese N que elijas. A lo que quiero llegar, es que si bien es un O(n) porque vos podes elegir cuantos pares aceptas por el primer vector de pares (el rojo o el que representa lo devuelto por la función hash), tiene un límite que es constante, entonces en el peor caso deberías recorrer un problema que, a priori no sabes que tan largo será, pero al estar limitado a un tope, sabes que no vas a recorrer mas allá de ese tope.
@@ -202,6 +202,7 @@ bool agregar_par(hash_t *hash, char *clave, void *valor, void **encontrado)
 }
 ```
 En ese caso, tendríamos dos situaciones, la primera es que me pasaron una clave que ya existe, entonces debemos modificar su valor, o caso contrario donde la clave no existe en el hash entonces debemos crear un nodo y setearlo tal que quede la clave y el valor/contenido dentro del mismo. Entonces algo así hicimos: ```c
+ ```c
 bool buscar_y_editar_valor_clave_repetida(char *clave, void *valor,
 					  par_t *pos_actual, void **encontrado)
 {
@@ -217,6 +218,7 @@ bool buscar_y_editar_valor_clave_repetida(char *clave, void *valor,
 ```
 
 Acá simplemente devolvemos true si pudimos la clave del par que estamos verificando es la misma a la clave que querían insertar, en ese caso, me guardo en encontrado el valor previo a ser modificado, modifico el valor viejo por el valor que me pasaron y devolvemos true, si no ocurre esto, devolvemos false, y en agregar par, seguís iterando hasta que se encuentre o no si es que hay clave repetida. Si se devolvió true tenemos una flag que corta la iteración y saltea el siguiente caso, que es que no existe dicha clave en el hash entonces debemos agregarla, y para eso tenemos a la función de agregar pero para clave que no es repetida: ```c
+ ```c
 bool agregar_par_no_repetido(hash_t *hash, char *clave, void *valor,
 			     size_t indice_hash)
 {
@@ -288,7 +290,21 @@ hash_t *rehash(hash_t *hash)
 ```
 
 Y para que quede mas claro podmeos hacer un dibujo de la idea del rehash.
-(metemos dibujo y explicacion del mismo)
+<div align="center">
+<img width="70%" src="img/DibujoRehash.png">
+</div>
+
+Entonces, lo que yo hago es, pedimos memoria para un nuevo vector de pares pero con el doble de capacidad, obvio que te guardas el vector viejo porque debemos trabajar con el (que me lo guardo en tabla_vieja), y luego tenemos que ir reinsertando los pares que estaban antes pero recalculando su nueva posición en el nuevo vector con mayor capacidad; porque ahora al tener más capacidad, y la usamos para calcular el resto en la función de hash, me puede devolver números más grandes (no acotado entre 0 y 3 sino de 0 a 6). También pedimos memoria para el vector que cuenta cuantos pares hay por posición, en mi dibujo tendríamos el vector con los contadores, pero para hacerlo más genérico, lo dejamos así. 
+
+Entonces, lo que yo hago, es itero en la tabla vieja, y a llamo a agregar_par pero como el campo capacidad de hash cambio, al llamar a la función de hash, esta nos devuelve valores más grandes, como comente antes. Y una vez que terminamos de agregar el par al nuevo vector, hacemos free de la clave y el par en cuestión, y como nos guardamos siempre en una variable auxiliar, el siguiente a iterar, avanzamos gracias a ese, obviamente como charlamos antes en agregar_par, es que vamos reactualizando el contador de pares, ya que con calloc me inicializa todo en 0 al pedir memoria para el nuevo vector de contador de pares y vamos actualizando a medida que agregamos.
+Por último, al terminar de agregar, liberamos la tabla vieja y el vector viejo de contador de pares. Y devolvemos el hash actualizado; si salió todo bien, nos quedaríamos con el hash actualizado, y en caso de que algo falle (una inserción un calloc, etc.) no actualizamos el hash, porque si no nos quedaría invalido o podríamos perder pares, por eso es importante esta línea al agregar:
+ ```c
+	hash_t *diccionario_rehasheado = rehash(hash);
+	if (diccionario_rehasheado == NULL) {
+		return false;
+	}
+	hash = diccionario_rehasheado;
+```
 
 ###  Contador de pares por posicion hash
 
@@ -306,6 +322,8 @@ Prueba con contador:
 </div>
 
 Notamos que la diferencia de alloc es realmente muy poca, pero la diferencia es 1.500.000 de bytes aproximadamente; a mi me parece bastante la diferencia pero en otra medida mayor como MB o GB ya no es tanto, es un dato a resaltar nada mas.
+
+En resumen, supongo que tuviemos que hacer un balance entre mas complejo y mas eficiente, porque debemos pedir y usar mas memoria, pero a cambio nos aseguramos que la busqueda sea un O(1) (en mi caso 10). Pero por otro lado tenes la opcion de hacer mas simple el algoritmo pero a cambio saber que al buscar ya no es O(1) o O(n) acotado sino un O(n) porque no sabes a priori cuantos pares hay por posicion, de la otra forma sabes que puede haber como maximo 10 pares por posicion. 
 
 ## Respuestas a las preguntas teóricas
 

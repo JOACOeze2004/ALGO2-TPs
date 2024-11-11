@@ -43,7 +43,7 @@ void LaCantidadDeElementosInicialesEnhashNulaEs0()
 	hash_destruir(hash);
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//pruebas de insertar
+// pruebas de insertar
 void InsertarEnHAshNULLDevuelveFalse()
 {
 	hash_t *hash = hash_crear(2);
@@ -133,9 +133,9 @@ void InsertarBienPeroConEncontradoNULLDevuelveTrue()
 	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
 	char *clave = pikachu.nombre;
 	void *valor = &(pikachu.fuerza);
-	pa2m_afirmar(
-		hash_insertar(hash, clave, valor, NULL),
-		"insertamos correctamente un elemento al diccionario Con Encontrado como NULL");
+	pa2m_afirmar(hash_insertar(hash, clave, valor, NULL),
+		     "insertamos correctamente un elemento al diccionario Con "
+		     "Encontrado como NULL");
 	pa2m_afirmar(hash_cantidad(hash) == 1,
 		     "La cantidad aumento correctemente en 1");
 	pa2m_afirmar(hash_buscar(hash, clave) == valor,
@@ -196,7 +196,7 @@ void InsertarUnvalorNULLdevuelveTrue()
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//pruebas de buscar
+// pruebas de buscar
 void BuscarenHashNULLDevuelveNULL()
 {
 	hash_t *hash = hash_crear(2);
@@ -310,13 +310,13 @@ void BuscarClaveConVAloresActualizadosDevuelveUltimoValorInsertado()
 	hash_insertar(hash, clave3, valor3, &encontrado);
 	hash_insertar(hash, clave4, valor4, &encontrado);
 
-	pa2m_afirmar(
-		hash_buscar(hash, clave2) == &(blastoise.fuerza),
-		"Buscamos la clave pikachu y nos devolvio el ultimo valor actualizado (la fuerza de blastoise que es 8)");
+	pa2m_afirmar(hash_buscar(hash, clave2) == &(blastoise.fuerza),
+		     "Buscamos la clave pikachu y nos devolvio el ultimo valor "
+		     "actualizado (la fuerza de blastoise que es 8)");
 	hash_destruir(hash);
 }
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//Pruebas de eliminar
+// Pruebas de eliminar
 void EliminarenHashNULLDevuelveNULL()
 {
 	hash_t *hash = hash_crear(3);
@@ -550,7 +550,8 @@ void EliminoTodosLosPokemonesAgreggodeNuevoYEliminoFuncionaBien()
 	hash_insertar(hash, clave4, valor4, &encontrado);
 	pa2m_afirmar(
 		hash_cantidad(hash) == 4,
-		"La cantidad de pokemones es 4 luego de haber eliminado todo el hash y volver a insertar");
+		"La cantidad de pokemones es 4 luego de haber eliminado todo el "
+		"hash y volver a insertar");
 	hash_destruir(hash);
 }
 
@@ -580,7 +581,7 @@ void EliminaEliminarEinsertarMismoParFuncionaBien()
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//Pruebas de iterar
+// Pruebas de iterar
 bool continuar_iteracion(char *clave, void *valor, void *ctx)
 {
 	struct pokemon *p = (struct pokemon *)valor;
@@ -664,9 +665,9 @@ void Iterar3PokemonesDevuelve3ElementosIterados()
 
 	size_t elementos_iterados =
 		hash_iterar(hash, continuar_iteracion, NULL);
-	pa2m_afirmar(
-		elementos_iterados == 2,
-		"Se iteran correctamente los 2 Pokémon de la hash ya que freno en Mewtwo ");
+	pa2m_afirmar(elementos_iterados == 2,
+		     "Se iteran correctamente los 2 Pokémon "
+		     "de la hash ya que freno en Mewtwo ");
 	pa2m_afirmar(hash_cantidad(hash) == 5, "hay 5 pokemones ");
 	hash_destruir(hash);
 }
@@ -703,7 +704,8 @@ void IterarSinFrenadoDevuelveTodosLosPokemonesEnElHash()
 		hash_iterar(hash, continuar_iteracion, NULL);
 	pa2m_afirmar(
 		elementos_iterados == 4,
-		"Se iteran correctamente los 4 Pokémon de la hash ya que no hay condicion de frenado en la iteracion (no esta mewtwo)");
+		"Se iteran correctamente los 4 Pokémon de la hash ya que no hay "
+		"condicion de frenado en la iteracion (no esta mewtwo)");
 
 	hash_destruir(hash);
 }
@@ -796,7 +798,8 @@ void IteroYEliminoDevuelveLaCantidadCorrecta()
 		hash_iterar(hash, continuar_iteracion, NULL);
 	pa2m_afirmar(
 		elementos_iterados == 8,
-		"Se iteran correctamente los 8 Pokémon de la hash ya que no hay condicion de frenado en la iteracion (no esta mewtwo)");
+		"Se iteran correctamente los 8 Pokémon de la hash ya que no hay "
+		"condicion de frenado en la iteracion (no esta mewtwo)");
 	pa2m_afirmar(hash_quitar(hash, clave4) == valor4,
 		     "Elimine clave numero 4");
 	pa2m_afirmar(hash_quitar(hash, clave3) == valor3,
@@ -808,12 +811,13 @@ void IteroYEliminoDevuelveLaCantidadCorrecta()
 		hash_iterar(hash, continuar_iteracion, NULL);
 	pa2m_afirmar(
 		elementos_iterados_2 == 5,
-		"Se iteran correctamente los 5 Pokémon de la hash ya que no hay condicion de frenado en la iteracion (no esta mewtwo)");
+		"Se iteran correctamente los 5 Pokémon de la hash ya que no hay "
+		"condicion de frenado en la iteracion (no esta mewtwo)");
 	hash_destruir(hash);
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//Pruebas combinadas
+// Pruebas extra
 
 void Insertar1000VecesElMismoParNoRompe()
 {
@@ -911,9 +915,8 @@ void Insertar1000VecesConClavesigualesFuncionoBien()
 			insercciones++;
 		}
 	}
-	pa2m_afirmar(
-		insercciones == 1000,
-		"Se insertaron 1000 elementos aunque algunos con claves iguales");
+	pa2m_afirmar(insercciones == 1000,
+		     "Se insertaron 1000 elementos aunque con claves iguales");
 	hash_destruir(hash);
 }
 
@@ -1047,7 +1050,7 @@ int main()
 	IterarConInserccionConMismaClaveDevuelve1();
 	IteroYEliminoDevuelveLaCantidadCorrecta();
 
-	pa2m_nuevo_grupo("Pruebas Combinadas");
+	pa2m_nuevo_grupo("Pruebas extras");
 	Insertar1000VecesElMismoParNoRompe();
 	Insertar1000VecesConClavesigualesFuncionoBien();
 	ContieneClaveEnHashValido();

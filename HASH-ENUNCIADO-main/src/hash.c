@@ -1,8 +1,10 @@
 #include "hash.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define FACTOR_CARGA_MAX 0.75
+#define LIMITE_PARES 10
 #define CAPACIDAD_BORDE 3
 #define FACTOR_CRECIMIENTO 2
 
@@ -16,12 +18,14 @@ struct par {
 
 struct hash {
 	par_t **pares;
+	size_t *contador_pares;
 	size_t capacidad;
 	size_t cantidad;
 };
 
-//pre: La clave es un string valido (nada de null).
-//post:	devuelve una posicion que sera usada como posicion para el vector de pares asi determinamos donde va a parar cada par al querer insertarlos.
+//pre:	La clave es un string valido (nada de null).
+//post:	Devuelve una posicion que sera usada como posicion para el vector
+// de pares asi determinamos donde va a parar cada par al querer insertarlos.
 size_t funcion_hash(const char *clave, size_t capacidad)
 {
 	size_t hash_posicion = 0;
@@ -34,7 +38,7 @@ size_t funcion_hash(const char *clave, size_t capacidad)
 	return hash_posicion;
 }
 
-//pre: La clave y el contenido son validas.
+//pre:	La clave y el contenido son validas.
 //post:	Devuelve un nodo que almacena una clave y su contenido.
 par_t *crear_nuevo_par(char *clave, void *contenido)
 {
@@ -62,11 +66,17 @@ hash_t *hash_crear(size_t capacidad_inicial)
 		return NULL;
 	}
 	hash->pares = calloc(cap_inicial_max, sizeof(par_t));
-	hash->capacidad = cap_inicial_max;
 	if (hash->pares == NULL) {
 		free(hash);
 		return NULL;
 	}
+	hash->contador_pares = calloc(cap_inicial_max, sizeof(size_t));
+	if (hash->contador_pares == NULL) {
+		free(hash->pares);
+		free(hash);
+		return NULL;
+	}
+	hash->capacidad = cap_inicial_max;
 	return hash;
 }
 
@@ -75,8 +85,9 @@ size_t hash_cantidad(hash_t *hash)
 	return hash == NULL ? 0 : hash->cantidad;
 }
 
-//pre: Todos los parametros que recibimos son validos.
-//post:	Devuelve true si se encontro la clave y false en caso contrario. Si la encontro, pisa el contenido viejo por el nuevo.
+//pre:	Todos los parametros que recibimos son validos.
+//post:	Devuelve true si se encontro la clave y false en caso contrario. Si
+// la encontro, pisa el contenido viejo por el nuevo.
 bool buscar_y_editar_valor_clave_repetida(char *clave, void *valor,
 					  par_t *pos_actual, void **encontrado)
 {
@@ -90,8 +101,9 @@ bool buscar_y_editar_valor_clave_repetida(char *clave, void *valor,
 	return false;
 }
 
-//pre:	Se supone que los paraetros pasados son validos y/o fueron inicializados.
-//post:	Devuelve true si pudo crear el nodo con la clave y contenido pasados a la funcion, devulveriafalse en caso de que falla la asignacion de memoria para el nodo.
+//pre:	Se supone que los parametros pasados son validos y/o fueron inicializados.
+//post:	Devuelve true si pudo crear el nodo con la clave y contenido pasados a la funcion, devolveria false en caso de que falla la
+// asignacion de memoria para el nodo.
 bool agregar_par_no_repetido(hash_t *hash, char *clave, void *valor,
 			     size_t indice_hash)
 {
@@ -101,6 +113,7 @@ bool agregar_par_no_repetido(hash_t *hash, char *clave, void *valor,
 	}
 	par_nuevo->siguiente = hash->pares[indice_hash];
 	hash->pares[indice_hash] = par_nuevo;
+	hash->contador_pares[indice_hash]++;
 	hash->cantidad++;
 	return true;
 }
@@ -149,20 +162,27 @@ void actualizar_nueva_tabla(hash_t *hash, par_t **tabla_vieja, size_t i)
 }
 
 //pre:	El hash no puede ser null, y las funciones involucradas no deberian haber fallado.
-//post:	Devolvemos un hash que tiene loselementos que tenia antes pero con un vector de pares con mayor capacidad para evitar coaliciones encadenadas.
+//post:	Devolvemos un hash que tiene los elementos que tenia antes pero con un vector de pares con mayor capacidad para evitar coaliciones encadenadas.
 hash_t *rehash(hash_t *hash)
 {
 	par_t **tabla_vieja = hash->pares;
+	size_t *contador_viejo = hash->contador_pares;
 	size_t capacidad_vieja = hash->capacidad;
 	hash->capacidad *= FACTOR_CRECIMIENTO;
 	hash->pares = calloc(hash->capacidad, sizeof(par_t));
 	if (hash->pares == NULL) {
 		return NULL;
 	}
+	hash->contador_pares = calloc(hash->capacidad, sizeof(size_t));
+	if (hash->contador_pares == NULL) {
+		free(hash->pares);
+		return NULL;
+	}
 	hash->cantidad = 0;
 	for (size_t i = 0; i < capacidad_vieja; i++) {
 		actualizar_nueva_tabla(hash, tabla_vieja, i);
 	}
+	free(contador_viejo);
 	free(tabla_vieja);
 	return hash;
 }
@@ -175,8 +195,10 @@ bool hash_insertar(hash_t *hash, char *clave, void *valor, void **encontrado)
 	if (encontrado != NULL) {
 		*encontrado = NULL;
 	}
+	size_t indice_hash = funcion_hash(clave, hash->capacidad);
 	if ((float)hash->cantidad / (float)hash->capacidad >=
-	    FACTOR_CARGA_MAX) {
+		    FACTOR_CARGA_MAX ||
+	    hash->contador_pares[indice_hash] > LIMITE_PARES) {
 		hash_t *diccionario_rehasheado = rehash(hash);
 		if (diccionario_rehasheado == NULL) {
 			return false;
@@ -225,7 +247,8 @@ bool hash_contiene(hash_t *hash, char *clave)
 }
 
 //pre: Todos los parametros fueron inicializados y no son validos.
-//post:	Ajusta las posiciones afecradas por la eliminacion del par, libera la clave y luego el par/nodo en cuestion que queriamos eliminar, y restamos la cantidad de elemntos en el hash.
+//post:	Ajusta las posiciones afectadas por la eliminacion del par, libera la clave y luego el par/nodo en cuestion que queriamos eliminar, y restamos
+// la cantidad de elemntos en el hash.
 void reajustar_destruir_par(hash_t *hash, par_t *par_actual, par_t *par_aux,
 			    size_t indice)
 {
@@ -236,6 +259,7 @@ void reajustar_destruir_par(hash_t *hash, par_t *par_actual, par_t *par_aux,
 	}
 	free(par_actual->clave);
 	free(par_actual);
+	hash->contador_pares[indice]--;
 	hash->cantidad--;
 }
 
@@ -294,8 +318,8 @@ size_t hash_iterar(hash_t *hash, bool (*f)(char *, void *, void *), void *ctx)
 }
 
 //pre:	Obvio que el hash no es NULL y que I fue inicializado, NULL puede ser NULL en caso de no haber pedido memoria para un elemento.
-//post:	Liberamos la clave y el elemento, y si el destructor pasado no es NULL tambien aplicamos el destructor. Pasar NULL si no tenemos un destructor o si no reservamos
-//memoria para algun contenido.
+//post:	Liberamos la clave y el elemento, y si el destructor pasado no es NULL tambien aplicamos el destructor. Pasar NULL si no tenemos un destructor
+// o si no reservamos memoria para algun contenido.
 void liberar_pares(hash_t *hash, void (*destructor)(void *), size_t i)
 {
 	par_t *par_actual = hash->pares[i];
@@ -319,6 +343,7 @@ void destruir_todo(hash_t *hash, void (*destructor)(void *))
 			liberar_pares(hash, destructor, i);
 		}
 		free(hash->pares);
+		free(hash->contador_pares);
 		free(hash);
 	}
 }

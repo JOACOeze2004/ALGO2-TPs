@@ -1,7 +1,7 @@
+#include "src/csv.h"
+#include "src/hash.h"
 #include <stdio.h>
 #include <string.h>
-#include "src/hash.h"
-#include "src/csv.h"
 
 #define TIPO_AGUA 'A'
 #define TIPO_FUEGO 'F'
@@ -56,8 +56,9 @@ bool castear_a_char(const char *str, void *ctx)
 	return true;
 }
 
-//pre: Asumimos que los argumentos que le pasamos son validos (o sea le pasamos un archivo .csv y el ejecutable).
-//post: Devuelve false en caso de que le pasemos menos de dos arguemntos, sino devolvemos true.
+// pre: Asumimos que los argumentos que le pasamos son validos (o sea le pasamos
+// un archivo .csv y el ejecutable). post: Devuelve false en caso de que le
+// pasemos menos de dos arguemntos, sino devolvemos true.
 bool son_argumentos_validos(int argc, const char *argv[])
 {
 	if (argc < 2) {
@@ -68,8 +69,9 @@ bool son_argumentos_validos(int argc, const char *argv[])
 	return true;
 }
 
-//pre:	El nombre pasado debe ser valido al igual que el pokemon.
-//post:	Reserva memoria para el nombre del pokemon a guardar y copia el nombre que le pasemos al campo nombre del pokemon.
+// pre:	El nombre pasado debe ser valido al igual que el pokemon.
+// post:	Reserva memoria para el nombre del pokemon a guardar y copia el
+// nombre que le pasemos al campo nombre del pokemon.
 void reservar_copiar_nombre_pokemon(struct pokemon *pokemon, char *nombre)
 {
 	pokemon->nombre = malloc(strlen(nombre) + 1);
@@ -78,8 +80,9 @@ void reservar_copiar_nombre_pokemon(struct pokemon *pokemon, char *nombre)
 	}
 }
 
-//pre:	Asumimos que el struct pokemon y los demas argumentos pasados fueron inicalizados y/o casteados correctamente.
-//post:	Seteamos los campos del pokemon con lo que fuismo casteando del archivo csv.
+// pre:	Asumimos que el struct pokemon y los demas argumentos pasados fueron
+// inicalizados y/o casteados correctamente. post:	Seteamos los campos del
+// pokemon con lo que fuismo casteando del archivo csv.
 void setear_pokemon(struct pokemon *pokemon, char *nombre, char tipo,
 		    int fuerza, int destreza, int resistencia)
 {
@@ -90,8 +93,9 @@ void setear_pokemon(struct pokemon *pokemon, char *nombre, char tipo,
 	pokemon->resistencia = resistencia;
 }
 
-//pre:	El elemento recebido no deberia ser NULL y deberia estar inicializado, asi se imprimiria correctamente los datos.
-//post:	Imprime todas las estadisticas del elemento que le pasemos.
+// pre:	El elemento recebido no deberia ser NULL y deberia estar inicializado,
+// asi se imprimiria correctamente los datos. post:	Imprime todas las
+// estadisticas del elemento que le pasemos.
 bool imprimir_pokemon(char *clave, void *elemento, void *ctx)
 {
 	struct pokemon *poke = elemento;
@@ -101,8 +105,11 @@ bool imprimir_pokemon(char *clave, void *elemento, void *ctx)
 	return true;
 }
 
-//pre:	Asumimos que le pasamos un tipo de pokemon valido, y que se inicializo correctamente el vector de contador_tipos.
-//post:	Le aumentamos en uno al contador dependiendo del tipo que sea el pokemon, llendo del 0 al 7 ( tipo agua = 0, fuego = 1, planta = 2, roca = 3, electrico = 4, normal = 5, lucha = 6)
+// pre:	Asumimos que le pasamos un tipo de pokemon valido, y que se inicializo
+// correctamente el vector de contador_tipos. post:	Le aumentamos en uno al
+// contador dependiendo del tipo que sea el pokemon, llendo del 0 al 7 ( tipo
+// agua = 0, fuego = 1, planta = 2, roca = 3, electrico = 4, normal = 5, lucha =
+// 6)
 void actualizar_contadores(char tipo, size_t *contador_tipos)
 {
 	switch (tipo) {
@@ -130,15 +137,17 @@ void actualizar_contadores(char tipo, size_t *contador_tipos)
 	}
 }
 
-//pre:	El puntero al struct pokedex, deberia ser valido, ademas de que debe funcionar correctamente la funcion de pokedex_cantidad_pokemones.
-//post:	sacamos la cantidad total de pokemones en la pokedex.
+// pre:	El puntero al struct pokedex, deberia ser valido, ademas de que debe
+// funcionar correctamente la funcion de pokedex_cantidad_pokemones. post:
+// sacamos la cantidad total de pokemones en la pokedex.
 void imprimir_cantidad_total_pokemones(hash_t *hash)
 {
 	printf("Total de pokémones en la Pokédex: %zu\n", hash_cantidad(hash));
 }
 
-//pre:	El vector de contadores debe estar inicializado y deberia haberse aumentado con la funcion de aumentar_contadores.
-//post:	Imprimimos las cantidades de cada tipo de los pokemones en la pokedex.
+// pre:	El vector de contadores debe estar inicializado y deberia haberse
+// aumentado con la funcion de aumentar_contadores. post:	Imprimimos las
+// cantidades de cada tipo de los pokemones en la pokedex.
 void imprimir_cant_tipos_pokemones(size_t *contador_tipos)
 {
 	printf("\nCantidad de Pokemones de cada tipo:\n");
@@ -151,8 +160,9 @@ void imprimir_cant_tipos_pokemones(size_t *contador_tipos)
 	printf("Tipo Lucha: %zu\n", contador_tipos[6]);
 }
 
-//pre:	El puntero a la pokedex y el vector de contador no deberian NULL.
-//post:	Imrpimimos los resultados obtenidos de los contadores. Ayudandonos de la funcion de iterar que venia en el .h.
+// pre:	El puntero a la pokedex y el vector de contador no deberian NULL.
+// post:	Imrpimimos los resultados obtenidos de los contadores. Ayudandonos
+// de la funcion de iterar que venia en el .h.
 void imprimir_resultados(hash_t *pokedex, size_t *contador_tipos)
 {
 	printf("\n");
@@ -165,20 +175,28 @@ void imprimir_resultados(hash_t *pokedex, size_t *contador_tipos)
 	printf("\n");
 }
 
-//post: Imprime una pequeña intro para que el usuario sepa que comandos pasarle y como "reaccionan" al mismo.
+// post: Imprime una pequeña intro para que el usuario sepa que comandos pasarle
+// y como "reaccionan" al mismo.
 void imprimir_inicio_pokedex()
 {
 	printf("\n");
-	printf("Bienvenido Ash, aqui estan todos los pokemones que cargaste, las estadisticas de los mismos y la cantidad que hay de cada tipo.\n");
-	printf("En esta version 1.3 de la pokedex, tienes tres opciones de momento, buscar un pokemon de los que ingresaste, mostrarte todos los pokemones que haya o salir de la pokedex\n");
-	printf("Entonces, si desea buscar un pokemon, debe insertar la palabra 'buscar' o el numero 1, para listar los pokemones que haya en la pokedex con sus estadisticas\n ponga la palabra 'listar' o el numero 2, si quieres salir coloca el numero 0 o la palabra 'salir\n");
+	printf("Bienvenido Ash, aqui estan todos los pokemones que cargaste, las "
+	       "estadisticas de los mismos y la cantidad que hay de cada tipo.\n");
+	printf("En esta version 1.3 de la pokedex, tienes tres opciones de momento, "
+	       "buscar un pokemon de los que ingresaste, mostrarte todos los "
+	       "pokemones que haya o salir de la pokedex\n");
+	printf("Entonces, si desea buscar un pokemon, debe insertar la palabra "
+	       "'buscar' o el numero 1, para listar los pokemones que haya en la "
+	       "pokedex con sus estadisticas\n ponga la palabra 'listar' o el numero "
+	       "2, si quieres salir coloca el numero 0 o la palabra 'salir\n");
 	printf("Presiona 0 o 'salir' para salir de la pokedex\n");
 	printf("Presiona 1 o 'buscar' para buscar un pokemon\n");
 	printf("Presiona 2 o 'listar' para listar la pokedex\n");
 }
 
-//pre:	La entrada deberia ser valida.
-//post:	Si la entrada es listar o un 2, devolvemos la opcion como un 2, si es buscar o 2 devolvemos la opcion como un 2 para luego procesarla.
+// pre:	La entrada deberia ser valida.
+// post:	Si la entrada es listar o un 2, devolvemos la opcion como un 2, si
+// es buscar o 2 devolvemos la opcion como un 2 para luego procesarla.
 int porcesar_entrada(char *entrada, int opcion)
 {
 	if (strcmp(entrada, LISTAR) == 0 || strcmp(entrada, "2") == 0) {
@@ -194,8 +212,10 @@ int porcesar_entrada(char *entrada, int opcion)
 	return opcion;
 }
 
-//pre:	La entrada deberia ser un string valido y no superar los 30 caracteres.
-//post:	Tenemos un while que mientras la entrada no sea la esperada (listar,1,buscar o 2) persiste en que le des una entrada valida. Y retornamos la opcion que el usuario eligio.
+// pre:	La entrada deberia ser un string valido y no superar los 30 caracteres.
+// post:	Tenemos un while que mientras la entrada no sea la esperada
+// (listar,1,buscar o 2) persiste en que le des una entrada valida. Y retornamos
+// la opcion que el usuario eligio.
 int definir_opcion()
 {
 	char entrada[30];
@@ -209,18 +229,29 @@ int definir_opcion()
 	return opcion;
 }
 
-//post:	Imprime un pequeño manual de como usar el buscador de la pokedex para el usuario.
+// post:	Imprime un pequeño manual de como usar el buscador de la pokedex
+// para el usuario.
 void imprimir_manual_busqueda()
 {
-	printf("\nBien has elegido buscar, explicacion breve de lo que deberias entar\n");
-	printf("Ahora tiene que meter el nombre del pokemon a buscar y yo te devuelvo el pokemon y sus estats, como estandar, los nombres empeizan en mayuscula, pero depende de como hayas cargado los pokemones\n");
-	printf("Por ejemplo proba buscando a Pikachu asi como lo escribi, luego proba con el que quieras.\n");
-	printf("Por las dudas no ingreses un nombre con mas de 30 caracteres ya que la pokedex no lo aguanta\n");
+	printf("\nBien has elegido buscar, explicacion breve de lo que deberias "
+	       "entar\n");
+	printf("Ahora tiene que meter el nombre del pokemon a buscar y yo te devuelvo "
+	       "el pokemon y sus estats, como estandar, los nombres empeizan en "
+	       "mayuscula, pero depende de como hayas cargado los pokemones\n");
+	printf("Por ejemplo proba buscando a Pikachu asi como lo escribi, luego "
+	       "proba con el que quieras.\n");
+	printf("Por las dudas no ingreses un nombre con mas de 30 caracteres ya que "
+	       "la pokedex no lo aguanta\n");
 	printf("bien, ahora puedes usar el buscador de pokemones\n");
 }
 
-//pre:	La pokedex debe haberse inicializado con algun pokemon, sino no encontrariamos nunca nada. Ademas el nombre del pokemon no deberia superar los 30 caracteres (igual el nombre mas largo eran 17 caracteres creo) y no leeria nombre de pokemones separados por un espacio
-//post:	Le pedimos un nombre al usuario y nos guardamos el nombre del pokemon en un struct pokemon auxiliar, le pasamos el buscado a la funcion de busar en la lista, si lo encuentra, devuelve el struct sino devuleve null.
+// pre:	La pokedex debe haberse inicializado con algun pokemon, sino no
+// encontrariamos nunca nada. Ademas el nombre del pokemon no deberia superar
+// los 30 caracteres (igual el nombre mas largo eran 17 caracteres creo) y no
+// leeria nombre de pokemones separados por un espacio post:	Le pedimos un
+// nombre al usuario y nos guardamos el nombre del pokemon en un struct pokemon
+// auxiliar, le pasamos el buscado a la funcion de busar en la lista, si lo
+// encuentra, devuelve el struct sino devuleve null.
 struct pokemon *buscar_pokemon_deseado(hash_t *pokedex)
 {
 	char entrada[30];
@@ -238,8 +269,10 @@ struct pokemon *buscar_pokemon_deseado(hash_t *pokedex)
 	}
 }
 
-//pre:	La pokedex debe tener algun pokemon, sino no encontrariamos nunca nada.
-//post:	Imprimimos lo que haya en la pokedex sobre ese pokemon que encontramos(nombre, tipo, stast,etc) pero si no lo encontramos, imprimimos algo para avisarle al usuario que no se encontro.
+// pre:	La pokedex debe tener algun pokemon, sino no encontrariamos nunca nada.
+// post:	Imprimimos lo que haya en la pokedex sobre ese pokemon que
+// encontramos(nombre, tipo, stast,etc) pero si no lo encontramos, imprimimos
+// algo para avisarle al usuario que no se encontro.
 void procesar_pokemon_buscado(hash_t *pokedex, void *ctx)
 {
 	struct pokemon *resultado = buscar_pokemon_deseado(pokedex);
@@ -251,9 +284,12 @@ void procesar_pokemon_buscado(hash_t *pokedex, void *ctx)
 	}
 }
 
-//pre:	La pokedex, el contador y el ctx deben ser validos.
-//post:	Segun la entrada del usuario, definimso que hacemos, si es 1, llamamos a las funciones que se encarguen de buscar al pokemon, si la opcion fue 1,
-// imprimimos los resultados que obtuvimos de porcesar el archivo y si la opcion fue 0, salimos de la pokedex
+// pre:	La pokedex, el contador y el ctx deben ser validos.
+// post:	Segun la entrada del usuario, definimso que hacemos, si es 1,
+// llamamos a las funciones que se encarguen de buscar al pokemon, si la opcion
+// fue 1,
+//  imprimimos los resultados que obtuvimos de porcesar el archivo y si la
+//  opcion fue 0, salimos de la pokedex
 void ejecutar_opciones(hash_t *pokedex, size_t *contador_tipos, void *ctx)
 {
 	int opcion = definir_opcion();
@@ -269,8 +305,10 @@ void ejecutar_opciones(hash_t *pokedex, size_t *contador_tipos, void *ctx)
 	}
 }
 
-//pre:	El elemento debe ser valido.
-//post:	Si el pokemon o elemento no son NULL, y si el nombre del mismo no fuera NULL, libera primero el espacio pedio para el nombre del pokemon, y luego liberamos al epsacio pedido para almacenar al pokemon/elemento.
+// pre:	El elemento debe ser valido.
+// post:	Si el pokemon o elemento no son NULL, y si el nombre del mismo no
+// fuera NULL, libera primero el espacio pedio para el nombre del pokemon, y
+// luego liberamos al epsacio pedido para almacenar al pokemon/elemento.
 void liberar_pokemon(void *elemento)
 {
 	struct pokemon *pokemon = elemento;
@@ -306,7 +344,9 @@ int main(int argc, const char *argv[])
 			       destreza, resistencia);
 		if (!hash_insertar(pokedex, nuevo_pokemon->nombre,
 				   nuevo_pokemon, NULL)) {
-			printf("\nError al agregar al Pokémon %s a la Pokédex, es posible que hayas metido un nombre vacio, un tipo invalido o una estadistica negativa.\n ",
+			printf("\nError al agregar al Pokémon %s a la Pokédex, es posible que "
+			       "hayas metido un nombre vacio, un tipo invalido o una estadistica "
+			       "negativa.\n ",
 			       nuevo_pokemon->nombre);
 		} else {
 			actualizar_contadores(nuevo_pokemon->tipo,
