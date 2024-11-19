@@ -2,6 +2,7 @@ VALGRIND_FLAGS=--leak-check=full --track-origins=yes --show-reachable=yes --erro
 CFLAGS =-std=c99 -Wall -Wconversion -Wtype-limits -pedantic -Werror -O2 -g
 ENGINECFLAGS =-Wall -Werror -O2 -g
 CC = gcc
+CLANG_FORMAT = clang-format
 
 all: clean valgrind-alumno valgrind-tp2
 
@@ -22,6 +23,18 @@ tp2: engine
 
 clean:
 	rm -f pruebas_alumno tp2 engine.o
+	
+formatear-pruebas:
+	$(CLANG_FORMAT) -i -style=file pruebas_alumno.c
+	
+formatear-menu:
+	$(CLANG_FORMAT) -i -style=file src/menu.c
+	
+formatear-pokedex:
+	$(CLANG_FORMAT) -i -style=file src/pokedex.c
+
+formatear-todo:
+	$(CLANG_FORMAT) -i -style=file src/menu.c && $(CLANG_FORMAT) -i -style=file src/menu.c && $(CLANG_FORMAT) -i -style=file src/pokedex.c
 	
 correr-pruebas:
 	$(CC) $(CFLAGS) src/*.c pruebas_alumno.c -o pruebas_alumno && valgrind $(VALGRIND_FLAGS) ./pruebas_alumno
