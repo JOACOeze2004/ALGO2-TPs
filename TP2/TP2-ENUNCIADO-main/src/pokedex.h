@@ -6,10 +6,15 @@
 #include <stdio.h>
 #include <string.h>
 
-
-
 typedef struct pokedex pokedex_t;
 
+struct pokemon {
+	char *nombre;
+	int puntaje;
+	char *color;
+	char *patron_movimientos;
+	//char primer_letra;
+};
 
 typedef struct pokemon pokemon_t;
 

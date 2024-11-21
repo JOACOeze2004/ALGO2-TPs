@@ -2,20 +2,10 @@
 #include "abb.h"
 #include "csv.h"
 
-
 struct pokedex {
 	abb_t *almacen;
 	size_t cant_pokemones;
 };
-
-struct pokemon {
-	char *nombre;
-	int puntaje;
-	char *color;
-	char *patron_movimientos;
-	//char primer_letra;
-};
-
 
 bool castear_a_int(const char *str, void *ctx)
 {
@@ -187,8 +177,6 @@ bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *nombre_a
 		if (!pokedex_agregar_pokemon(pokedex,nuevo_pokemon)) {
 			return false;
 		}
-		printf("Nombre: %s, puntaje: %i, color: %s, patron: %s\n",
-	       nuevo_pokemon->nombre, nuevo_pokemon->puntaje, nuevo_pokemon->color, nuevo_pokemon->patron_movimientos);
 		free(nombre_pokemon);
 		free(color);
         free(patron_movimientos);
@@ -199,7 +187,7 @@ bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *nombre_a
 
 //pre:
 //post:
-void destruir_con_destructor(pokedex_t *pokedex, void (*destructor)(void *))
+void destruir_pokedex_con_destructor(pokedex_t *pokedex, void (*destructor)(void *))
 {
 	if (pokedex) {
 		abb_destruir_todo(pokedex->almacen, destructor);
@@ -211,7 +199,7 @@ void destruir_con_destructor(pokedex_t *pokedex, void (*destructor)(void *))
 void pokedex_destruir(pokedex_t *pokedex)
 {
 	if(pokedex){
-		destruir_con_destructor(pokedex, NULL);	
+		destruir_pokedex_con_destructor(pokedex, NULL);	
 	}	 	
 }
 
@@ -219,6 +207,6 @@ void pokedex_destruir_todo(pokedex_t *pokedex, void (*destructor)(void *))
 {
 	if (pokedex)
 	{
-		destruir_con_destructor(pokedex, destructor);
+		destruir_pokedex_con_destructor(pokedex, destructor);
 	}
 }

@@ -11,6 +11,41 @@ struct jugador {
 	int iteraciones;
 };
 
+void liberar_pokemon(void *elemento)
+{
+	struct pokemon *pokemon = elemento;
+	if (pokemon != NULL) {
+		free(pokemon->nombre);
+		free(pokemon->color);
+		free(pokemon->patron_movimientos);
+		free(pokemon);
+	}
+}
+
+bool imprimir_pokemon(void *elemento, void *ctx)
+{
+	struct pokemon *poke = elemento;
+	printf("Nombre: %s, puntaje: %i, color: %s\n",
+	       poke->nombre, poke->puntaje, poke->color);
+	return true;
+}
+
+int comparador(void *a, void *b)
+{
+	if (a == NULL && b == NULL) {
+		return 0;
+	}
+	if (a == NULL) {
+		return -1;
+	}
+	if (b == NULL) {
+		return 1;
+	}
+	struct pokemon *poke_a = (struct pokemon *)a;
+	struct pokemon *poke_b = (struct pokemon *)b;
+	return strcmp(poke_a->nombre, poke_b->nombre);
+}
+
 int max(int a, int b)
 {
 	return a > b ? a : b;
@@ -48,6 +83,10 @@ int logica(int entrada, void *datos)
 
 	printf("Iteraciones: %d Tiempo: %d\n", jugador->iteraciones,
 	       jugador->iteraciones / 5);
+
+	if (jugador->iteraciones/5 == 60){
+		entrada = 'q';
+	}	
 
 	for (int i = 0; i < jugador->y; i++)
 		printf("\n");
@@ -101,20 +140,20 @@ void imprimir_inicio()
 	printf(ANSI_COLOR_YELLOW"Una vez sabida esta informacion, ya puedes empezar a jugar, suerte!\n"ANSI_COLOR_RESET);
 	
 	printf(ANSI_COLOR_RED"====================================================\n"); 
-	printf(ANSI_COLOR_CYAN"| [J]: Empezar Juego\n"ANSI_COLOR_RESET);
-	printf(ANSI_COLOR_CYAN"| [S]: Empezar Juego usando una semilla que eligas\n"ANSI_COLOR_RESET);
-	printf(ANSI_COLOR_CYAN"| [P]: Mostrar todos los pokemones en la pokedex\n"ANSI_COLOR_RESET);
-	printf(ANSI_COLOR_CYAN"| [Q]: Salir del juego\n"ANSI_COLOR_RESET);
+	printf("|" ANSI_COLOR_CYAN"[J]: Empezar Juego\n"ANSI_COLOR_RESET);
+	printf(ANSI_COLOR_RED"|" ANSI_COLOR_CYAN"[S]: Empezar Juego usando una semilla que eligas\n"ANSI_COLOR_RESET);
+	printf(ANSI_COLOR_RED"|" ANSI_COLOR_CYAN"[P]: Mostrar todos los pokemones en la pokedex\n"ANSI_COLOR_RESET);
+	printf(ANSI_COLOR_RED"|" ANSI_COLOR_CYAN"[Q]: Salir del juego\n"ANSI_COLOR_RESET);
 	printf(ANSI_COLOR_RED"===================================================\n"ANSI_COLOR_RESET);
 }
 
 
 int main()
 {
-	imprimir_inicio();
-
+	imprimir_inicio();	
 
 	menu_t *menu = menu_crear();
+	pokedex_t *pokedex = pokedex_crear(comparador);
 	menu_agregar_opciones(menu,'P',mostrar_pokedex);
 	menu_agregar_opciones(menu,'p',mostrar_pokedex);
 
@@ -126,6 +165,10 @@ int main()
 
 	menu_agregar_opciones(menu,'Q',cerrar_juego);
 	menu_agregar_opciones(menu,'q',cerrar_juego);
+
+	if(!pokedex_cargar_pokemones_desde_csv(pokedex,"datos/pokedex.csv",',',4)){
+		return -1;
+	}	
 
 	char entrada;
 	int opcion = -1;
@@ -139,15 +182,15 @@ int main()
             }
 		}
 	}	
-
+	pokedex_mostrar_ordenados(pokedex,imprimir_pokemon,	NULL);
 
 	//struct jugador jugador = { 0 };
 
 	//game_loop(logica, &jugador);
 
-	//mostrar_cursor();
+	mostrar_cursor();
 
-
+	pokedex_destruir_todo(pokedex,liberar_pokemon);
 	menu_destruir(menu);
 	return 0;
 }

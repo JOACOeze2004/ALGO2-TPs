@@ -4,25 +4,9 @@
 #include <string.h>
 #include <time.h>
 
-struct pokemon {
-	char *nombre;
-	char tipo;
-	int fuerza;
-	int destreza;
-	int resistencia;
-};
-
-struct pokemon2 {
-	char *nombre;
-	int puntaje;
-	char *color;
-	char *patron_movimientos;
-	//char primer_letra;
-};
-
 void liberar_pokemon(void *elemento)
 {
-	struct pokemon2 *pokemon = elemento;
+	struct pokemon *pokemon = elemento;
 	if (pokemon != NULL) {
 		free(pokemon->nombre);
 		free(pokemon->color);
@@ -58,9 +42,8 @@ int comparador(void *a, void *b)
 bool imprimir_pokemon(void *elemento, void *ctx)
 {
 	struct pokemon *poke = elemento;
-	printf("Nombre: %s, Tipo: %c, Fuerza: %d, Destreza: %d, Resistencia: %d\n",
-	       poke->nombre, poke->tipo, poke->fuerza, poke->destreza,
-	       poke->resistencia);
+	printf("Nombre: %s, puntaje: %i, color: %s, patron: %s\n",
+	       poke->nombre, poke->puntaje, poke->color, poke->patron_movimientos);
 	return true;
 }
 
@@ -240,7 +223,7 @@ void CrearPokedexConComparadorNULLDevueleNULL(){
 // Pruebas de insertar
 void InsertarEnPokedexUnPokemonValidoDevuelveTrue(){
 	pokedex_t *pokedex = pokedex_crear(comparador);
-	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon pikachu = { "Pikachu", 15, "AMARILLO", "I" };
 
 	pa2m_afirmar(pokedex_agregar_pokemon(pokedex,&pikachu),"Se Pudo Agregar Correctamente a Pikachu");
 	pa2m_afirmar(pokedex_cantidad_pokemones(pokedex) == 1,"La cantidad de pokemones en la pokedex es 1 luego de agregar 1 pokemon");
@@ -259,11 +242,11 @@ void InsertarEnPokedexUnPokemonNULLDevuelveFalse(){
 
 void InsertarEnPokedexVAriosPokemonesDevuelveTrue(){
 	pokedex_t *pokedex = pokedex_crear(comparador);
-	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
-	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
-	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
-	struct pokemon blastoise = { "Blastoise", 'A', 97, 167, 220 };
-	struct pokemon mewtwo = { "Mewtwo", 'A', 97, 167, 220 };
+	struct pokemon pikachu = { "Pikachu", 15, "AMARILLO", "I" };
+	struct pokemon charizard = { "Charizard", 50, "ROJO", "JIN" };
+	struct pokemon venusaur = { "Venusaur", 40, "VERDE","JJIIN"};
+	struct pokemon blastoise = { "Blastoise", 45, "AZUL" , "RJINR"};
+	struct pokemon mewtwo = { "Mewtwo", 100, "MAGENTA","RRRRRRIIR" };
 
 	pokedex_agregar_pokemon(pokedex,&pikachu);
 	pokedex_agregar_pokemon(pokedex,&charizard);
@@ -277,7 +260,7 @@ void InsertarEnPokedexVAriosPokemonesDevuelveTrue(){
 
 void InsertarVariasVecesAlMismoPokemonDevuelveTrue(){
 	pokedex_t *pokedex = pokedex_crear(comparador);
-	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon pikachu = { "Pikachu", 15, "AMARILLO", "I" };
 	for (size_t i = 0; i < 5; i++){
 		pa2m_afirmar(pokedex_agregar_pokemon(pokedex,&pikachu),"Pudismo agregar a pikachu a la pokedex (metidos:%zu)",i);
 	}
@@ -297,16 +280,14 @@ void InsertarVariosPokemonesNULLDevuelvefalse(){
 // Pruebas de eliminar
 void InsertarUnPokemonValidoYEliminarloDevuelveTrue(){
 	pokedex_t *pokedex = pokedex_crear(comparador);
-	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon pikachu = { "Pikachu", 15, "AMARILLO", "I" };
 
 	pokedex_agregar_pokemon(pokedex,&pikachu);
 
 	struct pokemon *eliminado = NULL;
 	pa2m_afirmar(pokedex_eliminar_pokemon(pokedex,&pikachu,(void *)&eliminado),"Se Pudo eliminar Correctamente a Pikachu");
 	pa2m_afirmar(strcmp(eliminado->nombre, pikachu.nombre) == 0,"El elemento eliminado tiene el mismo nombre que pikachu (porque es pikachu)");
-	pa2m_afirmar(eliminado->fuerza == pikachu.fuerza,"El elemento eliminado tiene la misma fuerza que pikachu (porque es pikachu)");
-	pa2m_afirmar(eliminado->destreza == pikachu.destreza,"El elemento eliminado tiene la misma destreza que pikachu (porque es pikachu)");
-	pa2m_afirmar(eliminado->resistencia == pikachu.resistencia,"El elemento eliminado tiene la misma resistencia que pikachu (porque es pikachu)");
+	pa2m_afirmar(eliminado->puntaje == pikachu.puntaje,"El elemento eliminado tiene la misma puntaje que pikachu (porque es pikachu)");
 
 	pa2m_afirmar(pokedex_cantidad_pokemones(pokedex) == 0,"La cantidad de pokemones en la pokedex es 0 luego de eliminar 1 pokemon");
 
@@ -315,7 +296,7 @@ void InsertarUnPokemonValidoYEliminarloDevuelveTrue(){
 
 void EliminarPokemonConEliminadoNULLDevuelveFalse(){
 	pokedex_t *pokedex = pokedex_crear(comparador);
-	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon pikachu = { "Pikachu", 15, "AMARILLO", "I" };
 
 	struct pokemon *eliminado = NULL;
 	pa2m_afirmar(!pokedex_eliminar_pokemon(pokedex,&pikachu,NULL),"No se Pudo eliminar a un pokemon con encontrado NULL");
@@ -337,8 +318,8 @@ void EliminarPokemonNULLDevuelveFalse(){
 
 void EliminarPokemonInexistenteDevuelveFalse(){
 	pokedex_t *pokedex = pokedex_crear(comparador);
-	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
-	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon pikachu = { "Pikachu", 15, "AMARILLO", "I" };
+	struct pokemon charizard = { "Charizard", 50, "ROJO", "JIN" };
 
 	pokedex_agregar_pokemon(pokedex,&pikachu);
 
@@ -353,11 +334,11 @@ void EliminarPokemonInexistenteDevuelveFalse(){
 
 void InsertarVariosPokemonYLosEliminoloDevuelveTrue(){
 	pokedex_t *pokedex = pokedex_crear(comparador);
-	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
-	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
-	struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
-	struct pokemon blastoise = { "Blastoise", 'A', 97, 167, 220 };
-	struct pokemon mewtwo = { "Mewtwo", 'A', 97, 167, 220 };
+	struct pokemon pikachu = { "Pikachu", 15, "AMARILLO", "I" };
+	struct pokemon charizard = { "Charizard", 50, "ROJO", "JIN" };
+	struct pokemon venusaur = { "Venusaur", 40, "VERDE","JJIIN"};
+	struct pokemon blastoise = { "Blastoise", 45, "AZUL" , "RJINR"};
+	struct pokemon mewtwo = { "Mewtwo", 100, "MAGENTA","RRRRRRIIR" };
 
 	pokedex_agregar_pokemon(pokedex,&pikachu);
 	pokedex_agregar_pokemon(pokedex,&charizard);
@@ -373,9 +354,7 @@ void InsertarVariosPokemonYLosEliminoloDevuelveTrue(){
 	pa2m_afirmar(pokedex_eliminar_pokemon(pokedex,&mewtwo,(void *)&eliminado),"Se Pudo eliminar Correctamente a mewtwo");
 
 	pa2m_afirmar(strcmp(eliminado->nombre, mewtwo.nombre) == 0,"El elemento eliminado tiene el mismo nombre que mewtwo (porque es mewtwo que fue el ultimo en ser eliminado)");
-	pa2m_afirmar(eliminado->fuerza == mewtwo.fuerza,"El elemento eliminado tiene la misma fuerza que mewtwo (porque es mewtwo ultimo en ser eliminado)");
-	pa2m_afirmar(eliminado->destreza == mewtwo.destreza,"El elemento eliminado tiene la misma destreza que mewtwo (porque es mewtwo ultimo en ser eliminado)");
-	pa2m_afirmar(eliminado->resistencia == mewtwo.resistencia,"El elemento eliminado tiene la misma resistencia que mewtwo (porque es mewtwo ultimo en ser eliminado)");
+	pa2m_afirmar(eliminado->puntaje == mewtwo.puntaje,"El elemento eliminado tiene la misma puntaje que mewtwo (porque es mewtwo ultimo en ser eliminado)");
 
 	pa2m_afirmar(pokedex_cantidad_pokemones(pokedex) == 0,"La cantidad de pokemones en la pokedex es 0 luego de eliminar 5 pokemon");
 
@@ -386,24 +365,23 @@ void InsertarVariosPokemonYLosEliminoloDevuelveTrue(){
 // Pruebas de Buscar
 void BuscarUnPokemonValidoDevuelveAlPokemon(){
 	pokedex_t *pokedex = pokedex_crear(comparador);
-	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon pikachu = { "Pikachu", 15, "AMARILLO", "I" };
 
 	pokedex_agregar_pokemon(pokedex,&pikachu);
 
 	struct pokemon *elemento_guardado = &pikachu;
 
 	pa2m_afirmar(pokedex_buscar_pokemon(pokedex,elemento_guardado) != NULL,"Se Pudo encontrar Correctamente a Pikachu");
-	pa2m_afirmar(elemento_guardado->fuerza == pikachu.fuerza,"La fuerza del encontrado es la misma que la de pikachu");
-	pa2m_afirmar(elemento_guardado->destreza == pikachu.destreza,"La destreza del encontrado es la misma que la de pikachu");
-	pa2m_afirmar(elemento_guardado->resistencia == pikachu.resistencia,"La resistencia del encontrado es la misma que la de pikachu");
+	pa2m_afirmar(strcmp(elemento_guardado->nombre, pikachu.nombre) == 0,"El nombre del encontrado es el misma que la de pikachu");
+	pa2m_afirmar(elemento_guardado->puntaje == pikachu.puntaje,"La puntaje del encontrado es el misma que la de pikachu");
 
 	pokedex_destruir(pokedex);
 }
 
 void BuscarUnPokemoninexistenteDevuelveNULL(){
 	pokedex_t *pokedex = pokedex_crear(comparador);
-	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
-	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
+	struct pokemon pikachu = { "Pikachu", 15, "AMARILLO", "I" };
+	struct pokemon charizard = { "Charizard", 50, "ROJO", "JIN" };
 
 
 	pokedex_agregar_pokemon(pokedex,&pikachu);
@@ -417,7 +395,7 @@ void BuscarUnPokemoninexistenteDevuelveNULL(){
 
 void BuscarUnPokemonEliminadoDevuelveNULL(){
 	pokedex_t *pokedex = pokedex_crear(comparador);
-	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
+	struct pokemon pikachu = { "Pikachu", 15, "AMARILLO", "I" };
 
 	pokedex_agregar_pokemon(pokedex,&pikachu);
 
@@ -434,9 +412,9 @@ void BuscarUnPokemonEliminadoDevuelveNULL(){
 void MostrarPokemonesOrdenadosImprimeEnOrden() {
     pokedex_t *pokedex = pokedex_crear(comparador);
 
-    struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
-    struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
-    struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+    struct pokemon pikachu = { "Pikachu", 15, "AMARILLO", "I" };
+    struct pokemon charizard = { "Charizard", 50, "ROJO", "JIN" };
+    struct pokemon venusaur = { "Venusaur", 40, "VERDE","JJIIN"};
 
     pokedex_agregar_pokemon(pokedex, &pikachu);
     pokedex_agregar_pokemon(pokedex, &charizard);
@@ -450,16 +428,16 @@ void MostrarPokemonesOrdenadosImprimeEnOrden() {
 void MostrarPokemonesOrdenadosSegunEjemploImprimeEnOrden() {
     pokedex_t *pokedex = pokedex_crear(comparador);
 
-    struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
-    struct pokemon charmander = { "Charmander", 'F', 60, 47, 23 };
-    struct pokemon lapras = { "Lapras", 'P', 10, 14, 30 };
-    struct pokemon mew = { "Mew", 'A', 100, 147, 300 };
-    struct pokemon lotad = { "Lotad", 'L', 21, 40, 37 };
-    struct pokemon magikarp = { "Magikarp", 'A', 1, 1, 3 };
-    struct pokemon cacnea = { "Cacnea", 'P', 11, 23, 27 };
-    struct pokemon pachirisu = { "Pachirisu", 'L', 40, 21, 38 };
-    struct pokemon gengar = { "Gengar", 'E', 47, 20, 18 };
-    struct pokemon galvantula = { "Galvantula", 'F', 17, 29, 52 };
+    struct pokemon pikachu = { "Pikachu", 15, "AMARILLO", "I" };
+    struct pokemon charmander = { "Charmander", 10, "ROJO","J" };
+    struct pokemon lapras = { "Lapras", 15, "AZUL","NRORSRER" };
+    struct pokemon mew = { "Mew", 27, "MAGENTA","R" };
+    struct pokemon lotad = { "Lotad", 5,"VERDE","NNEENESSESONOSO" };
+    struct pokemon magikarp = { "Magikarp", 5,"ROJO", "EEEROOOR"};
+    struct pokemon cacnea = { "Cacnea", 12, "VERDE","NNNRSSSR" };
+    struct pokemon pachirisu = { "Pachirisu",7,"AZUL","JRRI" };
+    struct pokemon gengar = { "Gengar", 22,"MAGENTA","RJRI" };
+    struct pokemon galvantula = { "Galvantula", 20,"AMARILLO","IJJRIR" };
 
     pokedex_agregar_pokemon(pokedex, &pikachu);
     pokedex_agregar_pokemon(pokedex, &charmander);
@@ -481,9 +459,9 @@ void MostrarPokemonesOrdenadosSegunEjemploImprimeEnOrden() {
 void ObtenerUnPokemonRandomDevuelvePokemonRandom() {
     pokedex_t *pokedex = pokedex_crear(comparador);
 
-    struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
-    struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
-    struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+    struct pokemon pikachu = { "Pikachu", 15, "AMARILLO", "I" };
+    struct pokemon charizard = { "Charizard", 50, "ROJO", "JIN" };
+    struct pokemon venusaur = { "Venusaur", 40, "VERDE","JJIIN"};
 
     pokedex_agregar_pokemon(pokedex, &pikachu);
     pokedex_agregar_pokemon(pokedex, &charizard);
@@ -498,9 +476,9 @@ void ObtenerUnPokemonRandomDevuelvePokemonRandom() {
 void ObtenerPokemonRandomYEliminoUnPokemonMeDevuelvenDistintosPokemones() {
     pokedex_t *pokedex = pokedex_crear(comparador);
 
-    struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
-    struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
-    struct pokemon venusaur = { "Venusaur", 'P', 89, 109, 301 };
+    struct pokemon pikachu = { "Pikachu", 15, "AMARILLO", "I" };
+    struct pokemon charizard = { "Charizard", 50, "ROJO", "JIN" };
+    struct pokemon venusaur = { "Venusaur", 40, "VERDE","JJIIN"};
 
     pokedex_agregar_pokemon(pokedex, &pikachu);
     pokedex_agregar_pokemon(pokedex, &charizard);
@@ -512,6 +490,10 @@ void ObtenerPokemonRandomYEliminoUnPokemonMeDevuelvenDistintosPokemones() {
     pa2m_afirmar(pokemon_aleatorio != NULL,
                  "El Pokemon es distinto de NULL");
 	printf("el nombre del pokemon aleatorio es:%s\n",pokemon_aleatorio->nombre);
+	printf("el puntaje del pokemon aleatorio es:%i\n",pokemon_aleatorio->puntaje);
+	printf("el color del pokemon aleatorio es:%s\n",pokemon_aleatorio->color);
+	printf("el patron del pokemon aleatorio es:%s\n",pokemon_aleatorio->patron_movimientos);
+
 	pa2m_afirmar(pokedex_eliminar_pokemon(pokedex,&venusaur,(void*)&eliminado),"Eliminamos a venusaur");
 	pa2m_afirmar(pokemon_aleatorio != NULL,
                  "El Pokemon random nuevo es distinto de NULL");
@@ -524,6 +506,15 @@ void ObtenerPokemonRandomYEliminoUnPokemonMeDevuelvenDistintosPokemones() {
 void LeerCSVDevuelveTrue() {
     pokedex_t *pokedex = pokedex_crear(comparador);
 	pa2m_afirmar(pokedex_cargar_pokemones_desde_csv(pokedex,"datos/pokedex.csv",',',4),"funciona xd");
+
+		struct pokemon *pokemon_aleatorio = pokedex_devolver_pokemon_aleatorio(pokedex);
+    pa2m_afirmar(pokemon_aleatorio != NULL,
+                 "El Pokemon es distinto de NULL");
+	printf("el nombre del pokemon aleatorio es:%s\n",pokemon_aleatorio->nombre);
+	printf("el puntaje del pokemon aleatorio es:%i\n",pokemon_aleatorio->puntaje);
+	printf("el color del pokemon aleatorio es:%s\n",pokemon_aleatorio->color);
+	printf("el patron del pokemon aleatorio es:%s\n",pokemon_aleatorio->patron_movimientos);
+
     pokedex_destruir_todo(pokedex,liberar_pokemon);
 }
 
@@ -584,7 +575,6 @@ int main()
 	pa2m_nuevo_grupo("Pruebas de obtener pokemon random (TDA Pokedex)");
 	ObtenerUnPokemonRandomDevuelvePokemonRandom();
 	ObtenerPokemonRandomYEliminoUnPokemonMeDevuelvenDistintosPokemones();
-
 
 	return pa2m_mostrar_reporte();
 }
