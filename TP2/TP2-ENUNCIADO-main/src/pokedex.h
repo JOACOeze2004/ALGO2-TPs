@@ -4,9 +4,12 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
+
 
 
 typedef struct pokedex pokedex_t;
+
 
 typedef struct pokemon pokemon_t;
 
@@ -67,14 +70,23 @@ bool pokedex_mostrar_ordenados(pokedex_t *pokedex,bool(*f)(void*, void*),void* c
 
 /*
 *   
+*
+*   Devuelve un pokemon aleatorio. Siempre que pokedex no sea NULL.
+*   
+*
+*/
+pokemon_t *pokedex_devolver_pokemon_aleatorio(pokedex_t *pokedex);
+
+
+/*
+*   
 *   Devuelve True si pudo aplicarle la funcion f a los elementos dentro de la pokedex.
 *
 *   Caso contrario de que sea false la funcion, devuelve false. 
 *
-*   Recomendacion: usar para el menu al pedir los pokemones leidos del csv en orden alfabetico.
 *
 */
-pokemon_t *pokedex_devolver_pokemon_aleatorio(pokedex_t *pokedex);
+bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex,const char *nombre_archivo, char separador, size_t columnas);
 
 
 #endif /* POKEDEX */

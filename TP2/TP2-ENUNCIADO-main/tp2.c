@@ -5,7 +5,6 @@
 #include "src/pokedex.h"
 
 
-
 struct jugador {
 	int x;
 	int y;

@@ -12,6 +12,25 @@ struct pokemon {
 	int resistencia;
 };
 
+struct pokemon2 {
+	char *nombre;
+	int puntaje;
+	char *color;
+	char *patron_movimientos;
+	//char primer_letra;
+};
+
+void liberar_pokemon(void *elemento)
+{
+	struct pokemon2 *pokemon = elemento;
+	if (pokemon != NULL) {
+		free(pokemon->nombre);
+		free(pokemon->color);
+		free(pokemon->patron_movimientos);
+		free(pokemon);
+	}
+}
+
 void funcion_random() {
     printf("Hola Mundo, probamos funcion random\n"); 
 }
@@ -500,10 +519,18 @@ void ObtenerPokemonRandomYEliminoUnPokemonMeDevuelvenDistintosPokemones() {
 	printf("el nombre del pokemon aleatorio es:%s\n",pokemon_aleatorio->nombre);
     pokedex_destruir(pokedex);
 }
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Pruebas de lectura del csv en pokedex
+void LeerCSVDevuelveTrue() {
+    pokedex_t *pokedex = pokedex_crear(comparador);
+	pa2m_afirmar(pokedex_cargar_pokemones_desde_csv(pokedex,"datos/pokedex.csv",',',4),"funciona xd");
+    pokedex_destruir_todo(pokedex,liberar_pokemon);
+}
+
 
 int main()
 {
-	srand ((unsigned)time(NULL));
+	srand ((unsigned int)time(NULL));	//en time iria la semilla, es decir en vez de time(null) pones semilla qsy
 	pa2m_nuevo_grupo("Pruebas de TDA Menu");
 	pa2m_nuevo_grupo("Pruebas de Crear (TDA Menu)");
 	CrearMenuDevuelveMenu();
@@ -557,6 +584,7 @@ int main()
 	pa2m_nuevo_grupo("Pruebas de obtener pokemon random (TDA Pokedex)");
 	ObtenerUnPokemonRandomDevuelvePokemonRandom();
 	ObtenerPokemonRandomYEliminoUnPokemonMeDevuelvenDistintosPokemones();
+
 
 	return pa2m_mostrar_reporte();
 }
