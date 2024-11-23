@@ -38,3 +38,6 @@ formatear-todo:
 	
 correr-pruebas:
 	$(CC) $(CFLAGS) src/*.c pruebas_alumno.c -o pruebas_alumno && valgrind $(VALGRIND_FLAGS) ./pruebas_alumno
+	
+correr-tp:
+	$(CC) $(ENGINECFLAGS) -c extra/engine.c -o engine.o && $(CC) $(CFLAGS) src/*.c tp2.c engine.o -o tp2 && valgrind $(VALGRIND_FLAGS) ./tp2 datos/pokedex.csv

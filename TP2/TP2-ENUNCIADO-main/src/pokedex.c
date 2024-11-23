@@ -158,11 +158,14 @@ void setear_pokemon(pokemon_t *pokemon, char *nombre, int puntaje,
 }
 
 
-bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *nombre_archivo, char separador, size_t columnas){
-	if (!pokedex || !nombre_archivo){
+bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *argv[], char separador, size_t columnas){
+	if (!pokedex || !argv){
 		return false;
 	}
-	struct archivo_csv *archivo = abrir_archivo_csv(nombre_archivo, separador);
+	struct archivo_csv *archivo = abrir_archivo_csv(argv[1], separador);
+	if (!archivo){
+		return false;
+	}	
 	char *nombre_pokemon = NULL;
 	int puntaje;
 	char *color = NULL;
@@ -173,14 +176,20 @@ bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *nombre_a
 	void *ctx[] = { &nombre_pokemon, &puntaje, &color, &patron_movimientos };
 	while (leer_linea_csv(archivo, columnas, funciones, ctx) == columnas) {
 		struct pokemon *nuevo_pokemon = malloc(sizeof(pokemon_t));
+		if (!nuevo_pokemon){
+			cerrar_archivo_csv(archivo);
+			return false;	
+		}		
 		setear_pokemon(nuevo_pokemon, nombre_pokemon, puntaje,color, patron_movimientos);
 		if (!pokedex_agregar_pokemon(pokedex,nuevo_pokemon)) {
+			cerrar_archivo_csv(archivo);
+            free(nuevo_pokemon);
 			return false;
 		}
 		free(nombre_pokemon);
 		free(color);
         free(patron_movimientos);
-	}
+	}	
 	cerrar_archivo_csv(archivo);
 	return true;
 }

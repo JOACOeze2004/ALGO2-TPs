@@ -4,12 +4,31 @@
 #include "src/menu.h"
 #include "src/pokedex.h"
 
-
-struct jugador {
+typedef struct coordenadas
+{
 	int x;
 	int y;
+} coordenadas_t;
+
+
+struct jugador {
+	coordenadas_t posicion;
 	int iteraciones;
 };
+
+
+// pre: Asumimos que los argumentos que le pasamos son validos (o sea le pasamos
+// un archivo .csv y el ejecutable). post: Devuelve false en caso de que le
+// pasemos menos de dos arguemntos, sino devolvemos true.
+bool son_argumentos_validos(int argc, const char *argv[])
+{
+	if (argc < 2) {
+		printf("Error, el archivo %s<archivo> No existe, paseme uno que sea valido",
+		       argv[0]);
+		return false;
+	}
+	return true;
+}
 
 void liberar_pokemon(void *elemento)
 {
@@ -60,18 +79,18 @@ int logica(int entrada, void *datos)
 {
 	struct jugador *jugador = datos;
 	borrar_pantalla();
-
+	
 	if (entrada == TECLA_DERECHA)
-		jugador->x++;
+		jugador->posicion.x++;
 	else if (entrada == TECLA_IZQUIERDA)
-		jugador->x--;
+		jugador->posicion.x--;
 	else if (entrada == TECLA_ARRIBA)
-		jugador->y--;
+		jugador->posicion.y--;
 	else if (entrada == TECLA_ABAJO)
-		jugador->y++;
+		jugador->posicion.y++;
 
-	jugador->x = min(20, max(0, jugador->x));
-	jugador->y = min(10, max(0, jugador->y));
+	jugador->posicion.x = min(20, max(0, jugador->posicion.x));
+	jugador->posicion.y = min(10, max(0, jugador->posicion.y));
 
 	jugador->iteraciones++;
 
@@ -88,10 +107,10 @@ int logica(int entrada, void *datos)
 		entrada = 'q';
 	}	
 
-	for (int i = 0; i < jugador->y; i++)
+	for (int i = 0; i < jugador->posicion.y; i++)
 		printf("\n");
 
-	for (int i = 0; i < jugador->x; i++)
+	for (int i = 0; i < jugador->posicion.x; i++)
 		printf(" ");
 
 	printf(ANSI_COLOR_MAGENTA ANSI_COLOR_BOLD "Ω" ANSI_COLOR_RESET);
@@ -112,7 +131,7 @@ void avanzar_juego(){
 }
 
 void elegir_semilla(){
-	printf("deberias ingresar una semilla... \n");
+	printf("Ahora deberias ingresar una semilla... \n");
 }
 
 void cerrar_juego(){
@@ -148,10 +167,12 @@ void imprimir_inicio()
 }
 
 
-int main()
+int main(int argc, const char *argv[])
 {
+	if (!son_argumentos_validos(argc, argv)) {
+		return -1;
+	}
 	imprimir_inicio();	
-
 	menu_t *menu = menu_crear();
 	pokedex_t *pokedex = pokedex_crear(comparador);
 	menu_agregar_opciones(menu,'P',mostrar_pokedex);
@@ -166,27 +187,41 @@ int main()
 	menu_agregar_opciones(menu,'Q',cerrar_juego);
 	menu_agregar_opciones(menu,'q',cerrar_juego);
 
-	if(!pokedex_cargar_pokemones_desde_csv(pokedex,"datos/pokedex.csv",',',4)){
+	if(!pokedex_cargar_pokemones_desde_csv(pokedex,argv,',',4)){
 		return -1;
 	}	
 
 	char entrada;
 	int opcion = -1;
+	int flag = -1;
+	void *ctx[] = {&flag,&pokedex,imprimir_pokemon,liberar_pokemon};
 	while (opcion == -1) {
 		printf("\nIngrese la opcion que quiera ------------> ");
 		if (scanf(" %c", &entrada) == 1) {
 			if (!menu_ejecutar_entrada(menu, entrada)) {
                 printf("\nERROR 405, por favor ingrese una opcion correcta");
-            } else {
+            }else if (entrada == 'q' || entrada == 'Q'){
+				opcion = 1;
+			}
+			else if (entrada == 'p' || entrada == 'P'){
+				opcion = -1;
+				pokedex_mostrar_ordenados(pokedex,imprimir_pokemon,	NULL);
+			}
+			
+			else {
                 opcion = 0; 
             }
 		}
 	}	
-	pokedex_mostrar_ordenados(pokedex,imprimir_pokemon,	NULL);
+	if (opcion == 1){
+		pokedex_destruir_todo(pokedex,liberar_pokemon);
+		menu_destruir(menu);
+		return 0;
+	}
+	
+	struct jugador jugador = { 0 };
 
-	//struct jugador jugador = { 0 };
-
-	//game_loop(logica, &jugador);
+	game_loop(logica, &jugador);
 
 	mostrar_cursor();
 

@@ -505,18 +505,36 @@ void ObtenerPokemonRandomYEliminoUnPokemonMeDevuelvenDistintosPokemones() {
 // Pruebas de lectura del csv en pokedex
 void LeerCSVDevuelveTrue() {
     pokedex_t *pokedex = pokedex_crear(comparador);
-	pa2m_afirmar(pokedex_cargar_pokemones_desde_csv(pokedex,"datos/pokedex.csv",',',4),"funciona xd");
+	const char *argv[] = { NULL, "datos/pokedex.csv" };
+	pa2m_afirmar(pokedex_cargar_pokemones_desde_csv(pokedex,argv,',',4),"Leer archivo CSV devuelve true y no pierde memoria");
 
-		struct pokemon *pokemon_aleatorio = pokedex_devolver_pokemon_aleatorio(pokedex);
+	struct pokemon *pokemon_aleatorio = pokedex_devolver_pokemon_aleatorio(pokedex);
     pa2m_afirmar(pokemon_aleatorio != NULL,
-                 "El Pokemon es distinto de NULL");
-	printf("el nombre del pokemon aleatorio es:%s\n",pokemon_aleatorio->nombre);
-	printf("el puntaje del pokemon aleatorio es:%i\n",pokemon_aleatorio->puntaje);
-	printf("el color del pokemon aleatorio es:%s\n",pokemon_aleatorio->color);
-	printf("el patron del pokemon aleatorio es:%s\n",pokemon_aleatorio->patron_movimientos);
-
+                 "El Pokemon aleatorio no es NULL, por lo que fue generado exitosamente");
     pokedex_destruir_todo(pokedex,liberar_pokemon);
 }
+
+void LeerCSVConPrametrosNULLDevuelveFalse() {
+    pokedex_t *pokedex = pokedex_crear(comparador);
+	const char *argv[] = { NULL, "datos/pokedex.csv" };
+	pa2m_afirmar(!pokedex_cargar_pokemones_desde_csv(NULL,argv,',',4),"Leer archivo CSV devuelve false");
+    pokedex_destruir_todo(pokedex,liberar_pokemon);
+}
+
+void LeerCSVConNombreIncorrectoDevuelveFalse() {
+    pokedex_t *pokedex = pokedex_crear(comparador);
+	const char *argv[] = { NULL, "datos/Pokedex.csv" };
+	pa2m_afirmar(!pokedex_cargar_pokemones_desde_csv(pokedex,argv,',',4),"Leer archivo CSV inexistente devuelve false");
+    pokedex_destruir_todo(pokedex,liberar_pokemon);
+}
+
+void LeerCSVConseparadorIncorrectoDevuelveFalse() {
+    pokedex_t *pokedex = pokedex_crear(comparador);
+	const char *argv[] = { NULL, "datos/Pokedex.csv" };
+	pa2m_afirmar(!pokedex_cargar_pokemones_desde_csv(pokedex,argv,';',4),"Leer archivo CSV con separador incorrecto devuelve false");
+    pokedex_destruir_todo(pokedex,liberar_pokemon);
+}
+
 
 
 int main()
@@ -576,5 +594,11 @@ int main()
 	ObtenerUnPokemonRandomDevuelvePokemonRandom();
 	ObtenerPokemonRandomYEliminoUnPokemonMeDevuelvenDistintosPokemones();
 
+	pa2m_nuevo_grupo("Pruebas de leer csv (TDA Pokedex)");
+	LeerCSVDevuelveTrue();
+	LeerCSVConPrametrosNULLDevuelveFalse();
+	LeerCSVConNombreIncorrectoDevuelveFalse();
+	LeerCSVConseparadorIncorrectoDevuelveFalse();
+	
 	return pa2m_mostrar_reporte();
 }
