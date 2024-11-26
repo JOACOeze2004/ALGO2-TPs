@@ -3,18 +3,40 @@
 #include <stdio.h>
 #include "src/menu.h"
 #include "src/pokedex.h"
+#include <time.h>
 
-typedef struct coordenadas
-{
+#define MAX_FIL 32
+#define MAX_COL 15
+
+typedef struct coordenadas{
 	int x;
 	int y;
 } coordenadas_t;
+
+typedef struct monstruos{
+	coordenadas_t posicion;
+	char caracter;
+} monstruos_t;
 
 
 struct jugador {
 	coordenadas_t posicion;
 	int iteraciones;
 };
+
+typedef struct juego{
+	struct jugador *jugador;
+	monstruos_t *poke;
+} juego_t;
+
+
+typedef struct tablero{
+	char letra;
+	char* color;
+} tablero_t;
+
+
+
 
 // pre: Asumimos que los argumentos que le pasamos son validos (o sea le pasamos
 // un archivo .csv y el ejecutable). post: Devuelve false en caso de que le
@@ -74,11 +96,8 @@ int min(int a, int b)
 	return a < b ? a : b;
 }
 
-int logica(int entrada, void *datos)
-{
-	struct jugador *jugador = datos;
-	borrar_pantalla();
-	
+void porcesar_entrada(int entrada, juego_t *juego){
+	struct jugador *jugador = juego->jugador; 
 	if (entrada == TECLA_DERECHA)
 		jugador->posicion.x++;
 	else if (entrada == TECLA_IZQUIERDA)
@@ -87,32 +106,63 @@ int logica(int entrada, void *datos)
 		jugador->posicion.y--;
 	else if (entrada == TECLA_ABAJO)
 		jugador->posicion.y++;
+}
 
-	jugador->posicion.x = min(20, max(0, jugador->posicion.x));
-	jugador->posicion.y = min(10, max(0, jugador->posicion.y));
+void imprimir_cabezera(juego_t *juego){
+	struct jugador *jugador = juego->jugador; 
+		printf("Utilizar " ANSI_COLOR_CYAN ANSI_COLOR_BOLD
+	       "⬆⬇⬅➡" ANSI_COLOR_RESET " para moverse\n");
+	printf("Presionar " ANSI_COLOR_RED ANSI_COLOR_BOLD "Q" ANSI_COLOR_RESET
+	       " para salir\n");
+	printf("Iteraciones: %d Tiempo: %d\n", jugador->iteraciones,
+	       jugador->iteraciones / 5);
+}
+
+int logica(int entrada, void *datos)
+{
+	juego_t *juego = datos;
+	struct jugador *jugador = juego->jugador; 
+	borrar_pantalla();
+	
+	porcesar_entrada(entrada,juego);
+
+	jugador->posicion.x = min(MAX_FIL -1, max(0, jugador->posicion.x));
+	jugador->posicion.y = min(MAX_COL -1, max(0, jugador->posicion.y));
 
 	jugador->iteraciones++;
 
-	printf("Utilizar " ANSI_COLOR_CYAN ANSI_COLOR_BOLD
-	       "⬆⬇⬅➡" ANSI_COLOR_RESET " para moverse\n");
+	imprimir_cabezera(juego);
 
-	printf("Presionar " ANSI_COLOR_RED ANSI_COLOR_BOLD "Q" ANSI_COLOR_RESET
-	       " para salir\n");
+	tablero_t terreno[MAX_COL][MAX_FIL];
+	memset(terreno,0,sizeof(terreno));
 
-	printf("Iteraciones: %d Tiempo: %d\n", jugador->iteraciones,
-	       jugador->iteraciones / 5);
+	tablero_t jugador_tablero = {.letra = '@',.color = ANSI_COLOR_BOLD ANSI_COLOR_RED};
+	terreno[jugador->posicion.y][jugador->posicion.x] = jugador_tablero;
+
+	for (int y = 0; y < MAX_COL; y++){
+		for (int x = 0; x < MAX_FIL; x++){
+			tablero_t elemento_tablero = terreno[y][x];
+			if (elemento_tablero.letra != 0){
+				printf("%s%c" ANSI_COLOR_RESET, elemento_tablero.color ,elemento_tablero.letra);
+			}			
+			else{
+				printf(".");
+			}
+		}
+		printf("\n");
+	}
+	
 
 	if (jugador->iteraciones/5 == 60){
 		entrada = 'q';
-	}	
+	}
+	// for (int i = 0; i < jugador->posicion.y; i++)
+	// 	printf("\n");
 
-	for (int i = 0; i < jugador->posicion.y; i++)
-		printf("\n");
+	// for (int i = 0; i < jugador->posicion.x; i++)
+	// 	printf(" ");
 
-	for (int i = 0; i < jugador->posicion.x; i++)
-		printf(" ");
-
-	printf(ANSI_COLOR_MAGENTA ANSI_COLOR_BOLD "Ω" ANSI_COLOR_RESET);
+	//printf(ANSI_COLOR_MAGENTA ANSI_COLOR_BOLD "Ω" ANSI_COLOR_RESET);
 
 	printf("\n");
 	esconder_cursor();
@@ -136,7 +186,13 @@ void avanzar_juego(void *ctx[]){
 }
 
 void elegir_semilla(void *ctx[]){
-	printf("Ahora deberias ingresar una semilla... \n");
+	printf("Ahora deberias ingresar una semilla (que sea un entero) --------->");
+	int *semilla = (int*)((void**)ctx)[3];
+	int entrada;
+	if (scanf(" %i", &entrada) == 1) {
+		*semilla = entrada;
+	}
+	return;
 }
 
 void cerrar_juego(void *ctx[]){
@@ -148,7 +204,6 @@ void cerrar_juego(void *ctx[]){
 	exit(-1);
 	return;
 }
-
 
 //post: Imprime una pequeña intro para que el usuario sepa que comandos pasarle y como "reaccionan" al mismo.
 void imprimir_inicio()
@@ -176,19 +231,9 @@ void imprimir_inicio()
 	printf(ANSI_COLOR_RED"===================================================\n"ANSI_COLOR_RESET);
 }
 
-
-int main(int argc, const char *argv[])
-{
-	if (!son_argumentos_validos(argc, argv)) {
-		return -1;
-	}
-	menu_t *menu = menu_crear();
-	pokedex_t *pokedex = pokedex_crear(comparador);
-	char entrada;
-	int opcion = -1;
-	void *ctx[] = {&opcion,&pokedex,&menu};
-	
-	imprimir_inicio();	
+//pre:
+//post:
+void agregar_todas_opciones(menu_t *menu,void *ctx[]){
 	menu_agregar_opciones(menu,'P',mostrar_pokedex,ctx);
 	menu_agregar_opciones(menu,'p',mostrar_pokedex,ctx);
 
@@ -200,8 +245,26 @@ int main(int argc, const char *argv[])
 
 	menu_agregar_opciones(menu,'Q',cerrar_juego,ctx);
 	menu_agregar_opciones(menu,'q',cerrar_juego,ctx);
+}
+
+int main(int argc, const char *argv[])
+{
+	if (!son_argumentos_validos(argc, argv)) {
+		return -1;
+	}
+	menu_t *menu = menu_crear();
+	pokedex_t *pokedex = pokedex_crear(comparador);
+	char entrada;
+	int opcion = -1;
+	int semilla = 0;
+	void *ctx[] = {&opcion,&pokedex,&menu, &semilla};
+	
+	imprimir_inicio();	
+	agregar_todas_opciones(menu,ctx);
 
 	if(!pokedex_cargar_pokemones_desde_csv(pokedex,argv,',',4)){
+		pokedex_destruir_todo(pokedex,liberar_pokemon);
+		menu_destruir(menu);
 		return -1;
 	}	
 	while (opcion == -1) {
@@ -210,19 +273,21 @@ int main(int argc, const char *argv[])
 			if (!menu_ejecutar_entrada(menu, entrada,ctx)) {
                 printf("\nERROR 405, por favor ingrese una opcion correcta");
             }
-			// else if (entrada == 'p' || entrada == 'P'){
-			// 	opcion = -1;
-			// 	pokedex_mostrar_ordenados(pokedex,imprimir_pokemon,	NULL);
-			// }
-			// else {
-            //     opcion = 0; 
-            // }
 		}
 	}	
-	
+	if (semilla == 0){
+		srand ((unsigned int)time(NULL));
+	}else{
+		srand ((unsigned int)semilla);
+	}	
 	struct jugador jugador = { 0 };
+	juego_t juego = {.jugador = &jugador };
 
-	game_loop(logica, &jugador);
+	pokemon_t *pokemon_nuevo = pokedex_devolver_pokemon_aleatorio(pokedex);
+
+	imprimir_pokemon(pokemon_nuevo,ctx);
+
+	game_loop(logica, &juego);
 
 	mostrar_cursor();
 
