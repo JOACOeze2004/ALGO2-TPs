@@ -110,7 +110,7 @@ bool seleccionar_pokemon(void *elemento,void* ctx){
 
 pokemon_t *pokedex_devolver_pokemon_aleatorio(pokedex_t *pokedex)
 {
-    if (!pokedex){
+    if (!pokedex || pokedex->cant_pokemones == 0){
         return NULL;
     }
     size_t indice_random = (size_t)rand() % (pokedex->cant_pokemones);

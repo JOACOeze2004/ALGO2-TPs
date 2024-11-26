@@ -8,19 +8,22 @@
 #define MAX_FIL 32
 #define MAX_COL 15
 
-typedef struct coordenadas{
+typedef struct coordenada{
 	int x;
 	int y;
-} coordenadas_t;
+} coordenada_t;
 
 typedef struct monstruos{
-	coordenadas_t posicion;
+	coordenada_t posicion;
 	char caracter;
+	char *color;
+	size_t cantidad;
+	pokemon_t *pokemon;
 } monstruos_t;
 
 
 struct jugador {
-	coordenadas_t posicion;
+	coordenada_t posicion;
 	int iteraciones;
 };
 
@@ -35,8 +38,14 @@ typedef struct tablero{
 	char* color;
 } tablero_t;
 
-
-
+//post: devuelve un coordenada_t con una fila y una columna, generadas de forma aleatoria.
+coordenada_t crear_fil_col_aleatorias()
+{
+    coordenada_t coordenada_aleatoria_i_j;
+    coordenada_aleatoria_i_j.x = rand() % (MAX_FIL);
+    coordenada_aleatoria_i_j.y = rand() % (MAX_COL);
+    return coordenada_aleatoria_i_j;
+}
 
 // pre: Asumimos que los argumentos que le pasamos son validos (o sea le pasamos
 // un archivo .csv y el ejecutable). post: Devuelve false en caso de que le
@@ -118,27 +127,9 @@ void imprimir_cabezera(juego_t *juego){
 	       jugador->iteraciones / 5);
 }
 
-int logica(int entrada, void *datos)
-{
-	juego_t *juego = datos;
-	struct jugador *jugador = juego->jugador; 
-	borrar_pantalla();
-	
-	porcesar_entrada(entrada,juego);
-
-	jugador->posicion.x = min(MAX_FIL -1, max(0, jugador->posicion.x));
-	jugador->posicion.y = min(MAX_COL -1, max(0, jugador->posicion.y));
-
-	jugador->iteraciones++;
-
-	imprimir_cabezera(juego);
-
-	tablero_t terreno[MAX_COL][MAX_FIL];
-	memset(terreno,0,sizeof(terreno));
-
-	tablero_t jugador_tablero = {.letra = '@',.color = ANSI_COLOR_BOLD ANSI_COLOR_RED};
-	terreno[jugador->posicion.y][jugador->posicion.x] = jugador_tablero;
-
+//pre:
+//post:
+void imrpimir_terreno(tablero_t terreno[MAX_COL][MAX_FIL]){
 	for (int y = 0; y < MAX_COL; y++){
 		for (int x = 0; x < MAX_FIL; x++){
 			tablero_t elemento_tablero = terreno[y][x];
@@ -150,20 +141,44 @@ int logica(int entrada, void *datos)
 			}
 		}
 		printf("\n");
-	}
-	
+	}	
+}
 
+int logica(int entrada, void *datos)
+{
+	juego_t *juego = datos;
+	struct jugador *jugador = juego->jugador; 
+	monstruos_t *pokemon = juego->poke; 
+
+	borrar_pantalla();
+	
+	porcesar_entrada(entrada,juego);
+
+	jugador->posicion.x = min(MAX_FIL -1, max(0, jugador->posicion.x));
+	jugador->posicion.y = min(MAX_COL -1, max(0, jugador->posicion.y));
+
+	pokemon->posicion.x = min(MAX_FIL -1, max(0, pokemon->posicion.x));
+	pokemon->posicion.y = min(MAX_COL -1, max(0, pokemon->posicion.y));
+
+	jugador->iteraciones++;
+
+	imprimir_cabezera(juego);
+
+	tablero_t terreno[MAX_COL][MAX_FIL];
+	memset(terreno,0,sizeof(terreno));
+
+	tablero_t jugador_tablero = {.letra = '@',.color = ANSI_COLOR_BOLD ANSI_COLOR_RED};
+	tablero_t pokemon_tablero = {.letra = pokemon->caracter,.color = pokemon->color};
+
+	terreno[pokemon->posicion.y][pokemon->posicion.x] = pokemon_tablero;
+	terreno[jugador->posicion.y][jugador->posicion.x] = jugador_tablero;
+
+
+	imrpimir_terreno(terreno);
+	
 	if (jugador->iteraciones/5 == 60){
 		entrada = 'q';
 	}
-	// for (int i = 0; i < jugador->posicion.y; i++)
-	// 	printf("\n");
-
-	// for (int i = 0; i < jugador->posicion.x; i++)
-	// 	printf(" ");
-
-	//printf(ANSI_COLOR_MAGENTA ANSI_COLOR_BOLD "Ω" ANSI_COLOR_RESET);
-
 	printf("\n");
 	esconder_cursor();
 
@@ -247,6 +262,40 @@ void agregar_todas_opciones(menu_t *menu,void *ctx[]){
 	menu_agregar_opciones(menu,'q',cerrar_juego,ctx);
 }
 
+char *setear_color(const char *color){
+	if (strcmp(color,"ROJO") == 0){
+		return ANSI_COLOR_RED;
+	}
+	else if (strcmp(color,"NEGRO") == 0){
+		return ANSI_COLOR_BLACK;
+	}
+	else if (strcmp(color,"VERDE") == 0){
+		return ANSI_COLOR_GREEN;
+	}
+	else if (strcmp(color,"AMARILLO") == 0){
+		return ANSI_COLOR_YELLOW;
+	}
+	else if (strcmp(color,"AZUL") == 0){
+		return ANSI_COLOR_BLUE;
+	}
+	else if (strcmp(color,"MAGENTA") == 0){
+		return ANSI_COLOR_MAGENTA;
+	}
+	else if (strcmp(color,"CYAN") == 0){
+		return ANSI_COLOR_CYAN;
+	}
+	else{
+		return ANSI_COLOR_WHITE;
+	}
+}
+
+void setear_atributos_pokemon(monstruos_t *poke, pokemon_t *pokemon_nuevo){
+	poke->pokemon = pokemon_nuevo;
+	poke->posicion = crear_fil_col_aleatorias();
+	poke->caracter = pokemon_nuevo->nombre[0];
+	poke->color = setear_color(pokemon_nuevo->color);
+}
+
 int main(int argc, const char *argv[])
 {
 	if (!son_argumentos_validos(argc, argv)) {
@@ -281,11 +330,17 @@ int main(int argc, const char *argv[])
 		srand ((unsigned int)semilla);
 	}	
 	struct jugador jugador = { 0 };
-	juego_t juego = {.jugador = &jugador };
-
+	monstruos_t poke = {.cantidad = 0};
 	pokemon_t *pokemon_nuevo = pokedex_devolver_pokemon_aleatorio(pokedex);
+	setear_atributos_pokemon(&poke,pokemon_nuevo);
 
-	imprimir_pokemon(pokemon_nuevo,ctx);
+
+
+
+	juego_t juego = {.jugador = &jugador,.poke = &poke };
+
+
+
 
 	game_loop(logica, &juego);
 

@@ -473,6 +473,16 @@ void ObtenerUnPokemonRandomDevuelvePokemonRandom() {
     pokedex_destruir(pokedex);
 }
 
+void ObtenerUnPokemonRandomEnPokedexVaciaDevuelveNULL() {
+    pokedex_t *pokedex = pokedex_crear(comparador);
+
+	struct pokemon *pokemon_aleatorio = pokedex_devolver_pokemon_aleatorio(pokedex);
+    pa2m_afirmar(pokemon_aleatorio == NULL,
+                 "El Pokemon es igual a NULL porque no hay pokemones en al pokedex");
+    pokedex_destruir(pokedex);
+}
+
+
 void ObtenerPokemonRandomYEliminoUnPokemonMeDevuelvenDistintosPokemones() {
     pokedex_t *pokedex = pokedex_crear(comparador);
 
@@ -593,6 +603,7 @@ int main()
 	pa2m_nuevo_grupo("Pruebas de obtener pokemon random (TDA Pokedex)");
 	ObtenerUnPokemonRandomDevuelvePokemonRandom();
 	ObtenerPokemonRandomYEliminoUnPokemonMeDevuelvenDistintosPokemones();
+	ObtenerUnPokemonRandomEnPokedexVaciaDevuelveNULL();
 
 	pa2m_nuevo_grupo("Pruebas de leer csv (TDA Pokedex)");
 	LeerCSVDevuelveTrue();
