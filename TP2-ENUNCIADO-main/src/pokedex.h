@@ -85,13 +85,18 @@ pokemon_t *pokedex_devolver_pokemon_aleatorio(pokedex_t *pokedex);
 
 /*
 *   
-*   Devuelve True si pudo aplicarle la funcion f a los elementos dentro de la pokedex.
-*
-*   Caso contrario de que sea false la funcion, devuelve false. 
 *
 *
 */
 bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex,const char *argv[], char separador, size_t columnas);
+
+
+/*
+*    
+*
+*
+*/
+bool pokedex_iterar(pokedex_t *pokedex,bool(*f)(void*, void*),void* ctx);
 
 
 #endif /* POKEDEX */

@@ -196,6 +196,18 @@ bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *argv[], 
 
 //pre:
 //post:
+bool pokedex_iterar(pokedex_t *pokedex,bool(*f)(void*, void*),void* ctx){
+	if (!pokedex){
+		return false;
+	}
+	if (abb_iterar_inorden(pokedex->almacen,f,ctx)) {
+		return true;
+	}
+	return false;	
+}
+
+//pre:
+//post:
 void destruir_pokedex_con_destructor(pokedex_t *pokedex, void (*destructor)(void *))
 {
 	if (pokedex) {
@@ -203,7 +215,6 @@ void destruir_pokedex_con_destructor(pokedex_t *pokedex, void (*destructor)(void
 		free(pokedex);
 	}
 }
-
 
 void pokedex_destruir(pokedex_t *pokedex)
 {
