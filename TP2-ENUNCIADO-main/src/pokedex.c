@@ -200,7 +200,7 @@ bool pokedex_iterar(pokedex_t *pokedex,bool(*f)(void*, void*),void* ctx){
 	if (!pokedex){
 		return false;
 	}
-	if (abb_iterar_inorden(pokedex->almacen,f,ctx)) {
+	if (abb_iterar_preorden(pokedex->almacen,f,ctx)) {
 		return true;
 	}
 	return false;	

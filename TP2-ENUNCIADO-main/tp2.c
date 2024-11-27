@@ -93,6 +93,83 @@ bool imprimir_pokemon(void *elemento, void *ctx)
 	return true;
 }
 
+//post: Imprime una pequeña intro para que el usuario sepa que comandos pasarle y como "reaccionan" al mismo.
+void imprimir_inicio()
+{
+	printf(ANSI_COLOR_BLUE"\t\t\t\t\t\t\t-----------------------------------------------------\n"); 
+    printf("\t\t\t\t\t\t\t|" ANSI_COLOR_GREEN ANSI_COLOR_BOLD"    BIENVENIDO A POKEMON GO 2: AHORA ES PERSONAL"ANSI_COLOR_BLUE "   |\n");
+    printf(ANSI_COLOR_BLUE"\t\t\t\t\t\t\t-----------------------------------------------------\n"ANSI_COLOR_RESET);
+    printf("\n");
+
+	printf(ANSI_COLOR_MAGENTA"Hola jugador,bienvenido a " ANSI_COLOR_BOLD "Pokemon go 2\n"ANSI_COLOR_RESET);
+	printf(ANSI_COLOR_GREEN ANSI_COLOR_BOLD"El objetivo del juego es que atrapes pokemones, antes de que se acabe el tiempo.\n"ANSI_COLOR_RESET);
+	printf(ANSI_COLOR_GREEN"Lo ideal es que trapes a pokemones con el mismo color, asi obtendras un multiplicador al puntaje al capturarlos.\n");
+	printf(ANSI_COLOR_GREEN"Los pokemones se mueven a lo largo del tablero, pero no se mueven si no te moves.\n");
+	printf(ANSI_COLOR_GREEN"Por ultimo tenes 60 segundos de juego en total, una vez llegado a 0, finaliza el juego.\n");
+	printf(ANSI_COLOR_RED ANSI_COLOR_BOLD"A continuacion veras un menu en el cual podras elegir entre 4 opciones.\n");
+	printf(ANSI_COLOR_RED "Cabe aclarar que tambien se aceptan las minusculas\n"ANSI_COLOR_RESET);
+
+	printf(ANSI_COLOR_YELLOW"Una vez sabida esta informacion, ya puedes empezar a jugar, suerte!\n"ANSI_COLOR_RESET);
+	
+	printf(ANSI_COLOR_RED"====================================================\n"); 
+	printf("|" ANSI_COLOR_CYAN"[J]: Empezar Juego\n"ANSI_COLOR_RESET);
+	printf(ANSI_COLOR_RED"|" ANSI_COLOR_CYAN"[S]: Empezar Juego usando una semilla que eligas\n"ANSI_COLOR_RESET);
+	printf(ANSI_COLOR_RED"|" ANSI_COLOR_CYAN"[P]: Mostrar todos los pokemones en la pokedex\n"ANSI_COLOR_RESET);
+	printf(ANSI_COLOR_RED"|" ANSI_COLOR_CYAN"[Q]: Salir del juego\n"ANSI_COLOR_RESET);
+	printf(ANSI_COLOR_RED"===================================================\n"ANSI_COLOR_RESET);
+}
+
+void mostrar_pokedex(void *ctx[]){
+	printf("Aqui estan los pokemones que se ingresaron... \n");
+	int *opcion = (int*)((void**)ctx)[0];
+	pokedex_t *pokedex = *(pokedex_t **)ctx[1]; 
+	pokedex_mostrar_ordenados(pokedex,imprimir_pokemon,	NULL);
+	*opcion = -1;
+	return;	
+}
+
+void avanzar_juego(void *ctx[]){
+	printf("Inicializando el juego... \n");
+	int *opcion = (int*)((void**)ctx)[0];
+	*opcion = 1;
+}
+
+void elegir_semilla(void *ctx[]){
+	printf("Ahora deberias ingresar una semilla (que sea un entero) --------->");
+	int *semilla = (int*)((void**)ctx)[3];
+	int entrada;
+	if (scanf(" %i", &entrada) == 1) {
+		*semilla = entrada;
+	}
+	return;
+}
+
+void cerrar_juego(void *ctx[]){
+	printf("Saliendo del juego...\n");
+	pokedex_t *pokedex = *(pokedex_t **)ctx[1]; 
+   	menu_t *menu = *(menu_t **)ctx[2];
+	pokedex_destruir_todo(pokedex,liberar_pokemon);
+	menu_destruir(menu);
+	exit(0);
+	return;
+}
+
+//pre:
+//post:
+void agregar_todas_opciones(menu_t *menu,void *ctx[]){
+	menu_agregar_opciones(menu,'P',mostrar_pokedex,ctx);
+	menu_agregar_opciones(menu,'p',mostrar_pokedex,ctx);
+
+	menu_agregar_opciones(menu,'J',avanzar_juego,ctx);
+	menu_agregar_opciones(menu,'j',avanzar_juego,ctx);
+
+	menu_agregar_opciones(menu,'S',elegir_semilla,ctx);
+	menu_agregar_opciones(menu,'s',elegir_semilla,ctx);
+
+	menu_agregar_opciones(menu,'Q',cerrar_juego,ctx);
+	menu_agregar_opciones(menu,'q',cerrar_juego,ctx);
+}
+
 int comparador(void *a, void *b)
 {
 	if (a == NULL && b == NULL) {
@@ -143,33 +220,6 @@ void imprimir_cabezera(juego_t *juego, pokemon_t *pokemon_eliminado){
 void limitar_movimiento(coordenada_t *posicion){
 	posicion->x = min(MAX_FIL - 1, max(0, posicion->x));
 	posicion->y = min(MAX_COL - 1, max(0, posicion->y));
-}
-
-//pre:
-//post:
-void imrpimir_terreno(tablero_t terreno[MAX_COL][MAX_FIL]){
-	for (int y = 0; y < MAX_COL; y++){
-		for (int x = 0; x < MAX_FIL; x++){
-			tablero_t elemento_tablero = terreno[y][x];
-			if (elemento_tablero.letra != 0){
-				printf("%s%c" ANSI_COLOR_RESET, elemento_tablero.color ,elemento_tablero.letra);
-			}			
-			else{
-				printf(".");
-			}
-		}
-		printf("\n");
-	}	
-}
-
-bool imprimir_pokemon_en_terreno(monstruos_t *pokemon, tablero_t terreno[MAX_COL][MAX_FIL]) {
-	tablero_t pokemon_tablero = {.letra = pokemon->caracter,.color = pokemon->color};
-	
-	limitar_movimiento(&pokemon->posicion);
-
-	terreno[pokemon->posicion.y][pokemon->posicion.x] = pokemon_tablero;
-
-	return true;
 }
 
 void accionar_patron(juego_t *juego,char letra){
@@ -289,11 +339,39 @@ void setear_atributos_pokemon(monstruos_t *poke, pokemon_t *pokemon_nuevo){
 	poke->puntaje = pokemon_nuevo->puntaje;	
 }
 
+//pre:
+//post:
+void imprimir_terreno(tablero_t terreno[MAX_COL][MAX_FIL]){
+	for (int y = 0; y < MAX_COL; y++){
+		for (int x = 0; x < MAX_FIL; x++){
+			tablero_t elemento_tablero = terreno[y][x];
+			if (elemento_tablero.letra != 0){
+				printf("%s%c" ANSI_COLOR_RESET, elemento_tablero.color ,elemento_tablero.letra);
+			}			
+			else{
+				printf(".");
+			}
+		}
+		printf("\n");
+	}	
+}
+
+bool imprimir_pokemon_en_terreno(monstruos_t *pokemon, tablero_t terreno[MAX_COL][MAX_FIL]) {
+	tablero_t pokemon_tablero = {.letra = pokemon->caracter,.color = pokemon->color};
+	
+	limitar_movimiento(&pokemon->posicion);
+
+	terreno[pokemon->posicion.y][pokemon->posicion.x] = pokemon_tablero;
+
+	return true;
+}
+
+
 int logica(int entrada, void *datos)
 {
 	juego_t *juego = datos;
 	struct jugador *jugador = juego->jugador; 
-	//monstruos_t *pokemon = juego->poke; 
+	//monstruos_t *pokemon = juego->poke;
 
 	borrar_pantalla();
 	
@@ -322,7 +400,7 @@ int logica(int entrada, void *datos)
 
 	terreno[jugador->posicion.y][jugador->posicion.x] = jugador_tablero;
 
-	imrpimir_terreno(terreno);
+	imprimir_terreno(terreno);
 	
 	if (jugador->iteraciones/5 == 60){
 		entrada = 'q';
@@ -333,82 +411,6 @@ int logica(int entrada, void *datos)
 	return entrada == 'q' || entrada == 'Q';
 }
 
-void mostrar_pokedex(void *ctx[]){
-	printf("Aqui estan los pokemones que se ingresaron... \n");
-	int *opcion = (int*)((void**)ctx)[0];
-	pokedex_t *pokedex = *(pokedex_t **)ctx[1]; 
-	pokedex_mostrar_ordenados(pokedex,imprimir_pokemon,	NULL);
-	*opcion = -1;
-	return;	
-}
-
-void avanzar_juego(void *ctx[]){
-	printf("Inicializando el juego... \n");
-	int *opcion = (int*)((void**)ctx)[0];
-	*opcion = 1;
-}
-
-void elegir_semilla(void *ctx[]){
-	printf("Ahora deberias ingresar una semilla (que sea un entero) --------->");
-	int *semilla = (int*)((void**)ctx)[3];
-	int entrada;
-	if (scanf(" %i", &entrada) == 1) {
-		*semilla = entrada;
-	}
-	return;
-}
-
-void cerrar_juego(void *ctx[]){
-	printf("Saliendo del juego...\n");
-	pokedex_t *pokedex = *(pokedex_t **)ctx[1]; 
-   	menu_t *menu = *(menu_t **)ctx[2];
-	pokedex_destruir_todo(pokedex,liberar_pokemon);
-	menu_destruir(menu);
-	exit(0);
-	return;
-}
-
-//post: Imprime una pequeña intro para que el usuario sepa que comandos pasarle y como "reaccionan" al mismo.
-void imprimir_inicio()
-{
-	printf(ANSI_COLOR_BLUE"\t\t\t\t\t\t\t-----------------------------------------------------\n"); 
-    printf("\t\t\t\t\t\t\t|" ANSI_COLOR_GREEN ANSI_COLOR_BOLD"    BIENVENIDO A POKEMON GO 2: AHORA ES PERSONAL"ANSI_COLOR_BLUE "   |\n");
-    printf(ANSI_COLOR_BLUE"\t\t\t\t\t\t\t-----------------------------------------------------\n"ANSI_COLOR_RESET);
-    printf("\n");
-
-	printf(ANSI_COLOR_MAGENTA"Hola jugador,bienvenido a " ANSI_COLOR_BOLD "Pokemon go 2\n"ANSI_COLOR_RESET);
-	printf(ANSI_COLOR_GREEN ANSI_COLOR_BOLD"El objetivo del juego es que atrapes pokemones, antes de que se acabe el tiempo.\n"ANSI_COLOR_RESET);
-	printf(ANSI_COLOR_GREEN"Lo ideal es que trapes a pokemones con el mismo color, asi obtendras un multiplicador al puntaje al capturarlos.\n");
-	printf(ANSI_COLOR_GREEN"Los pokemones se mueven a lo largo del tablero, pero no se mueven si no te moves.\n");
-	printf(ANSI_COLOR_GREEN"Por ultimo tenes 60 segundos de juego en total, una vez llegado a 0, finaliza el juego.\n");
-	printf(ANSI_COLOR_RED ANSI_COLOR_BOLD"A continuacion veras un menu en el cual podras elegir entre 4 opciones.\n");
-	printf(ANSI_COLOR_RED "Cabe aclarar que tambien se aceptan las minusculas\n"ANSI_COLOR_RESET);
-
-	printf(ANSI_COLOR_YELLOW"Una vez sabida esta informacion, ya puedes empezar a jugar, suerte!\n"ANSI_COLOR_RESET);
-	
-	printf(ANSI_COLOR_RED"====================================================\n"); 
-	printf("|" ANSI_COLOR_CYAN"[J]: Empezar Juego\n"ANSI_COLOR_RESET);
-	printf(ANSI_COLOR_RED"|" ANSI_COLOR_CYAN"[S]: Empezar Juego usando una semilla que eligas\n"ANSI_COLOR_RESET);
-	printf(ANSI_COLOR_RED"|" ANSI_COLOR_CYAN"[P]: Mostrar todos los pokemones en la pokedex\n"ANSI_COLOR_RESET);
-	printf(ANSI_COLOR_RED"|" ANSI_COLOR_CYAN"[Q]: Salir del juego\n"ANSI_COLOR_RESET);
-	printf(ANSI_COLOR_RED"===================================================\n"ANSI_COLOR_RESET);
-}
-
-//pre:
-//post:
-void agregar_todas_opciones(menu_t *menu,void *ctx[]){
-	menu_agregar_opciones(menu,'P',mostrar_pokedex,ctx);
-	menu_agregar_opciones(menu,'p',mostrar_pokedex,ctx);
-
-	menu_agregar_opciones(menu,'J',avanzar_juego,ctx);
-	menu_agregar_opciones(menu,'j',avanzar_juego,ctx);
-
-	menu_agregar_opciones(menu,'S',elegir_semilla,ctx);
-	menu_agregar_opciones(menu,'s',elegir_semilla,ctx);
-
-	menu_agregar_opciones(menu,'Q',cerrar_juego,ctx);
-	menu_agregar_opciones(menu,'q',cerrar_juego,ctx);
-}
 
 int main(int argc, const char *argv[])
 {
@@ -458,8 +460,8 @@ int main(int argc, const char *argv[])
 		pokedex_agregar_pokemon(nueva_pokedex,pokemon_nuevo);
 		poke.cantidad++;
 	}	
-
 	juego_t juego = {.jugador = &jugador,.poke = &poke, .pokedex = nueva_pokedex};
+
 	game_loop(logica, &juego);
 
 	mostrar_cursor();
