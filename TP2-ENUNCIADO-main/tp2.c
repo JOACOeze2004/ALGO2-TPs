@@ -16,7 +16,6 @@
 #define MOV_JUGADOR_INVERTIDO 'I'
 #define MOV_RANDOM 'R'
 
-
 typedef struct coordenada{
 	int x;
 	int y;
@@ -139,7 +138,11 @@ void imprimir_cabezera(juego_t *juego, pokemon_t *pokemon_eliminado){
 	}else{
 		printf("\nUltimo pokemon en ser atrapado: %s\n",pokemon_eliminado->nombre);
 	}	
-	printf("\n");
+}
+
+void limitar_movimiento(coordenada_t *posicion){
+	posicion->x = min(MAX_FIL - 1, max(0, posicion->x));
+	posicion->y = min(MAX_COL - 1, max(0, posicion->y));
 }
 
 //pre:
@@ -162,8 +165,7 @@ void imrpimir_terreno(tablero_t terreno[MAX_COL][MAX_FIL]){
 bool imprimir_pokemon_en_terreno(monstruos_t *pokemon, tablero_t terreno[MAX_COL][MAX_FIL]) {
 	tablero_t pokemon_tablero = {.letra = pokemon->caracter,.color = pokemon->color};
 	
-	pokemon->posicion.x = min(MAX_FIL - 1, max(0, pokemon->posicion.x));
-	pokemon->posicion.y = min(MAX_COL - 1, max(0, pokemon->posicion.y));
+	limitar_movimiento(&pokemon->posicion);
 
 	terreno[pokemon->posicion.y][pokemon->posicion.x] = pokemon_tablero;
 
@@ -215,12 +217,11 @@ void accionar_patron(juego_t *juego,char letra){
 void aplicar_patron_movimiento(juego_t *juego) {
 	size_t letra_a_ejecutar = juego->poke->indice_patron;
 	size_t longitud_patron = strlen(juego->poke->patron);
-    accionar_patron(juego, juego->poke->patron[letra_a_ejecutar]);
 	juego->poke->indice_patron++;	
-	if (juego->poke->indice_patron == longitud_patron){
+    accionar_patron(juego, juego->poke->patron[letra_a_ejecutar]);
+	if (juego->poke->indice_patron >= longitud_patron - 1){
 		juego->poke->indice_patron = 0;
 	}
-	
 }
 
 void porcesar_entrada(int entrada, juego_t *juego){
@@ -292,23 +293,24 @@ int logica(int entrada, void *datos)
 {
 	juego_t *juego = datos;
 	struct jugador *jugador = juego->jugador; 
-	monstruos_t *pokemon = juego->poke; 
+	//monstruos_t *pokemon = juego->poke; 
 
 	borrar_pantalla();
 	
 	porcesar_entrada(entrada,juego);
 
-	jugador->posicion.x = min(MAX_FIL -1, max(0, jugador->posicion.x));
-	jugador->posicion.y = min(MAX_COL -1, max(0, jugador->posicion.y));
+	limitar_movimiento(&jugador->posicion);
 
 	jugador->iteraciones++;
-
-	if (pokemon->cantidad == 7 && son_posiciones_iguales(jugador->posicion,pokemon->posicion)){
-		jugador->puntaje += pokemon->puntaje;
-		pokedex_eliminar_pokemon(juego->pokedex,juego->poke->pokemon,(void*)&pokemon->pokemon_eliminado);
+	
+	if (juego->poke->cantidad == 7 && son_posiciones_iguales(jugador->posicion,juego->poke->posicion)){
+		jugador->puntaje += juego->poke->puntaje;
+		pokedex_eliminar_pokemon(juego->pokedex,juego->poke->pokemon,(void*)&juego->poke->pokemon_eliminado);
+		juego->poke->cantidad--;
+		pokedex_mostrar_ordenados(juego->pokedex,imprimir_pokemon,NULL);
 	}
 
-	imprimir_cabezera(juego,pokemon->pokemon_eliminado);
+	imprimir_cabezera(juego,juego->poke->pokemon_eliminado);
 
 	tablero_t terreno[MAX_COL][MAX_FIL];
 	memset(terreno,0,sizeof(terreno));
@@ -316,7 +318,7 @@ int logica(int entrada, void *datos)
 	tablero_t jugador_tablero = {.letra = '@',.color = ANSI_COLOR_BOLD ANSI_COLOR_RED};
 
 	//pokedex_iterar(juego->pokedex,imprimir_pokemon_en_terreno,NULL);
-	imprimir_pokemon_en_terreno(pokemon,terreno);
+	imprimir_pokemon_en_terreno(juego->poke,terreno);
 
 	terreno[jugador->posicion.y][jugador->posicion.x] = jugador_tablero;
 
@@ -408,9 +410,6 @@ void agregar_todas_opciones(menu_t *menu,void *ctx[]){
 	menu_agregar_opciones(menu,'q',cerrar_juego,ctx);
 }
 
-
-
-
 int main(int argc, const char *argv[])
 {
 	if (!son_argumentos_validos(argc, argv)) {
@@ -450,8 +449,6 @@ int main(int argc, const char *argv[])
 	jugador.puntaje = 0;
 	jugador.multiplicador = 1;
 
-
-
 	monstruos_t poke = {.cantidad = 0,.pokemon_eliminado = NULL};
 
 	pokedex_t *nueva_pokedex = pokedex_crear(comparador);
@@ -460,7 +457,7 @@ int main(int argc, const char *argv[])
 		setear_atributos_pokemon(&poke,pokemon_nuevo);
 		pokedex_agregar_pokemon(nueva_pokedex,pokemon_nuevo);
 		poke.cantidad++;
-	}
+	}	
 
 	juego_t juego = {.jugador = &jugador,.poke = &poke, .pokedex = nueva_pokedex};
 	game_loop(logica, &juego);
