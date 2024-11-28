@@ -206,6 +206,30 @@ bool pokedex_iterar(pokedex_t *pokedex,bool(*f)(void*, void*),void* ctx){
 	return false;	
 }
 
+
+bool pokedex_agregar_monstruo(pokedex_t *pokedex, monstruos_t *poke){
+	if (!pokedex || !poke) {
+		return false;
+	}
+	if (!abb_insertar(pokedex->almacen, poke)) {
+		return false;
+	}
+	pokedex->cant_pokemones++;
+	return true;
+}
+
+bool pokedex_eliminar_monstruo(pokedex_t *pokedex, monstruos_t *poke, void **eliminado){
+	if (!pokedex || !poke || pokedex->cant_pokemones == 0 ||
+	    !eliminado) {
+		return false;
+	}
+	if (abb_quitar(pokedex->almacen, poke, eliminado)) {
+		pokedex->cant_pokemones--;
+		return true;
+	}
+	return false;
+}
+
 //pre:
 //post:
 void destruir_pokedex_con_destructor(pokedex_t *pokedex, void (*destructor)(void *))

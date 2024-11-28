@@ -8,6 +8,8 @@
 #define MAX_FIL 32
 #define MAX_COL 15
 
+#define CANT_INICIAL_POKE 1
+
 #define MOV_ARRIBA 'N'
 #define MOV_ABAJO 'S'
 #define MOV_DERECHO 'E'
@@ -21,7 +23,7 @@ typedef struct coordenada{
 	int y;
 } coordenada_t;
 
-typedef struct monstruos{
+struct monstruo{
 	coordenada_t posicion;
 	char caracter;
 	char *color;
@@ -31,7 +33,7 @@ typedef struct monstruos{
 	size_t indice_patron;
 	int puntaje;
 	pokemon_t *pokemon_eliminado;
-} monstruos_t;
+};
 
 struct jugador {
 	coordenada_t posicion;
@@ -44,7 +46,9 @@ struct jugador {
 typedef struct juego{
 	struct jugador *jugador;
 	monstruos_t *poke;
-	pokedex_t *pokedex;
+	pokedex_t *pokedex_nueva;
+	pokedex_t *pokedex_vieja;
+
 } juego_t;
 
 typedef struct tablero{
@@ -85,11 +89,58 @@ void liberar_pokemon(void *elemento)
 	}
 }
 
+void liberar_monstruos(void *elemento)
+{
+	monstruos_t *pokemon = elemento;
+	if (pokemon != NULL) {
+		free(pokemon);
+	}
+}
+
+int comparador(void *a, void *b)
+{
+	if (a == NULL && b == NULL) {
+		return 0;
+	}
+	if (a == NULL) {
+		return -1;
+	}
+	if (b == NULL) {
+		return 1;
+	}
+	struct pokemon *poke_a = (struct pokemon *)a;
+	struct pokemon *poke_b = (struct pokemon *)b;
+	return strcmp(poke_a->nombre, poke_b->nombre);
+}
+
+int comparador_monstruos(void *a, void *b)
+{
+	if (a == NULL && b == NULL) {
+		return 0;
+	}
+	if (a == NULL) {
+		return -1;
+	}
+	if (b == NULL) {
+		return 1;
+	}
+	monstruos_t *poke_a = (monstruos_t *)a;
+	monstruos_t *poke_b = (monstruos_t *)b;
+	return strcmp(poke_a->pokemon->nombre, poke_b->pokemon->nombre);
+}
+
 bool imprimir_pokemon(void *elemento, void *ctx)
 {
 	struct pokemon *poke = elemento;
 	printf("Nombre: %s, puntaje: %i, color: %s\n",
 	       poke->nombre, poke->puntaje, poke->color);
+	return true;
+}
+bool imprimir_pokemon2(void *elemento, void *ctx)
+{
+	monstruos_t *poke = elemento;
+	printf("coordenada x:%i Coordenda Y:%i,nombre:%s,Patron:%s, color:%s,puntaje:%i,caracter: %c\n",
+	       poke->posicion.x, poke->posicion.y,poke->pokemon->nombre,poke->pokemon->patron_movimientos,poke->pokemon->color,poke->puntaje,poke->caracter);
 	return true;
 }
 
@@ -170,22 +221,6 @@ void agregar_todas_opciones(menu_t *menu,void *ctx[]){
 	menu_agregar_opciones(menu,'q',cerrar_juego,ctx);
 }
 
-int comparador(void *a, void *b)
-{
-	if (a == NULL && b == NULL) {
-		return 0;
-	}
-	if (a == NULL) {
-		return -1;
-	}
-	if (b == NULL) {
-		return 1;
-	}
-	struct pokemon *poke_a = (struct pokemon *)a;
-	struct pokemon *poke_b = (struct pokemon *)b;
-	return strcmp(poke_a->nombre, poke_b->nombre);
-}
-
 int max(int a, int b)
 {
 	return a > b ? a : b;
@@ -202,102 +237,19 @@ bool son_posiciones_iguales(coordenada_t posicion1,coordenada_t posicion2){
     return (posicion1.x == posicion2.x && posicion1.y == posicion2.y) ;   
 }
 
-void imprimir_cabezera(juego_t *juego, pokemon_t *pokemon_eliminado){
+void imprimir_cabezera(juego_t *juego){
 	struct jugador *jugador = juego->jugador; 
 		printf("Utilizar " ANSI_COLOR_CYAN ANSI_COLOR_BOLD
 	       "⬆⬇⬅➡" ANSI_COLOR_RESET " para moverse\n");
 	printf("Presionar " ANSI_COLOR_RED ANSI_COLOR_BOLD "Q" ANSI_COLOR_RESET
 	       " para salir\n");
 	printf("Iteraciones: %d Tiempo: %d Puntaje: %i Multiplicador: %i\n", jugador->iteraciones,
-	       jugador->iteraciones / 5,jugador->puntaje,jugador->multiplicador);
-	if (pokemon_eliminado == NULL){
-		printf("Aun no has atrapado a ningun pokemon\n");
-	}else{
-		printf("\nUltimo pokemon en ser atrapado: %s\n",pokemon_eliminado->nombre);
-	}	
+	       jugador->iteraciones / 5,jugador->puntaje,jugador->multiplicador);	
 }
 
 void limitar_movimiento(coordenada_t *posicion){
 	posicion->x = min(MAX_FIL - 1, max(0, posicion->x));
 	posicion->y = min(MAX_COL - 1, max(0, posicion->y));
-}
-
-void accionar_patron(juego_t *juego,char letra){
-	monstruos_t *poke = juego->poke;
-	struct jugador *jugador = juego->jugador;
-	int direccion_random = rand() % 4;
-	switch (letra)
-	{
-	case MOV_ARRIBA:
-		poke->posicion.y-=1;
-		break;
-	case MOV_ABAJO:
-		poke->posicion.y+=1;
-		break;
-	case MOV_DERECHO :
-		poke->posicion.x+=1;
-		break;
-	case MOV_IZQUIERDA:
-		poke->posicion.x-=1;
-		break;
-	case MOV_JUGADOR_INVERTIDO:
-		poke->posicion.x -= jugador->ultima_coordenada.x;
-		poke->posicion.y -= jugador->ultima_coordenada.y;
-		break;
-	case MOV_JUGADOR:
-		poke->posicion.x += jugador->ultima_coordenada.x;
-		poke->posicion.y += jugador->ultima_coordenada.y;
-		break;
-	case MOV_RANDOM:
-		if (direccion_random == 0){
-			poke->posicion.y-=1;
-		}else if (direccion_random == 1){
-			poke->posicion.y+=1;
-		}else if (direccion_random == 2){
-			poke->posicion.x+=1;
-		}else{
-			poke->posicion.x-=1;
-		}	
-		break;
-	default:
-		break;
-	}
-}
-
-void aplicar_patron_movimiento(juego_t *juego) {
-	size_t letra_a_ejecutar = juego->poke->indice_patron;
-	size_t longitud_patron = strlen(juego->poke->patron);
-	juego->poke->indice_patron++;	
-    accionar_patron(juego, juego->poke->patron[letra_a_ejecutar]);
-	if (juego->poke->indice_patron >= longitud_patron - 1){
-		juego->poke->indice_patron = 0;
-	}
-}
-
-void porcesar_entrada(int entrada, juego_t *juego){
-	struct jugador *jugador = juego->jugador; 
-	jugador->ultima_coordenada.x = 0;
-    jugador->ultima_coordenada.y = 0;
-	if (entrada == TECLA_DERECHA){
-		jugador->posicion.x++;
-		jugador->ultima_coordenada.x = 1;
-		aplicar_patron_movimiento(juego);
-	}
-	else if (entrada == TECLA_IZQUIERDA){
-		jugador->posicion.x--;
-		jugador->ultima_coordenada.x = -1;
-		aplicar_patron_movimiento(juego);
-	}
-	else if (entrada == TECLA_ARRIBA){
-		jugador->posicion.y--;
-		jugador->ultima_coordenada.y = -1 ;
-		aplicar_patron_movimiento(juego);
-	}
-	else if (entrada == TECLA_ABAJO){
-		jugador->posicion.y++;
-		jugador->ultima_coordenada.y = 1;
-		aplicar_patron_movimiento(juego);
-	}
 }
 
 char *setear_color(const char *color){
@@ -339,6 +291,108 @@ void setear_atributos_pokemon(monstruos_t *poke, pokemon_t *pokemon_nuevo){
 	poke->puntaje = pokemon_nuevo->puntaje;	
 }
 
+void accionar_patron(monstruos_t *poke, struct jugador *jugador, char letra) {
+    int direccion_random = rand() % 4;
+    switch (letra)
+    {
+    case MOV_ARRIBA:
+        poke->posicion.y -= 1;
+        break;
+    case MOV_ABAJO:
+        poke->posicion.y += 1;
+        break;
+    case MOV_DERECHO:
+        poke->posicion.x += 1;
+        break;
+    case MOV_IZQUIERDA:
+        poke->posicion.x -= 1;
+        break;
+    case MOV_JUGADOR_INVERTIDO:
+        poke->posicion.x -= jugador->ultima_coordenada.x;
+        poke->posicion.y -= jugador->ultima_coordenada.y;
+        break;
+    case MOV_JUGADOR:
+        poke->posicion.x += jugador->ultima_coordenada.x;
+        poke->posicion.y += jugador->ultima_coordenada.y;
+        break;
+    case MOV_RANDOM:
+        if (direccion_random == 0) {
+            poke->posicion.y -= 1;
+        } else if (direccion_random == 1) {
+            poke->posicion.y += 1;
+        } else if (direccion_random == 2) {
+            poke->posicion.x += 1;
+        } else {
+            poke->posicion.x -= 1;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+void aplicar_patron_movimiento(juego_t *juego, monstruos_t *poke) {
+	size_t letra_a_ejecutar = poke->indice_patron;
+	size_t longitud_patron = strlen(poke->pokemon->patron_movimientos);
+	poke->indice_patron++;	
+    accionar_patron(poke, juego->jugador,poke->pokemon->patron_movimientos[letra_a_ejecutar]);
+	if ( poke->indice_patron >= longitud_patron){
+		poke->indice_patron = 0;
+	}
+}
+
+bool aplicar_patron_a_pokemon(void* pokemon_void, void* ctx) {
+    monstruos_t *poke = (monstruos_t *)pokemon_void;
+    juego_t *juego = (juego_t *)ctx;
+
+    if (poke->pokemon->patron_movimientos != NULL) {
+        aplicar_patron_movimiento(juego, poke);
+    }
+
+    return true;
+}
+
+void porcesar_entrada(int entrada, juego_t *juego){
+	struct jugador *jugador = juego->jugador; 
+	jugador->ultima_coordenada.x = 0;
+    jugador->ultima_coordenada.y = 0;
+	if (entrada == TECLA_DERECHA){
+		jugador->posicion.x++;
+		jugador->ultima_coordenada.x = 1;
+		pokedex_iterar(juego->pokedex_nueva,aplicar_patron_a_pokemon,juego);
+	}
+	else if (entrada == TECLA_IZQUIERDA){
+		jugador->posicion.x--;
+		jugador->ultima_coordenada.x = -1;
+		pokedex_iterar(juego->pokedex_nueva,aplicar_patron_a_pokemon,juego);
+	}
+	else if (entrada == TECLA_ARRIBA){
+		jugador->posicion.y--;
+		jugador->ultima_coordenada.y = -1;
+		pokedex_iterar(juego->pokedex_nueva,aplicar_patron_a_pokemon,juego);
+	}
+	else if (entrada == TECLA_ABAJO){
+		jugador->posicion.y++;
+		jugador->ultima_coordenada.y = 1;
+		pokedex_iterar(juego->pokedex_nueva,aplicar_patron_a_pokemon,juego);
+	}
+}
+
+//pre:
+//post:
+bool imprimir_pokemon_en_terreno(void *pokemon_void, void *terreno) {
+    monstruos_t *pokemon = (monstruos_t *)pokemon_void;
+    tablero_t (*tablero)[MAX_COL][MAX_FIL] = (tablero_t (*)[MAX_COL][MAX_FIL])terreno;
+
+    tablero_t pokemon_tablero = {.letra = pokemon->caracter, .color = pokemon->color};
+
+    limitar_movimiento(&pokemon->posicion);
+
+    (*tablero)[pokemon->posicion.y][pokemon->posicion.x] = pokemon_tablero;
+
+    return true;
+}
+
 //pre:
 //post:
 void imprimir_terreno(tablero_t terreno[MAX_COL][MAX_FIL]){
@@ -356,22 +410,37 @@ void imprimir_terreno(tablero_t terreno[MAX_COL][MAX_FIL]){
 	}	
 }
 
-bool imprimir_pokemon_en_terreno(monstruos_t *pokemon, tablero_t terreno[MAX_COL][MAX_FIL]) {
-	tablero_t pokemon_tablero = {.letra = pokemon->caracter,.color = pokemon->color};
-	
-	limitar_movimiento(&pokemon->posicion);
-
-	terreno[pokemon->posicion.y][pokemon->posicion.x] = pokemon_tablero;
-
-	return true;
+void crear_setear_monstruo(pokedex_t *pokedex,pokedex_t *nueva_pokedex){
+	pokemon_t *pokemon_nuevo = pokedex_devolver_pokemon_aleatorio(pokedex);
+	monstruos_t *poke_nuevo = calloc(1,sizeof(monstruos_t));
+	setear_atributos_pokemon(poke_nuevo,pokemon_nuevo);
+	pokedex_agregar_monstruo(nueva_pokedex,poke_nuevo);
+	poke_nuevo->cantidad++;
 }
 
+
+bool capturar_pokemon(void* pokemon_void, void* ctx) {
+    monstruos_t *poke = (monstruos_t *)pokemon_void;
+    juego_t *juego = (juego_t *)ctx;
+    
+    if (son_posiciones_iguales(juego->jugador->posicion, poke->posicion)) {		
+		juego->jugador->puntaje += (poke->pokemon->puntaje *juego->jugador->multiplicador);
+
+        pokedex_eliminar_monstruo(juego->pokedex_nueva, poke,(void*)&poke->pokemon_eliminado);
+        poke->cantidad--;
+        juego->jugador->posicion.x = 10;
+		crear_setear_monstruo(juego->pokedex_vieja,juego->pokedex_nueva);
+        juego->jugador->iteraciones = 300;
+
+        return false;
+    }
+    return true; 
+}
 
 int logica(int entrada, void *datos)
 {
 	juego_t *juego = datos;
 	struct jugador *jugador = juego->jugador; 
-	//monstruos_t *pokemon = juego->poke;
 
 	borrar_pantalla();
 	
@@ -381,22 +450,17 @@ int logica(int entrada, void *datos)
 
 	jugador->iteraciones++;
 	
-	if (juego->poke->cantidad == 7 && son_posiciones_iguales(jugador->posicion,juego->poke->posicion)){
-		jugador->puntaje += juego->poke->puntaje;
-		pokedex_eliminar_pokemon(juego->pokedex,juego->poke->pokemon,(void*)&juego->poke->pokemon_eliminado);
-		juego->poke->cantidad--;
-		pokedex_mostrar_ordenados(juego->pokedex,imprimir_pokemon,NULL);
-	}
 
-	imprimir_cabezera(juego,juego->poke->pokemon_eliminado);
+	imprimir_cabezera(juego);
+
+	pokedex_iterar(juego->pokedex_nueva,capturar_pokemon,juego);
 
 	tablero_t terreno[MAX_COL][MAX_FIL];
 	memset(terreno,0,sizeof(terreno));
 
 	tablero_t jugador_tablero = {.letra = '@',.color = ANSI_COLOR_BOLD ANSI_COLOR_RED};
 
-	//pokedex_iterar(juego->pokedex,imprimir_pokemon_en_terreno,NULL);
-	imprimir_pokemon_en_terreno(juego->poke,terreno);
+	pokedex_iterar(juego->pokedex_nueva,imprimir_pokemon_en_terreno,terreno);
 
 	terreno[jugador->posicion.y][jugador->posicion.x] = jugador_tablero;
 
@@ -411,12 +475,12 @@ int logica(int entrada, void *datos)
 	return entrada == 'q' || entrada == 'Q';
 }
 
-
 int main(int argc, const char *argv[])
 {
 	if (!son_argumentos_validos(argc, argv)) {
 		return -1;
 	}
+	borrar_pantalla();
 	menu_t *menu = menu_crear();
 	pokedex_t *pokedex = pokedex_crear(comparador);
 	char entrada;
@@ -452,21 +516,18 @@ int main(int argc, const char *argv[])
 	jugador.multiplicador = 1;
 
 	monstruos_t poke = {.cantidad = 0,.pokemon_eliminado = NULL};
-
-	pokedex_t *nueva_pokedex = pokedex_crear(comparador);
-	for (size_t i = 0; i < 7; i++){
-		pokemon_t *pokemon_nuevo = pokedex_devolver_pokemon_aleatorio(pokedex);
-		setear_atributos_pokemon(&poke,pokemon_nuevo);
-		pokedex_agregar_pokemon(nueva_pokedex,pokemon_nuevo);
-		poke.cantidad++;
+	pokedex_t *nueva_pokedex = pokedex_crear(comparador_monstruos);
+	for (size_t i = 0; i < CANT_INICIAL_POKE; i++){
+		crear_setear_monstruo(pokedex,nueva_pokedex);
 	}	
-	juego_t juego = {.jugador = &jugador,.poke = &poke, .pokedex = nueva_pokedex};
+
+	juego_t juego = {.jugador = &jugador,.poke = &poke, .pokedex_nueva = nueva_pokedex, .pokedex_vieja = pokedex};
 
 	game_loop(logica, &juego);
 
 	mostrar_cursor();
 
-	pokedex_destruir_todo(nueva_pokedex,NULL);
+	pokedex_destruir_todo(nueva_pokedex,liberar_monstruos);
 
 	pokedex_destruir_todo(pokedex,liberar_pokemon);
 	menu_destruir(menu);

@@ -18,6 +18,9 @@ struct pokemon {
 
 typedef struct pokemon pokemon_t;
 
+typedef struct monstruo monstruos_t;
+
+
 /*
     *Crea la pokedex.
 */
@@ -82,14 +85,12 @@ bool pokedex_mostrar_ordenados(pokedex_t *pokedex,bool(*f)(void*, void*),void* c
 */
 pokemon_t *pokedex_devolver_pokemon_aleatorio(pokedex_t *pokedex);
 
-
 /*
 *   
 *
 *
 */
 bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex,const char *argv[], char separador, size_t columnas);
-
 
 /*
 *    
@@ -98,5 +99,22 @@ bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex,const char *argv[], c
 */
 bool pokedex_iterar(pokedex_t *pokedex,bool(*f)(void*, void*),void* ctx);
 
+/**
+ * Inserta un monstruo a la pokedex.
+ * 
+ *
+ * Devuelve true si pudo agregar al monstruo,o false en caso de error.
+ *
+ */
+bool pokedex_agregar_monstruo(pokedex_t *pokedex, monstruos_t *poke);
+
+/**
+ * 
+ * 
+ *
+ * 
+ *
+ */
+bool pokedex_eliminar_monstruo(pokedex_t *pokedex, monstruos_t *poke, void **eliminado);
 
 #endif /* POKEDEX */
