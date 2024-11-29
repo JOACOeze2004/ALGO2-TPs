@@ -13,19 +13,14 @@ typedef struct opcion opcion_t;
 menu_t *menu_crear();
 
 /*
-    *Destruye el menu.
+    *Destruye el menu. 
 */
 void menu_destruir(menu_t *menu);
 
 /**
- * Destruye el menu aplicando la funcion destructora (si no es NULL) a cada elemento.
- * */
-void menu_destruir_todo(menu_t *menu, void (*destructor)(void *));
-
-/**
- * Inserta una opcion al menu, y una funcion como valor del mismo.
+ * Inserta una opcion al menu, y una funcion como valor del mismo. Se le debe pasar un ctx que contengan los parametros que usaran para las funciones que metan.
  * 
- * *En caso de meter la misma opcion, modifica la funcion que habia antes por la que le pasaste ahora y devuelve true. *
+ * En caso de meter la misma opcion, modifica la funcion que habia antes por la que le pasaste ahora y devuelve true. *
  *
  * Devuelve true si pudo agregar la opcion junto con su funcion,o false en caso de error.
  *

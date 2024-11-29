@@ -1,32 +1,13 @@
 #include "pokedex.h"
 #include "abb.h"
 #include "csv.h"
+#include "castear.h"
 
 struct pokedex {
 	abb_t *almacen;
 	size_t cant_pokemones;
 };
 
-bool castear_a_int(const char *str, void *ctx)
-{
-	return sscanf(str, "%d", (int *)ctx) == 1;
-}
-
-bool crear_string_nuevo(const char *str, void *ctx)
-{
-	char *nuevo = malloc(strlen(str) + 1);
-	if (nuevo == NULL)
-		return false;
-	strcpy(nuevo, str);
-	*(char **)ctx = nuevo;
-	return true;
-}
-
-bool castear_a_char(const char *str, void *ctx)
-{
-	*(char *)ctx = *(char *)str;
-	return true;
-}
 
 pokedex_t *pokedex_crear(int (*comparador)(void *, void *))
 {
@@ -62,8 +43,7 @@ size_t pokedex_cantidad_pokemones(pokedex_t *pokedex)
 bool pokedex_eliminar_pokemon(pokedex_t *pokedex, pokemon_t *pokemon,
 			      void **eliminado)
 {
-	if (!pokedex || !pokemon || pokedex->cant_pokemones == 0 ||
-	    !eliminado) {
+	if (!pokedex || !pokemon || pokedex->cant_pokemones == 0) {
 		return false;
 	}
 	if (abb_quitar(pokedex->almacen, pokemon, eliminado)) {
@@ -122,6 +102,8 @@ pokemon_t *pokedex_devolver_pokemon_aleatorio(pokedex_t *pokedex)
 	return pokemon_aleatorio;
 }
 
+//pre:
+//post:
 void reservar_copiar_nombre_pokemon(pokemon_t *pokemon, char *nombre)
 {
 	pokemon->nombre = malloc(strlen(nombre) + 1);

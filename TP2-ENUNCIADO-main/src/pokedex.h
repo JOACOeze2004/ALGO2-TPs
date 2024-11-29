@@ -13,7 +13,6 @@ struct pokemon {
 	int puntaje;
 	char *color;
 	char *patron_movimientos;
-	//char primer_letra;
 };
 
 typedef struct pokemon pokemon_t;
@@ -87,32 +86,37 @@ pokemon_t *pokedex_devolver_pokemon_aleatorio(pokedex_t *pokedex);
 
 /*
 *   
+*	Devuelve True si pudo cargar los pokemones que estaban en el archivo que le pasamos.
 *
+*	Internamente, snos encargamos de setear las cosas, pero se espera que el archivo tenga el siguiente formato:
 *
+*	NombrePokemon,puntaje,color,patron de Movimientos.
+*
+*	Obvio que pueden poner el separador que quieran, pero se espera ese formato.
 */
 bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *argv[],
 					char separador, size_t columnas);
 
 /*
-*    
-*
-*
+*		
+*   Itera la pokedex con el recorrido PREORDEN. Si la funcion que le pasamos devuleve false, se corta el recorrido y devuelve false la funcion.
+*	
 */
 bool pokedex_iterar(pokedex_t *pokedex, bool (*f)(void *, void *), void *ctx);
 
 /**
- * Inserta un monstruo a la pokedex.
+ * Inserta un monstruo (pokemon para el juego/tablero) a la pokedex.
  * 
  *
- * Devuelve true si pudo agregar al monstruo,o false en caso de error.
+ * Devuelve true si pudo agregar al monstruo,o false en caso contrario.
  *
  */
 bool pokedex_agregar_monstruo(pokedex_t *pokedex, monstruos_t *poke);
 
 /**
  * 
- * 
- *
+ * 	
+ *	Elimina un monstruo de la pokedex. Y se guarda el monstruo eliminado en eliminado, siempre que este no sea NULL.
  * 
  *
  */
