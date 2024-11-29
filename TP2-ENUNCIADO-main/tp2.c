@@ -8,7 +8,7 @@
 #define MAX_FIL 32
 #define MAX_COL 15
 
-#define CANT_INICIAL_POKE 1
+#define CANT_INICIAL_POKE 3
 
 #define MOV_ARRIBA 'N'
 #define MOV_ABAJO 'S'
@@ -27,12 +27,10 @@ struct monstruo{
 	coordenada_t posicion;
 	char caracter;
 	char *color;
-	size_t cantidad;
 	pokemon_t *pokemon;
 	char *patron;
 	size_t indice_patron;
 	int puntaje;
-	pokemon_t *pokemon_eliminado;
 };
 
 struct jugador {
@@ -48,7 +46,9 @@ typedef struct juego{
 	monstruos_t *poke;
 	pokedex_t *pokedex_nueva;
 	pokedex_t *pokedex_vieja;
-
+	monstruos_t *pokemon_eliminado;
+	bool hay_poke_a_eliminar;
+	monstruos_t *poke_free;
 } juego_t;
 
 typedef struct tablero{
@@ -126,7 +126,13 @@ int comparador_monstruos(void *a, void *b)
 	}
 	monstruos_t *poke_a = (monstruos_t *)a;
 	monstruos_t *poke_b = (monstruos_t *)b;
-	return strcmp(poke_a->pokemon->nombre, poke_b->pokemon->nombre);
+	if (poke_a->posicion.x == poke_b->posicion.x && poke_a->posicion.y == poke_b->posicion.y) {
+        return 0; 
+    } else if (poke_a->posicion.x < poke_b->posicion.x || (poke_a->posicion.x == poke_b->posicion.x && poke_a->posicion.y < poke_b->posicion.y)) {
+        return -1;
+    } else {
+        return 1;
+    }
 }
 
 bool imprimir_pokemon(void *elemento, void *ctx)
@@ -139,8 +145,8 @@ bool imprimir_pokemon(void *elemento, void *ctx)
 bool imprimir_pokemon2(void *elemento, void *ctx)
 {
 	monstruos_t *poke = elemento;
-	printf("coordenada x:%i Coordenda Y:%i,nombre:%s,Patron:%s, color:%s,puntaje:%i,caracter: %c\n",
-	       poke->posicion.x, poke->posicion.y,poke->pokemon->nombre,poke->pokemon->patron_movimientos,poke->pokemon->color,poke->puntaje,poke->caracter);
+	printf("nombre:%s, color:%s,puntaje:%i,caracter: %c\n",
+	       poke->pokemon->nombre,poke->pokemon->color,poke->puntaje,poke->caracter);
 	return true;
 }
 
@@ -234,7 +240,7 @@ int min(int a, int b)
 //pre:  recibe dos coordenadas_t, que son dos posiciones.
 //post: retorna true si las filas y columnas de amobs puntos es la misma.
 bool son_posiciones_iguales(coordenada_t posicion1,coordenada_t posicion2){
-    return (posicion1.x == posicion2.x && posicion1.y == posicion2.y) ;   
+    return (posicion1.x == posicion2.x && posicion1.y == posicion2.y);   
 }
 
 void imprimir_cabezera(juego_t *juego){
@@ -243,8 +249,13 @@ void imprimir_cabezera(juego_t *juego){
 	       "⬆⬇⬅➡" ANSI_COLOR_RESET " para moverse\n");
 	printf("Presionar " ANSI_COLOR_RED ANSI_COLOR_BOLD "Q" ANSI_COLOR_RESET
 	       " para salir\n");
-	printf("Iteraciones: %d Tiempo: %d Puntaje: %i Multiplicador: %i\n", jugador->iteraciones,
-	       jugador->iteraciones / 5,jugador->puntaje,jugador->multiplicador);	
+	printf("Iteraciones: %d Tiempo restante: %d Puntaje: %i Multiplicador: %i\n", jugador->iteraciones,
+	       60 - jugador->iteraciones / 5,jugador->puntaje,jugador->multiplicador);	
+	if (juego->pokemon_eliminado == NULL){
+		printf("No has captudaro a ningun pokemon aun\n");
+	}else{
+		printf("El ultimo pokemon capturado es:%s\n",juego->pokemon_eliminado->pokemon->nombre);
+	}
 }
 
 void limitar_movimiento(coordenada_t *posicion){
@@ -336,7 +347,7 @@ void aplicar_patron_movimiento(juego_t *juego, monstruos_t *poke) {
 	size_t longitud_patron = strlen(poke->pokemon->patron_movimientos);
 	poke->indice_patron++;	
     accionar_patron(poke, juego->jugador,poke->pokemon->patron_movimientos[letra_a_ejecutar]);
-	if ( poke->indice_patron >= longitud_patron){
+	if (poke->indice_patron >= longitud_patron - 1){
 		poke->indice_patron = 0;
 	}
 }
@@ -344,11 +355,9 @@ void aplicar_patron_movimiento(juego_t *juego, monstruos_t *poke) {
 bool aplicar_patron_a_pokemon(void* pokemon_void, void* ctx) {
     monstruos_t *poke = (monstruos_t *)pokemon_void;
     juego_t *juego = (juego_t *)ctx;
-
     if (poke->pokemon->patron_movimientos != NULL) {
         aplicar_patron_movimiento(juego, poke);
     }
-
     return true;
 }
 
@@ -415,23 +424,23 @@ void crear_setear_monstruo(pokedex_t *pokedex,pokedex_t *nueva_pokedex){
 	monstruos_t *poke_nuevo = calloc(1,sizeof(monstruos_t));
 	setear_atributos_pokemon(poke_nuevo,pokemon_nuevo);
 	pokedex_agregar_monstruo(nueva_pokedex,poke_nuevo);
-	poke_nuevo->cantidad++;
 }
 
 
 bool capturar_pokemon(void* pokemon_void, void* ctx) {
-    monstruos_t *poke = (monstruos_t *)pokemon_void;
-    juego_t *juego = (juego_t *)ctx;
+    monstruos_t *poke = pokemon_void;
+    juego_t *juego = ctx;
     
     if (son_posiciones_iguales(juego->jugador->posicion, poke->posicion)) {		
-		juego->jugador->puntaje += (poke->pokemon->puntaje *juego->jugador->multiplicador);
-
-        pokedex_eliminar_monstruo(juego->pokedex_nueva, poke,(void*)&poke->pokemon_eliminado);
-        poke->cantidad--;
-        juego->jugador->posicion.x = 10;
-		crear_setear_monstruo(juego->pokedex_vieja,juego->pokedex_nueva);
-        juego->jugador->iteraciones = 300;
-
+		juego->jugador->puntaje += (poke->pokemon->puntaje * juego->jugador->multiplicador);
+		if (juego->pokemon_eliminado != NULL && ( poke->caracter == juego->pokemon_eliminado->caracter || (strcmp(poke->color,juego->pokemon_eliminado->color)== 0))){
+			juego->jugador->multiplicador++;
+		}
+		else{
+			juego->jugador->multiplicador = 1;
+		}	
+		juego->poke_free = poke;
+		juego->hay_poke_a_eliminar = true;
         return false;
     }
     return true; 
@@ -441,6 +450,7 @@ int logica(int entrada, void *datos)
 {
 	juego_t *juego = datos;
 	struct jugador *jugador = juego->jugador; 
+	juego->hay_poke_a_eliminar = false;
 
 	borrar_pantalla();
 	
@@ -450,26 +460,33 @@ int logica(int entrada, void *datos)
 
 	jugador->iteraciones++;
 	
-
 	imprimir_cabezera(juego);
-
-	pokedex_iterar(juego->pokedex_nueva,capturar_pokemon,juego);
 
 	tablero_t terreno[MAX_COL][MAX_FIL];
 	memset(terreno,0,sizeof(terreno));
 
 	tablero_t jugador_tablero = {.letra = '@',.color = ANSI_COLOR_BOLD ANSI_COLOR_RED};
-
+	
 	pokedex_iterar(juego->pokedex_nueva,imprimir_pokemon_en_terreno,terreno);
 
 	terreno[jugador->posicion.y][jugador->posicion.x] = jugador_tablero;
 
 	imprimir_terreno(terreno);
+
 	
-	if (jugador->iteraciones/5 == 60){
+	if (jugador->iteraciones / 5 == 60){
 		entrada = 'q';
 	}
 	printf("\n");
+
+	pokedex_iterar(juego->pokedex_nueva,capturar_pokemon,juego);
+
+	if (juego->hay_poke_a_eliminar) {
+		if(pokedex_eliminar_monstruo(juego->pokedex_nueva, juego->poke_free, (void*)&juego->pokemon_eliminado)){
+			crear_setear_monstruo(juego->pokedex_vieja,juego->pokedex_nueva);
+		}
+    }
+
 	esconder_cursor();
 
 	return entrada == 'q' || entrada == 'Q';
@@ -515,13 +532,13 @@ int main(int argc, const char *argv[])
 	jugador.puntaje = 0;
 	jugador.multiplicador = 1;
 
-	monstruos_t poke = {.cantidad = 0,.pokemon_eliminado = NULL};
+	monstruos_t poke = { 0 };
 	pokedex_t *nueva_pokedex = pokedex_crear(comparador_monstruos);
 	for (size_t i = 0; i < CANT_INICIAL_POKE; i++){
 		crear_setear_monstruo(pokedex,nueva_pokedex);
 	}	
 
-	juego_t juego = {.jugador = &jugador,.poke = &poke, .pokedex_nueva = nueva_pokedex, .pokedex_vieja = pokedex};
+	juego_t juego = {.jugador = &jugador,.poke = &poke, .pokedex_nueva = nueva_pokedex, .pokedex_vieja = pokedex, .pokemon_eliminado = NULL};
 
 	game_loop(logica, &juego);
 

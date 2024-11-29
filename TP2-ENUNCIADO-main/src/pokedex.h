@@ -20,11 +20,10 @@ typedef struct pokemon pokemon_t;
 
 typedef struct monstruo monstruos_t;
 
-
 /*
     *Crea la pokedex.
 */
-pokedex_t *pokedex_crear(int (*comparador)(void*, void*));
+pokedex_t *pokedex_crear(int (*comparador)(void *, void *));
 
 /*
     *Destruye la pokedex.
@@ -55,7 +54,8 @@ size_t pokedex_cantidad_pokemones(pokedex_t *pokedex);
 /*
 *   Elimina un pokemon de la pokedex. Y se guarda el pokemon eliminado en eliminado, siempre que este no sea NULL.
 */
-bool pokedex_eliminar_pokemon(pokedex_t *pokedex, pokemon_t *pokemon,void **eliminado);
+bool pokedex_eliminar_pokemon(pokedex_t *pokedex, pokemon_t *pokemon,
+			      void **eliminado);
 
 /*
 *   
@@ -73,8 +73,8 @@ void *pokedex_buscar_pokemon(pokedex_t *pokedex, void *pokemon_buscado);
 *   Recomendacion: usar para el menu al pedir los pokemones leidos del csv en orden alfabetico.
 *
 */
-bool pokedex_mostrar_ordenados(pokedex_t *pokedex,bool(*f)(void*, void*),void* ctx);
-
+bool pokedex_mostrar_ordenados(pokedex_t *pokedex, bool (*f)(void *, void *),
+			       void *ctx);
 
 /*
 *   
@@ -90,14 +90,15 @@ pokemon_t *pokedex_devolver_pokemon_aleatorio(pokedex_t *pokedex);
 *
 *
 */
-bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex,const char *argv[], char separador, size_t columnas);
+bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *argv[],
+					char separador, size_t columnas);
 
 /*
 *    
 *
 *
 */
-bool pokedex_iterar(pokedex_t *pokedex,bool(*f)(void*, void*),void* ctx);
+bool pokedex_iterar(pokedex_t *pokedex, bool (*f)(void *, void *), void *ctx);
 
 /**
  * Inserta un monstruo a la pokedex.
@@ -115,6 +116,7 @@ bool pokedex_agregar_monstruo(pokedex_t *pokedex, monstruos_t *poke);
  * 
  *
  */
-bool pokedex_eliminar_monstruo(pokedex_t *pokedex, monstruos_t *poke, void **eliminado);
+bool pokedex_eliminar_monstruo(pokedex_t *pokedex, monstruos_t *poke,
+			       void **eliminado);
 
 #endif /* POKEDEX */

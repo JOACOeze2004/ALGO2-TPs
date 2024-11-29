@@ -28,7 +28,6 @@ bool castear_a_char(const char *str, void *ctx)
 	return true;
 }
 
-
 pokedex_t *pokedex_crear(int (*comparador)(void *, void *))
 {
 	pokedex_t *pokedex = calloc(1, sizeof(pokedex_t));
@@ -88,7 +87,8 @@ bool pokedex_mostrar_ordenados(pokedex_t *pokedex, bool (*f)(void *, void *),
 	if (!pokedex || !f) {
 		return false;
 	}
-	if (abb_iterar_inorden(pokedex->almacen, f, ctx) == pokedex->cant_pokemones) {
+	if (abb_iterar_inorden(pokedex->almacen, f, ctx) ==
+	    pokedex->cant_pokemones) {
 		return true;
 	}
 	return false;
@@ -96,28 +96,29 @@ bool pokedex_mostrar_ordenados(pokedex_t *pokedex, bool (*f)(void *, void *),
 
 //pre:
 //post:
-bool seleccionar_pokemon(void *elemento,void* ctx){
-    size_t *contador = ((size_t **)ctx)[0];
-    size_t *indice_objetivo = ((size_t **)ctx)[1];
-    pokemon_t **resultado = ((pokemon_t ***)ctx)[2];
-    if (*contador == *indice_objetivo) {
-        *resultado = elemento;
-        return false;
-    }
-    (*contador)++;
-    return true;
+bool seleccionar_pokemon(void *elemento, void *ctx)
+{
+	size_t *contador = ((size_t **)ctx)[0];
+	size_t *indice_objetivo = ((size_t **)ctx)[1];
+	pokemon_t **resultado = ((pokemon_t ***)ctx)[2];
+	if (*contador == *indice_objetivo) {
+		*resultado = elemento;
+		return false;
+	}
+	(*contador)++;
+	return true;
 }
 
 pokemon_t *pokedex_devolver_pokemon_aleatorio(pokedex_t *pokedex)
 {
-    if (!pokedex || pokedex->cant_pokemones == 0){
-        return NULL;
-    }
-    size_t indice_random = (size_t)rand() % (pokedex->cant_pokemones);
-    size_t i = 0;
-    pokemon_t *pokemon_aleatorio = NULL;
-    void *ctx[] = {&i, &indice_random, &pokemon_aleatorio};
-    abb_iterar_postorden(pokedex->almacen, seleccionar_pokemon, ctx);
+	if (!pokedex || pokedex->cant_pokemones == 0) {
+		return NULL;
+	}
+	size_t indice_random = (size_t)rand() % (pokedex->cant_pokemones);
+	size_t i = 0;
+	pokemon_t *pokemon_aleatorio = NULL;
+	void *ctx[] = { &i, &indice_random, &pokemon_aleatorio };
+	abb_iterar_postorden(pokedex->almacen, seleccionar_pokemon, ctx);
 	return pokemon_aleatorio;
 }
 
@@ -137,7 +138,8 @@ void reservar_copiar_color_pokemon(pokemon_t *pokemon, char *color)
 	}
 }
 
-void reservar_copiar_patron_movimientos(pokemon_t *pokemon, char *patron_movimientos)
+void reservar_copiar_patron_movimientos(pokemon_t *pokemon,
+					char *patron_movimientos)
 {
 	pokemon->patron_movimientos = malloc(strlen(patron_movimientos) + 1);
 	if (pokemon->patron_movimientos != NULL) {
@@ -148,66 +150,71 @@ void reservar_copiar_patron_movimientos(pokemon_t *pokemon, char *patron_movimie
 // pre:	Asumimos que el struct pokemon y los demas argumentos pasados fueron
 // inicalizados y/o casteados correctamente. post:	Seteamos los campos del
 // pokemon con lo que fuismo casteando del archivo csv.
-void setear_pokemon(pokemon_t *pokemon, char *nombre, int puntaje,
-		    char* color, char* patron_movimientos)
+void setear_pokemon(pokemon_t *pokemon, char *nombre, int puntaje, char *color,
+		    char *patron_movimientos)
 {
 	reservar_copiar_nombre_pokemon(pokemon, nombre);
 	pokemon->puntaje = puntaje;
-	reservar_copiar_color_pokemon(pokemon,color);
-	reservar_copiar_patron_movimientos(pokemon,patron_movimientos);
+	reservar_copiar_color_pokemon(pokemon, color);
+	reservar_copiar_patron_movimientos(pokemon, patron_movimientos);
 }
 
-
-bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *argv[], char separador, size_t columnas){
-	if (!pokedex || !argv){
+bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *argv[],
+					char separador, size_t columnas)
+{
+	if (!pokedex || !argv) {
 		return false;
 	}
 	struct archivo_csv *archivo = abrir_archivo_csv(argv[1], separador);
-	if (!archivo){
+	if (!archivo) {
 		return false;
-	}	
+	}
 	char *nombre_pokemon = NULL;
 	int puntaje;
 	char *color = NULL;
 	char *patron_movimientos = NULL;
-	bool (*funciones[])(const char *,
-			    void *) = { crear_string_nuevo, castear_a_int, crear_string_nuevo,
-					crear_string_nuevo };
-	void *ctx[] = { &nombre_pokemon, &puntaje, &color, &patron_movimientos };
+	bool (*funciones[])(const char *, void *) = { crear_string_nuevo,
+						      castear_a_int,
+						      crear_string_nuevo,
+						      crear_string_nuevo };
+	void *ctx[] = { &nombre_pokemon, &puntaje, &color,
+			&patron_movimientos };
 	while (leer_linea_csv(archivo, columnas, funciones, ctx) == columnas) {
 		struct pokemon *nuevo_pokemon = malloc(sizeof(pokemon_t));
-		if (!nuevo_pokemon){
+		if (!nuevo_pokemon) {
 			cerrar_archivo_csv(archivo);
-			return false;	
-		}		
-		setear_pokemon(nuevo_pokemon, nombre_pokemon, puntaje,color, patron_movimientos);
-		if (!pokedex_agregar_pokemon(pokedex,nuevo_pokemon)) {
+			return false;
+		}
+		setear_pokemon(nuevo_pokemon, nombre_pokemon, puntaje, color,
+			       patron_movimientos);
+		if (!pokedex_agregar_pokemon(pokedex, nuevo_pokemon)) {
 			cerrar_archivo_csv(archivo);
-            free(nuevo_pokemon);
+			free(nuevo_pokemon);
 			return false;
 		}
 		free(nombre_pokemon);
 		free(color);
-        free(patron_movimientos);
-	}	
+		free(patron_movimientos);
+	}
 	cerrar_archivo_csv(archivo);
 	return true;
 }
 
 //pre:
 //post:
-bool pokedex_iterar(pokedex_t *pokedex,bool(*f)(void*, void*),void* ctx){
-	if (!pokedex){
+bool pokedex_iterar(pokedex_t *pokedex, bool (*f)(void *, void *), void *ctx)
+{
+	if (!pokedex) {
 		return false;
 	}
-	if (abb_iterar_preorden(pokedex->almacen,f,ctx)) {
+	if (abb_iterar_preorden(pokedex->almacen, f, ctx)) {
 		return true;
 	}
-	return false;	
+	return false;
 }
 
-
-bool pokedex_agregar_monstruo(pokedex_t *pokedex, monstruos_t *poke){
+bool pokedex_agregar_monstruo(pokedex_t *pokedex, monstruos_t *poke)
+{
 	if (!pokedex || !poke) {
 		return false;
 	}
@@ -218,9 +225,10 @@ bool pokedex_agregar_monstruo(pokedex_t *pokedex, monstruos_t *poke){
 	return true;
 }
 
-bool pokedex_eliminar_monstruo(pokedex_t *pokedex, monstruos_t *poke, void **eliminado){
-	if (!pokedex || !poke || pokedex->cant_pokemones == 0 ||
-	    !eliminado) {
+bool pokedex_eliminar_monstruo(pokedex_t *pokedex, monstruos_t *poke,
+			       void **eliminado)
+{
+	if (!pokedex || !poke || pokedex->cant_pokemones == 0) {
 		return false;
 	}
 	if (abb_quitar(pokedex->almacen, poke, eliminado)) {
@@ -232,7 +240,8 @@ bool pokedex_eliminar_monstruo(pokedex_t *pokedex, monstruos_t *poke, void **eli
 
 //pre:
 //post:
-void destruir_pokedex_con_destructor(pokedex_t *pokedex, void (*destructor)(void *))
+void destruir_pokedex_con_destructor(pokedex_t *pokedex,
+				     void (*destructor)(void *))
 {
 	if (pokedex) {
 		abb_destruir_todo(pokedex->almacen, destructor);
@@ -242,15 +251,14 @@ void destruir_pokedex_con_destructor(pokedex_t *pokedex, void (*destructor)(void
 
 void pokedex_destruir(pokedex_t *pokedex)
 {
-	if(pokedex){
-		destruir_pokedex_con_destructor(pokedex, NULL);	
-	}	 	
+	if (pokedex) {
+		destruir_pokedex_con_destructor(pokedex, NULL);
+	}
 }
 
 void pokedex_destruir_todo(pokedex_t *pokedex, void (*destructor)(void *))
 {
-	if (pokedex)
-	{
+	if (pokedex) {
 		destruir_pokedex_con_destructor(pokedex, destructor);
 	}
 }

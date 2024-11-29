@@ -28,7 +28,8 @@ menu_t *menu_crear()
 	return menu;
 }
 
-bool menu_agregar_opciones(menu_t *menu, char opcion, void (*funcion)(void**),void *ctx[])
+bool menu_agregar_opciones(menu_t *menu, char opcion, void (*funcion)(void **),
+			   void *ctx[])
 {
 	if (!menu || !funcion) {
 		return false;
@@ -54,7 +55,7 @@ bool menu_agregar_opciones(menu_t *menu, char opcion, void (*funcion)(void**),vo
 	return true;
 }
 
-bool menu_ejecutar_entrada(menu_t *menu, char opcion,void *ctx[])
+bool menu_ejecutar_entrada(menu_t *menu, char opcion, void *ctx[])
 {
 	if (!menu) {
 		return false;
@@ -88,7 +89,7 @@ bool menu_eliminar_opcion(menu_t *menu, char opcion)
 	return true;
 }
 
-void (*menu_obtener_funcion_opcion(menu_t *menu, char opcion))(void**)
+void (*menu_obtener_funcion_opcion(menu_t *menu, char opcion))(void **)
 {
 	if (!menu) {
 		return NULL;

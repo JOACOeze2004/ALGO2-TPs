@@ -34,10 +34,13 @@ formatear-pokedex:
 	$(CLANG_FORMAT) -i -style=file src/pokedex.c
 
 formatear-todo:
-	$(CLANG_FORMAT) -i -style=file src/menu.c && $(CLANG_FORMAT) -i -style=file src/menu.c && $(CLANG_FORMAT) -i -style=file src/pokedex.c
+	$(CLANG_FORMAT) -i -style=file src/menu.c && $(CLANG_FORMAT) -i -style=file src/menu.c && $(CLANG_FORMAT) -i -style=file src/pokedex.c && $(CLANG_FORMAT) -i -style=file src/menu.h && $(CLANG_FORMAT) -i -style=file tp2.c
 	
 correr-pruebas:
 	$(CC) $(CFLAGS) src/*.c pruebas_alumno.c -o pruebas_alumno && valgrind $(VALGRIND_FLAGS) ./pruebas_alumno
 	
 correr-tp:
 	$(CC) $(ENGINECFLAGS) -c extra/engine.c -o engine.o && $(CC) $(CFLAGS) src/*.c tp2.c engine.o -o tp2 && valgrind $(VALGRIND_FLAGS) ./tp2 datos/pokedex.csv
+	
+zipear:
+	cd ../ && zip -r TP2-ENUNCIADO-main.zip TP2-ENUNCIADO-main
