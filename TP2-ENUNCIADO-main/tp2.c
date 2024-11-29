@@ -43,12 +43,13 @@ struct jugador {
 
 typedef struct juego{
 	struct jugador *jugador;
-	monstruos_t *poke;
 	pokedex_t *pokedex_nueva;
 	pokedex_t *pokedex_vieja;
 	monstruos_t *pokemon_eliminado;
 	bool hay_poke_a_eliminar;
 	monstruos_t *poke_free;
+	int multicplicador_maximo;
+	int cant_pokemones;
 } juego_t;
 
 typedef struct tablero{
@@ -243,6 +244,8 @@ bool son_posiciones_iguales(coordenada_t posicion1,coordenada_t posicion2){
     return (posicion1.x == posicion2.x && posicion1.y == posicion2.y);   
 }
 
+//pre:
+//post:
 void imprimir_cabezera(juego_t *juego){
 	struct jugador *jugador = juego->jugador; 
 		printf("Utilizar " ANSI_COLOR_CYAN ANSI_COLOR_BOLD
@@ -251,11 +254,6 @@ void imprimir_cabezera(juego_t *juego){
 	       " para salir\n");
 	printf("Iteraciones: %d Tiempo restante: %d Puntaje: %i Multiplicador: %i\n", jugador->iteraciones,
 	       60 - jugador->iteraciones / 5,jugador->puntaje,jugador->multiplicador);	
-	if (juego->pokemon_eliminado == NULL){
-		printf("No has captudaro a ningun pokemon aun\n");
-	}else{
-		printf("El ultimo pokemon capturado es:%s\n",juego->pokemon_eliminado->pokemon->nombre);
-	}
 }
 
 void limitar_movimiento(coordenada_t *posicion){
@@ -431,15 +429,19 @@ bool capturar_pokemon(void* pokemon_void, void* ctx) {
     monstruos_t *poke = pokemon_void;
     juego_t *juego = ctx;
     
-    if (son_posiciones_iguales(juego->jugador->posicion, poke->posicion)) {		
+    if (son_posiciones_iguales(juego->jugador->posicion, poke->posicion) ) {		
 		juego->jugador->puntaje += (poke->pokemon->puntaje * juego->jugador->multiplicador);
 		if (juego->pokemon_eliminado != NULL && ( poke->caracter == juego->pokemon_eliminado->caracter || (strcmp(poke->color,juego->pokemon_eliminado->color)== 0))){
 			juego->jugador->multiplicador++;
+			if (juego->jugador->multiplicador > juego->multicplicador_maximo){
+				juego->multicplicador_maximo = juego->jugador->multiplicador;
+			}			
 		}
 		else{
 			juego->jugador->multiplicador = 1;
 		}	
 		juego->poke_free = poke;
+		juego->pokemon_eliminado = poke;
 		juego->hay_poke_a_eliminar = true;
         return false;
     }
@@ -459,7 +461,6 @@ int logica(int entrada, void *datos)
 	limitar_movimiento(&jugador->posicion);
 
 	jugador->iteraciones++;
-	
 	imprimir_cabezera(juego);
 
 	tablero_t terreno[MAX_COL][MAX_FIL];
@@ -473,23 +474,58 @@ int logica(int entrada, void *datos)
 
 	imprimir_terreno(terreno);
 
-	
 	if (jugador->iteraciones / 5 == 60){
 		entrada = 'q';
 	}
+
 	printf("\n");
 
 	pokedex_iterar(juego->pokedex_nueva,capturar_pokemon,juego);
 
+	if (juego->pokemon_eliminado == NULL){
+		printf("No has captudaro a ningun pokemon aun\n");
+	}else{
+		printf("El ultimo pokemon capturado es: %s%s\n"ANSI_COLOR_RESET, juego->pokemon_eliminado->color,juego->pokemon_eliminado->pokemon->nombre);
+	}
+
 	if (juego->hay_poke_a_eliminar) {
 		if(pokedex_eliminar_monstruo(juego->pokedex_nueva, juego->poke_free, (void*)&juego->pokemon_eliminado)){
+			juego->cant_pokemones--;
 			crear_setear_monstruo(juego->pokedex_vieja,juego->pokedex_nueva);
+			//free(juego->poke_free);
 		}
     }
 
 	esconder_cursor();
 
 	return entrada == 'q' || entrada == 'Q';
+}
+
+void mostrar_outro(juego_t juego){
+	printf(ANSI_COLOR_GREEN"Bueno se acabo el tiempo, veamos tus estadisticas...\n"ANSI_COLOR_RESET);
+	volatile long retraso = 0;
+	for (long i = 0; i < 99999999; i++){
+		retraso++;
+	}
+	retraso = 0;	
+	printf( ANSI_COLOR_BOLD ANSI_COLOR_BLUE"Tu puntaje fue de: " ANSI_COLOR_RED ANSI_COLOR_BOLD"%i\n",juego.jugador->puntaje);	
+	for ( long i = 0; i < 99999999; i++){
+		retraso++;
+	}
+	retraso = 0;	
+	printf(ANSI_COLOR_BLUE"Tu multiplicador maximo fue de: "ANSI_COLOR_RED ANSI_COLOR_BOLD"%i\n",juego.multicplicador_maximo);
+	for (long i = 0; i < 99999999; i++){
+		retraso++;
+	}
+	retraso = 0;
+	printf(ANSI_COLOR_BLUE"Tu combo mas largo de cuando capturaste a...." ANSI_COLOR_RED ANSI_COLOR_BOLD"\n No c aun no la hice :C\n"ANSI_COLOR_RESET);
+
+	for (long i = 0; i < 99999999; i++){
+		retraso++;
+	}
+	retraso = 0;
+
+	printf(ANSI_COLOR_YELLOW"Espero que el juego hay funcionado correctamente y que quieras volver a jugar :D\n"ANSI_COLOR_RESET);
 }
 
 int main(int argc, const char *argv[])
@@ -532,18 +568,21 @@ int main(int argc, const char *argv[])
 	jugador.puntaje = 0;
 	jugador.multiplicador = 1;
 
-	monstruos_t poke = { 0 };
 	pokedex_t *nueva_pokedex = pokedex_crear(comparador_monstruos);
+	juego_t juego = {.jugador = &jugador,.pokedex_nueva = nueva_pokedex, .pokedex_vieja = pokedex, .pokemon_eliminado = NULL, .poke_free = NULL, .multicplicador_maximo = 1};
+	
 	for (size_t i = 0; i < CANT_INICIAL_POKE; i++){
 		crear_setear_monstruo(pokedex,nueva_pokedex);
 	}	
-
-	juego_t juego = {.jugador = &jugador,.poke = &poke, .pokedex_nueva = nueva_pokedex, .pokedex_vieja = pokedex, .pokemon_eliminado = NULL};
 
 	game_loop(logica, &juego);
 
 	mostrar_cursor();
 
+
+	borrar_pantalla();
+	
+	//mostrar_outro(juego);
 	pokedex_destruir_todo(nueva_pokedex,liberar_monstruos);
 
 	pokedex_destruir_todo(pokedex,liberar_pokemon);
