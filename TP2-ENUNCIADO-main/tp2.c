@@ -77,8 +77,8 @@ bool son_argumentos_validos(int argc, const char *argv[])
 	return true;
 }
 
-//pre:
-//post:
+//pre:	El elemento pasado debe ser valido.
+//post:	Libera lo pedido para guardarnos el nombre, color y patron de los pokemones y libera el mismo pokemon.
 void liberar_pokemon(void *elemento)
 {
 	struct pokemon *pokemon = elemento;
@@ -90,8 +90,8 @@ void liberar_pokemon(void *elemento)
 	}
 }
 
-//pre:
-//post:
+//pre:	El elemento pasado debe ser valido.
+//post:	Libera lo pdido para los mostruos.
 void liberar_monstruos(void *elemento)
 {
 	monstruos_t *pokemon = elemento;
@@ -100,8 +100,8 @@ void liberar_monstruos(void *elemento)
 	}
 }
 
-//pre:
-//post:
+//pre:	Los argumentos pasado debe ser validos. Y al pasarle como argumentos, deben tener un campo nombre o un string.
+//post:	En caso de que algun element sea NULL retorna 0, o -1. Y sino devolvemos segun lo que nos de de comparar los nombres de los pokemones.
 int comparador(void *a, void *b)
 {
 	if (a == NULL && b == NULL) {
@@ -118,8 +118,8 @@ int comparador(void *a, void *b)
 	return strcmp(poke_a->nombre, poke_b->nombre);
 }
 
-//pre:
-//post:
+//pre:	Los argumentos pasado debe ser validos. Y al pasarle como argumentos, deben tener un campo nombre o un string.
+//post:	En caso de que algun element sea NULL retorna 0, o -1. Y sino, devolvemos segun que posicion es mayor o menor de los elementos pasados.
 int comparador_monstruos(void *a, void *b)
 {
 	if (a == NULL && b == NULL) {
@@ -142,16 +142,18 @@ int comparador_monstruos(void *a, void *b)
     }
 }
 
-//pre:
-//post:
+//pre:	Los elementos pasados deben ser validos, y deberian tener un campo nombre, puntaje y color. 
+//post:	Imprimimos el nombre, puntaje o color del pokemon.
 bool imprimir_pokemon(void *elemento, void *ctx)
 {
-	struct pokemon *poke = elemento;
+	pokemon_t *poke = elemento;
 	printf("Nombre: %s, puntaje: %i, color: %s\n",
 	       poke->nombre, poke->puntaje, poke->color);
 	return true;
 }
 
+//pre: Los elementos pasados deben ser validos, y deberian tener un campo nombre y color.
+//post:	Imprime el color y el nombre del monstruo.
 bool imprimir_pokemon2(void *elemento, void *ctx)
 {
 	monstruos_t *poke = elemento;
@@ -187,8 +189,8 @@ void imprimir_inicio()
 	printf(ANSI_COLOR_RED"====================================================\n"ANSI_COLOR_RESET);
 }
 
-//pre:
-//post:
+//pre:	El ctx debe ser valido.
+//post:	Se setea la opcion para salir del while del main, y se ivoca a la funcion de pokedex_mostrar_ordenados.
 void mostrar_pokedex(void *ctx[]){
 	printf("Aqui estan los pokemones que se ingresaron... \n");
 	int *opcion = (int*)((void**)ctx)[0];
@@ -198,16 +200,16 @@ void mostrar_pokedex(void *ctx[]){
 	return;	
 }
 
-//pre:
-//post:
+//pre:	El ctx debe ser valido.
+//post:	Se setea la opcion para salir del while del main.
 void avanzar_juego(void *ctx[]){
 	printf("Inicializando el juego... \n");
 	int *opcion = (int*)((void**)ctx)[0];
 	*opcion = 1;
 }
 
-//pre:
-//post:
+//pre:	El ctx debe ser valido.
+//post:	Se setea la semilla que el jugador ingreso. 
 void elegir_semilla(void *ctx[]){
 	printf("Ahora deberias ingresar una semilla (que sea un entero) --------->");
 	int *semilla = (int*)((void**)ctx)[3];
@@ -218,8 +220,8 @@ void elegir_semilla(void *ctx[]){
 	return;
 }
 
-//pre:
-//post:
+//pre:	El ctx debe ser valido.
+//post:	Se libera lo pedido para la pokedex y se abandona el programa con exit().
 void cerrar_juego(void *ctx[]){
 	printf("Saliendo del juego...\n");
 	pokedex_t *pokedex = *(pokedex_t **)ctx[1]; 
@@ -230,8 +232,8 @@ void cerrar_juego(void *ctx[]){
 	return;
 }
 
-//pre:
-//post:
+//pre:	Menu y ctx deben ser validos.
+//post:	Agrega las opciones estandar y sus respectivas funciones al menu.
 void agregar_todas_opciones(menu_t *menu,void *ctx[]){
 	menu_agregar_opciones(menu,'P',mostrar_pokedex,ctx);
 	menu_agregar_opciones(menu,'p',mostrar_pokedex,ctx);
@@ -262,8 +264,8 @@ bool son_posiciones_iguales(coordenada_t posicion1,coordenada_t posicion2){
     return (posicion1.x == posicion2.x && posicion1.y == posicion2.y);   
 }
 
-//pre:
-//post:
+//pre:	El juego debe ser valido y debe tener sus campos inicializados.
+//post:	Imprme informacion arriba del tablero.
 void imprimir_cabezera(juego_t *juego){
 	struct jugador *jugador = juego->jugador; 
 		printf("Utilizar " ANSI_COLOR_CYAN ANSI_COLOR_BOLD
@@ -274,15 +276,15 @@ void imprimir_cabezera(juego_t *juego){
 	       60 - jugador->iteraciones / 5,jugador->puntaje,jugador->multiplicador);	
 }
 
-//pre:
-//post:
+//pre:	Las coordenadas que le pasamos deben estar inicializadas.
+//post:	limita el moimiento de las coordenadas q el pasamos para que los pokemones y el jugador no se salgan del tablero.
 void limitar_movimiento(coordenada_t *posicion){
 	posicion->x = min(MAX_FIL - 1, max(0, posicion->x));
 	posicion->y = min(MAX_COL - 1, max(0, posicion->y));
 }
 
-//pre:
-//post:
+//pre:	El color pasado deben ser validos.
+//post:	Devuelve un string que vendria a ser el color que se supone que debe tener.
 char *setear_color(const char *color){
 	if (strcmp(color,"ROJO") == 0){
 		return ANSI_COLOR_RED;
@@ -310,8 +312,8 @@ char *setear_color(const char *color){
 	}
 }
 
-//pre:
-//post:
+//pre:	el monstruo y el pokemon, deben haverse inicializado y deben ser validos.
+//post:	setea los distintos campos del monstruo, con algunos datos del pokemon leido del csv, y otros cargados manualmente.
 void setear_atributos_pokemon(monstruos_t *poke, pokemon_t *pokemon_nuevo){
 	poke->pokemon = pokemon_nuevo;
 	poke->posicion = crear_fil_col_aleatorias();
@@ -322,8 +324,8 @@ void setear_atributos_pokemon(monstruos_t *poke, pokemon_t *pokemon_nuevo){
 	poke->pokemon->puntaje = pokemon_nuevo->puntaje;	
 }
 
-//pre:
-//post:
+//pre:	El monstruo, el jugador y la letra deben ser validos e inicializados. Ademas se debe haber inicializado una semilla en el main para que rand devuelva aleatoriamente un numero. 
+//post:	Dependiendo de la letra que le pasemos, el monstruo se mueve arriba,abajo, derecha, izquierda, el mismo movimiento que hizo el jugador, el movimiento inverso que hizo el jugador o un movimiento random dependiendo que devuelve rand.
 void accionar_patron(monstruos_t *poke, struct jugador *jugador, char letra) {
     int direccion_random = rand() % 4;
     switch (letra)
@@ -364,8 +366,8 @@ void accionar_patron(monstruos_t *poke, struct jugador *jugador, char letra) {
     }
 }
 
-//pre:
-//post:
+//pre:	Juego y el mosntruo deben ser validos y deben estar inicializados. Ademas debe tener un patron de movimientos valido, de lo contrario no se ejecutaria ningun movimiento. 
+//post: Vamos pasando letra a letra del patron del movimeintos que tiene el pokemon y se va avanzando con el contador de letra para porcesar la siguiente. SI se llegara a una letra previa del final (porque creo que cuenta el \n del csv), se setea el contador de la letra del pokemon a 0 asi se repite el ciclo.
 void aplicar_patron_movimiento(juego_t *juego, monstruos_t *poke) {
 	size_t letra_a_ejecutar = poke->indice_patron;
 	size_t longitud_patron = strlen(poke->pokemon->patron_movimientos);
@@ -376,8 +378,8 @@ void aplicar_patron_movimiento(juego_t *juego, monstruos_t *poke) {
 	}
 }
 
-//pre:
-//post:
+//pre:	El pokemon y el ctx deben ser validos.
+//post:	Se le aplica el patron de movimientos a cada pokemon de la pokedex. Util para usar con iterar_pokedex.
 bool aplicar_patron_a_pokemon(void* pokemon_void, void* ctx) {
     monstruos_t *poke = (monstruos_t *)pokemon_void;
     juego_t *juego = (juego_t *)ctx;
@@ -387,8 +389,8 @@ bool aplicar_patron_a_pokemon(void* pokemon_void, void* ctx) {
     return true;
 }
 
-//pre:
-//post:
+//pre:	La entrada deberia ser valida y el juego tambien y sus campos deben estar inicializados.
+//post:	Ejecuta el movimiento del jugador segun la entrada y mueve a los pokemones iterando en al pokedex.
 void procesar_entrada(int entrada, juego_t *juego){
 	struct jugador *jugador = juego->jugador; 
 	jugador->ultima_coordenada.x = 0;
@@ -415,8 +417,8 @@ void procesar_entrada(int entrada, juego_t *juego){
 	}
 }
 
-//pre:
-//post:
+//pre:	El pokemon y el terreno deben ser validos. Ademas se deberian tener los campos de posicion de los monstruos inicializados y dentro del tamaño que tiene el terreno.
+//post:	Dibuja en el terreno, al pokemon en cuestion.
 bool imprimir_pokemon_en_terreno(void *pokemon_void, void *terreno) {
     monstruos_t *pokemon = (monstruos_t *)pokemon_void;
     tablero_t (*tablero)[MAX_COL][MAX_FIL] = (tablero_t (*)[MAX_COL][MAX_FIL])terreno;
@@ -430,8 +432,8 @@ bool imprimir_pokemon_en_terreno(void *pokemon_void, void *terreno) {
     return true;
 }
 
-//pre:
-//post:
+//pre:	El terreno deberia estar ya inicializado.
+//post:	Imprme los caracteres (juento con sus colores) de los monstruos y el jugador. Si no hay nada en la posicion, imprime un puntito.
 void imprimir_terreno(tablero_t terreno[MAX_COL][MAX_FIL]){
 	for (int y = 0; y < MAX_COL; y++){
 		for (int x = 0; x < MAX_FIL; x++){
@@ -447,8 +449,8 @@ void imprimir_terreno(tablero_t terreno[MAX_COL][MAX_FIL]){
 	}	
 }
 
-//pre:
-//post:
+//pre:	Ambas pokedex, deben haber sido creadas, ademas de no ser NULL.
+//post:	Pedimos memoria para el monstruo, seteamos sus campos y lo agregamos a la pokedex que contiene a los monstruos.
 void crear_setear_monstruo(pokedex_t *pokedex,pokedex_t *nueva_pokedex){
 	pokemon_t *pokemon_nuevo = pokedex_devolver_pokemon_aleatorio(pokedex);
 	monstruos_t *poke_nuevo = calloc(1,sizeof(monstruos_t));
@@ -533,11 +535,11 @@ int logica(int entrada, void *datos)
 	return entrada == 'q' || entrada == 'Q';
 }
 
-//pre:
-//post:
+//pre:	juego deberia estar inicializado y se deberian haber modificado ssu campos durante la ejecuccion del programa.
+//post:	Imrpme varias estadisticas de la partida. 
 void mostrar_outro(juego_t juego){
 	printf(ANSI_COLOR_GREEN"Bueno se acabo el tiempo, veamos tus estadisticas...\n"ANSI_COLOR_RESET);
-	volatile long retraso = 0;
+	volatile long retraso = 0;	//tengo entendido que es C99, pero queria como meter un delay para simular una carga de datos, quedo bien igual.
 	for (long i = 0; i < 99999999; i++){
 		retraso++;
 	}
@@ -552,7 +554,7 @@ void mostrar_outro(juego_t juego){
 		retraso++;
 	}
 	retraso = 0;
-	printf(ANSI_COLOR_BLUE"Tu combo mas largo (sin contar al primero qeu capturaste) de cuando capturaste a...." ANSI_COLOR_RED ANSI_COLOR_BOLD"\n"ANSI_COLOR_RESET);
+	printf(ANSI_COLOR_BLUE"Tu combo mas largo (sin contar al primero que capturaste) fue: " ANSI_COLOR_RED ANSI_COLOR_BOLD"\n"ANSI_COLOR_RESET);
 	size_t combo_mas_largo = pokedex_iterar(juego.pokedex_combo_mas_largo,imprimir_pokemon2,NULL);
 	if (combo_mas_largo == 0){
 		printf(ANSI_COLOR_MAGENTA"Que paso? no capturaste pokemones del mismo color o con misma inicial consecutivamente\n");

@@ -74,8 +74,8 @@ bool pokedex_mostrar_ordenados(pokedex_t *pokedex, bool (*f)(void *, void *),
 	return false;
 }
 
-//pre:
-//post:
+//pre:	obvio que los elemntos pasados son validos y estan inicialziados. Ademas de habverse inicializado una semilla previamnete asi rand devuelve un numero aleatorio.
+//post:	devuelve true si se llego al indice q devolvio rand, y se pisa el pokemon que le pasamos con el contexto para asi quedarnos con el pokemon que estaba en ese nodo.
 bool seleccionar_pokemon(void *elemento, void *ctx)
 {
 	size_t *contador = ((size_t **)ctx)[0];
@@ -112,6 +112,8 @@ void reservar_copiar_nombre_pokemon(pokemon_t *pokemon, char *nombre)
 	}
 }
 
+//pre:
+//post:
 void reservar_copiar_color_pokemon(pokemon_t *pokemon, char *color)
 {
 	pokemon->color = malloc(strlen(color) + 1);
@@ -120,6 +122,8 @@ void reservar_copiar_color_pokemon(pokemon_t *pokemon, char *color)
 	}
 }
 
+//pre:
+//post:
 void reservar_copiar_patron_movimientos(pokemon_t *pokemon,
 					char *patron_movimientos)
 {
@@ -129,9 +133,8 @@ void reservar_copiar_patron_movimientos(pokemon_t *pokemon,
 	}
 }
 
-// pre:	Asumimos que el struct pokemon y los demas argumentos pasados fueron
-// inicalizados y/o casteados correctamente. post:	Seteamos los campos del
-// pokemon con lo que fuismo casteando del archivo csv.
+// pre:	Asumimos que el struct pokemon y los demas argumentos pasados fueron  inicalizados y/o casteados correctamente. 
+// post:	Seteamos los campos del pokemon con lo que fuismo casteando del archivo csv.
 void setear_pokemon(pokemon_t *pokemon, char *nombre, int puntaje, char *color,
 		    char *patron_movimientos)
 {
@@ -139,6 +142,25 @@ void setear_pokemon(pokemon_t *pokemon, char *nombre, int puntaje, char *color,
 	pokemon->puntaje = puntaje;
 	reservar_copiar_color_pokemon(pokemon, color);
 	reservar_copiar_patron_movimientos(pokemon, patron_movimientos);
+}
+
+//pre:	Los parametros pasados deben ser validos, obvio.
+//post:	devuelve un pokemon con todos los atributos que se le pasaron por el csv. O devuleve NULL si fallo el malloc.
+pokemon_t *crear_y_configurar_pokemon(char *nombre, int puntaje, char *color, char *patron_movimientos) {
+    pokemon_t *nuevo_pokemon = malloc(sizeof(pokemon_t));
+    if (!nuevo_pokemon) {
+        return NULL;
+    }
+    setear_pokemon(nuevo_pokemon, nombre, puntaje, color, patron_movimientos);
+    return nuevo_pokemon;
+}
+
+//pre:	Los parametros pasados deben ser validos.
+//post:	Libera lo pedido para el parseo del nombre, color y patron del pokemon.
+void liberar_recursos_csv(char *nombre, char *color, char *patron) {
+    free(nombre);
+    free(color);
+    free(patron);
 }
 
 bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *argv[],
@@ -162,28 +184,22 @@ bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *argv[],
 	void *ctx[] = { &nombre_pokemon, &puntaje, &color,
 			&patron_movimientos };
 	while (leer_linea_csv(archivo, columnas, funciones, ctx) == columnas) {
-		struct pokemon *nuevo_pokemon = malloc(sizeof(pokemon_t));
+		struct pokemon *nuevo_pokemon = crear_y_configurar_pokemon(nombre_pokemon,puntaje,color,patron_movimientos);
 		if (!nuevo_pokemon) {
 			cerrar_archivo_csv(archivo);
 			return false;
 		}
-		setear_pokemon(nuevo_pokemon, nombre_pokemon, puntaje, color,
-			       patron_movimientos);
 		if (!pokedex_agregar_pokemon(pokedex, nuevo_pokemon)) {
 			cerrar_archivo_csv(archivo);
 			free(nuevo_pokemon);
 			return false;
 		}
-		free(nombre_pokemon);
-		free(color);
-		free(patron_movimientos);
+		liberar_recursos_csv(nombre_pokemon,color,patron_movimientos);
 	}
 	cerrar_archivo_csv(archivo);
 	return true;
 }
 
-//pre:
-//post:
 bool pokedex_iterar(pokedex_t *pokedex, bool (*f)(void *, void *), void *ctx)
 {
 	if (!pokedex) {
@@ -220,8 +236,8 @@ bool pokedex_eliminar_monstruo(pokedex_t *pokedex, monstruos_t *poke,
 	return false;
 }
 
-//pre:
-//post:
+//pre:	La pokedex debe ser valida. Y si queremos aplicarle la funcion destructora no hya que pasarle null.
+//post:	Liberamos la pokedex aplciandole la funcion destructora.
 void destruir_pokedex_con_destructor(pokedex_t *pokedex,
 				     void (*destructor)(void *))
 {
