@@ -93,6 +93,8 @@ pokemon_t *pokedex_devolver_pokemon_aleatorio(pokedex_t *pokedex);
 *	NombrePokemon,puntaje,color,patron de Movimientos.
 *
 *	Obvio que pueden poner el separador que quieran, pero se espera ese formato.
+*
+*	Es tu responsabilidad porporcionarle una funcion destructora que libere lo pedido para el nombre, color y patron de movimientos. QUEDAS ADVERTIDO.
 */
 bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *argv[],
 					char separador, size_t columnas);

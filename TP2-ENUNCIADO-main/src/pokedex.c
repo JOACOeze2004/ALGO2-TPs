@@ -8,7 +8,6 @@ struct pokedex {
 	size_t cant_pokemones;
 };
 
-
 pokedex_t *pokedex_crear(int (*comparador)(void *, void *))
 {
 	pokedex_t *pokedex = calloc(1, sizeof(pokedex_t));
@@ -74,8 +73,8 @@ bool pokedex_mostrar_ordenados(pokedex_t *pokedex, bool (*f)(void *, void *),
 	return false;
 }
 
-//pre:	obvio que los elemntos pasados son validos y estan inicialziados. Ademas de habverse inicializado una semilla previamnete asi rand devuelve un numero aleatorio.
-//post:	devuelve true si se llego al indice q devolvio rand, y se pisa el pokemon que le pasamos con el contexto para asi quedarnos con el pokemon que estaba en ese nodo.
+//pre:	Obvio que los elemntos pasados son validos y estan inicialziados. Ademas de habverse inicializado una semilla previamnete asi rand devuelve un numero aleatorio.
+//post:	Devuelve true si se llego al indice q devolvio rand, y se pisa el pokemon que le pasamos con el contexto para asi quedarnos con el pokemon que estaba en ese nodo.
 bool seleccionar_pokemon(void *elemento, void *ctx)
 {
 	size_t *contador = ((size_t **)ctx)[0];
@@ -102,8 +101,8 @@ pokemon_t *pokedex_devolver_pokemon_aleatorio(pokedex_t *pokedex)
 	return pokemon_aleatorio;
 }
 
-//pre:
-//post:
+//pre: pokemon y el nombre deberian ser parametros validos e inicializados.
+//post:	Reserva memoria para el nombre del pokemon a guardar y copia el nombre que le pasemos al campo nombre del pokemon.
 void reservar_copiar_nombre_pokemon(pokemon_t *pokemon, char *nombre)
 {
 	pokemon->nombre = malloc(strlen(nombre) + 1);
@@ -112,8 +111,8 @@ void reservar_copiar_nombre_pokemon(pokemon_t *pokemon, char *nombre)
 	}
 }
 
-//pre:
-//post:
+//pre:	pokemon y el color deberian ser parametros validos e inicializados.
+//post:	Reserva memoria para el color del pokemon a guardar y copia el mismo al campo color del pokemon.
 void reservar_copiar_color_pokemon(pokemon_t *pokemon, char *color)
 {
 	pokemon->color = malloc(strlen(color) + 1);
@@ -122,8 +121,8 @@ void reservar_copiar_color_pokemon(pokemon_t *pokemon, char *color)
 	}
 }
 
-//pre:
-//post:
+//pre:	pokemon y el patron deberian ser parametros validos e inicializados.
+//post:	Reserva memoria para el paton del pokemon a guardar y copia el mismo al campo patron del pokemon.
 void reservar_copiar_patron_movimientos(pokemon_t *pokemon,
 					char *patron_movimientos)
 {
@@ -133,7 +132,7 @@ void reservar_copiar_patron_movimientos(pokemon_t *pokemon,
 	}
 }
 
-// pre:	Asumimos que el struct pokemon y los demas argumentos pasados fueron  inicalizados y/o casteados correctamente. 
+// pre:	Asumimos que el struct pokemon y los demas argumentos pasados fueron  inicalizados y/o casteados correctamente.
 // post:	Seteamos los campos del pokemon con lo que fuismo casteando del archivo csv.
 void setear_pokemon(pokemon_t *pokemon, char *nombre, int puntaje, char *color,
 		    char *patron_movimientos)
@@ -146,21 +145,25 @@ void setear_pokemon(pokemon_t *pokemon, char *nombre, int puntaje, char *color,
 
 //pre:	Los parametros pasados deben ser validos, obvio.
 //post:	devuelve un pokemon con todos los atributos que se le pasaron por el csv. O devuleve NULL si fallo el malloc.
-pokemon_t *crear_y_configurar_pokemon(char *nombre, int puntaje, char *color, char *patron_movimientos) {
-    pokemon_t *nuevo_pokemon = malloc(sizeof(pokemon_t));
-    if (!nuevo_pokemon) {
-        return NULL;
-    }
-    setear_pokemon(nuevo_pokemon, nombre, puntaje, color, patron_movimientos);
-    return nuevo_pokemon;
+pokemon_t *crear_y_configurar_pokemon(char *nombre, int puntaje, char *color,
+				      char *patron_movimientos)
+{
+	pokemon_t *nuevo_pokemon = malloc(sizeof(pokemon_t));
+	if (!nuevo_pokemon) {
+		return NULL;
+	}
+	setear_pokemon(nuevo_pokemon, nombre, puntaje, color,
+		       patron_movimientos);
+	return nuevo_pokemon;
 }
 
 //pre:	Los parametros pasados deben ser validos.
 //post:	Libera lo pedido para el parseo del nombre, color y patron del pokemon.
-void liberar_recursos_csv(char *nombre, char *color, char *patron) {
-    free(nombre);
-    free(color);
-    free(patron);
+void liberar_recursos_csv(char *nombre, char *color, char *patron)
+{
+	free(nombre);
+	free(color);
+	free(patron);
 }
 
 bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *argv[],
@@ -184,7 +187,8 @@ bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *argv[],
 	void *ctx[] = { &nombre_pokemon, &puntaje, &color,
 			&patron_movimientos };
 	while (leer_linea_csv(archivo, columnas, funciones, ctx) == columnas) {
-		struct pokemon *nuevo_pokemon = crear_y_configurar_pokemon(nombre_pokemon,puntaje,color,patron_movimientos);
+		struct pokemon *nuevo_pokemon = crear_y_configurar_pokemon(
+			nombre_pokemon, puntaje, color, patron_movimientos);
 		if (!nuevo_pokemon) {
 			cerrar_archivo_csv(archivo);
 			return false;
@@ -194,7 +198,7 @@ bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *argv[],
 			free(nuevo_pokemon);
 			return false;
 		}
-		liberar_recursos_csv(nombre_pokemon,color,patron_movimientos);
+		liberar_recursos_csv(nombre_pokemon, color, patron_movimientos);
 	}
 	cerrar_archivo_csv(archivo);
 	return true;
@@ -229,11 +233,11 @@ bool pokedex_eliminar_monstruo(pokedex_t *pokedex, monstruos_t *poke,
 	if (!pokedex || !poke || pokedex->cant_pokemones == 0) {
 		return false;
 	}
-	if (abb_quitar(pokedex->almacen, poke, eliminado)) {
-		pokedex->cant_pokemones--;
-		return true;
+	if (!abb_quitar(pokedex->almacen, poke, eliminado)) {
+		return false;
 	}
-	return false;
+	pokedex->cant_pokemones--;
+	return true;
 }
 
 //pre:	La pokedex debe ser valida. Y si queremos aplicarle la funcion destructora no hya que pasarle null.
