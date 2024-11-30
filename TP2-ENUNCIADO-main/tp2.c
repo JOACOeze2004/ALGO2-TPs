@@ -41,6 +41,7 @@ struct jugador {
 
 typedef struct juego{
 	struct jugador *jugador;
+	int semilla;
 	pokedex_t *pokedex_nueva;
 	pokedex_t *pokedex_vieja;
 	pokedex_t *pokedex_pokes_eliminados;
@@ -458,6 +459,18 @@ void crear_setear_monstruo(pokedex_t *pokedex,pokedex_t *nueva_pokedex){
 	pokedex_agregar_monstruo(nueva_pokedex,poke_nuevo);
 }
 
+void actualizar_multiplicador(juego_t *juego,monstruos_t *poke){
+	if (juego->pokemon_eliminado != NULL && ( poke->caracter == juego->pokemon_eliminado->caracter || (strcmp(poke->color,juego->pokemon_eliminado->color)== 0))){
+		juego->jugador->multiplicador++;
+		if (juego->jugador->multiplicador > juego->multiplicador_maximo){
+			juego->multiplicador_maximo = juego->jugador->multiplicador;
+			pokedex_agregar_monstruo(juego->pokedex_combo_mas_largo,poke);		
+		}	
+	}else{
+		juego->jugador->multiplicador = 1;
+	}
+}
+
 //pre:
 //post:
 bool capturar_pokemon(void* pokemon_void, void* ctx) {
@@ -465,16 +478,7 @@ bool capturar_pokemon(void* pokemon_void, void* ctx) {
     juego_t *juego = ctx;
     
     if (son_posiciones_iguales(juego->jugador->posicion, poke->posicion) ) {		
-		if (juego->pokemon_eliminado != NULL && ( poke->caracter == juego->pokemon_eliminado->caracter || (strcmp(poke->color,juego->pokemon_eliminado->color)== 0))){
-			juego->jugador->multiplicador++;
-			if (juego->jugador->multiplicador > juego->multiplicador_maximo){
-				juego->multiplicador_maximo = juego->jugador->multiplicador;
-				pokedex_agregar_monstruo(juego->pokedex_combo_mas_largo,poke);		
-			}	
-		}
-		else{
-			juego->jugador->multiplicador = 1;
-		}
+		actualizar_multiplicador(juego,poke);
 		juego->pokemon_eliminado = poke;
 		juego->hay_poke_a_eliminar = true;
         return false;
@@ -482,11 +486,23 @@ bool capturar_pokemon(void* pokemon_void, void* ctx) {
     return true; 
 }
 
+//pre:	Juego debe estar inicializado y debe ser valido.
+//post:	Imprime un pie con la informacion del ultimo pokemon capturado.
+void imprimir_pie(juego_t *juego){
+	if (juego->pokemon_eliminado == NULL){
+		printf("No has captudaro a ningun pokemon aun\n");
+	}else{
+		printf("El ultimo pokemon capturado es: %s%s\n"ANSI_COLOR_RESET, juego->pokemon_eliminado->color,juego->pokemon_eliminado->pokemon->nombre);
+	}
+}
+
 int logica(int entrada, void *datos)
 {
 	juego_t *juego = datos;
 	struct jugador *jugador = juego->jugador; 
 	juego->hay_poke_a_eliminar = false;
+	tablero_t terreno[MAX_COL][MAX_FIL];
+	memset(terreno,0,sizeof(terreno));
 
 	borrar_pantalla();
 	
@@ -497,8 +513,8 @@ int logica(int entrada, void *datos)
 	pokedex_iterar(juego->pokedex_nueva,capturar_pokemon,juego);
 
 	if (juego->hay_poke_a_eliminar) {
-		juego->jugador->puntaje += (juego->pokemon_eliminado->pokemon->puntaje * juego->jugador->multiplicador);
 		if(pokedex_eliminar_monstruo(juego->pokedex_nueva, juego->pokemon_eliminado, (void*)&juego->pokemon_eliminado)){
+			juego->jugador->puntaje += (juego->pokemon_eliminado->pokemon->puntaje * juego->jugador->multiplicador);
 			pokedex_agregar_monstruo(juego->pokedex_pokes_eliminados,juego->pokemon_eliminado);
 			crear_setear_monstruo(juego->pokedex_vieja,juego->pokedex_nueva);
 		}
@@ -506,9 +522,6 @@ int logica(int entrada, void *datos)
 
 	jugador->iteraciones++;
 	imprimir_cabezera(juego);
-
-	tablero_t terreno[MAX_COL][MAX_FIL];
-	memset(terreno,0,sizeof(terreno));
 
 	tablero_t jugador_tablero = {.letra = '@',.color = ANSI_COLOR_BOLD ANSI_COLOR_RED};
 	
@@ -524,70 +537,79 @@ int logica(int entrada, void *datos)
 
 	printf("\n");
 
-	if (juego->pokemon_eliminado == NULL){
-		printf("No has captudaro a ningun pokemon aun\n");
-	}else{
-		printf("El ultimo pokemon capturado es: %s%s\n"ANSI_COLOR_RESET, juego->pokemon_eliminado->color,juego->pokemon_eliminado->pokemon->nombre);
-	}
+	imprimir_pie(juego);
 
 	esconder_cursor();
 
 	return entrada == 'q' || entrada == 'Q';
 }
 
+//pre:	A prior el restraso deberia estar inicializado. (auque no es estrictamente necesario)
+//post:	Hace un for con el uso del tipo volatile (que le dice al compilador que no optimice los for asi tarda mas en hacerlo y da la sensacion de un delay) y seteamos a 0 el retraso para poder reutilizarlo despues.
+void aplciar_delay(volatile long *retraso){
+	for (long i = 0; i < 99999999; i++){
+		(*retraso)++;
+	}
+	*retraso = 0;
+}
+
+//pre:	Promedio debe estar inicializado.
+//post:	Imprme segun el pormedio que te de, un mensaje con la calificacion q obtuviste
+void porcesar_calificacion(int promedio){
+	if (promedio <= 10){
+		printf("Obtuviste una " ANSI_COLOR_BOLD ANSI_COLOR_RED "F"ANSI_COLOR_RESET ANSI_COLOR_GREEN", te falta mucho para ser un maestro pokemon,debes practicar mucho\n");
+	}
+	else if (promedio > 10 && promedio <= 50)
+	{
+		printf("Obtuviste una "  ANSI_COLOR_BOLD ANSI_COLOR_RED "E"ANSI_COLOR_RESET ANSI_COLOR_GREEN", Nada mal, pero debes practicar mas para ser un maestro pokemon\n");
+	}
+	else if (promedio > 50 && promedio <= 100)
+	{
+		printf("Obtuviste una "  ANSI_COLOR_BOLD ANSI_COLOR_RED "D"ANSI_COLOR_RESET ANSI_COLOR_GREEN", Bien es un buen inicio para ser un maestro pokemon aunque aun te falta practica, sigue practicando\n");
+	}
+	else if (promedio > 100 && promedio <= 250)
+	{
+		printf("Obtuviste una "  ANSI_COLOR_BOLD ANSI_COLOR_RED "C"ANSI_COLOR_RESET ANSI_COLOR_GREEN", Muy Bien, ¿Estuviste practicando mas, no?, sigue asi y algun dia podras ser un maestro pokemon\n");
+	}
+	else if (promedio > 250 && promedio <= 500)
+	{
+		printf("Obtuviste una "  ANSI_COLOR_BOLD ANSI_COLOR_RED "B"ANSI_COLOR_RESET ANSI_COLOR_GREEN", Excelente, estas muy cerca de poder comvertirte en un maestro pokemon, ya podrias inentra ir a tu primer gimnasio\n");
+	}
+	else if (promedio >= 1000)
+	{
+		printf("Obtuviste una "  ANSI_COLOR_BOLD ANSI_COLOR_RED"A"ANSI_COLOR_RESET ANSI_COLOR_GREEN", ¡Sorprendente! ,practicamente estas listo para ser un maestro poekmon, tu primer gimnasio sera facil para vos\n");
+	}
+}
+
 //pre:	juego deberia estar inicializado y se deberian haber modificado ssu campos durante la ejecuccion del programa.
-//post:	Imrpme varias estadisticas de la partida. 
+//post:	Imprime varias estadisticas de la partida. 
 void mostrar_outro(juego_t juego){
 	printf(ANSI_COLOR_GREEN"Bueno se acabo el tiempo, veamos tus estadisticas...\n"ANSI_COLOR_RESET);
-	volatile long retraso = 0;	//tengo entendido que es C99, pero queria como meter un delay para simular una carga de datos, quedo bien igual.
-	for (long i = 0; i < 99999999; i++){
-		retraso++;
-	}
-	retraso = 0;	
+	volatile long retraso = 0;		//tengo entendido que es C99, pero queria como meter un delay para simular una carga de datos, quedo bien igual. Aunque es posible q time.h tenga algun delay mejor del que hice yo.
+	aplciar_delay(&retraso);	
+	
 	printf( ANSI_COLOR_BOLD ANSI_COLOR_BLUE"Tu puntaje fue de: " ANSI_COLOR_RED ANSI_COLOR_BOLD"%i\n",juego.jugador->puntaje);	
-	for ( long i = 0; i < 99999999; i++){
-		retraso++;
-	}
-	retraso = 0;	
+
+	aplciar_delay(&retraso);	
+
 	printf(ANSI_COLOR_BLUE"Tu multiplicador maximo fue de: "ANSI_COLOR_RED ANSI_COLOR_BOLD"%i\n",juego.multiplicador_maximo);
-	for (long i = 0; i < 99999999; i++){
-		retraso++;
-	}
-	retraso = 0;
+	
+	aplciar_delay(&retraso);	
+	
 	printf(ANSI_COLOR_BLUE"Tu combo mas largo (sin contar al primero que capturaste) fue: " ANSI_COLOR_RED ANSI_COLOR_BOLD"\n"ANSI_COLOR_RESET);
-	size_t combo_mas_largo = pokedex_iterar(juego.pokedex_combo_mas_largo,imprimir_pokemon2,NULL);
+	
+	int combo_mas_largo = pokedex_iterar(juego.pokedex_combo_mas_largo,imprimir_pokemon2,NULL);
+	
 	if (combo_mas_largo == 0){
 		printf(ANSI_COLOR_MAGENTA"Que paso? no capturaste pokemones del mismo color o con misma inicial consecutivamente\n");
 	}
+	
 	printf(ANSI_COLOR_CYAN"Ahora veamos tu calificacion...\n"ANSI_COLOR_GREEN);
-	int promedio = (int)combo_mas_largo + juego.jugador->puntaje + juego.multiplicador_maximo / 3;
-	for (long i = 0; i < 99999999; i++){
-		retraso++;
-	}
-	if (promedio < 10){
-		printf("Obtuviste una F, te falta mucho para ser un maestro pokemon,debes practicar mucho\n");
-	}
-	else if (promedio > 10 && promedio < 50)
-	{
-		printf("Obtuviste una E, Nada mal, pero debes practicar mas para ser un maestro pokemon\n");
-	}
-	else if (promedio > 50 && promedio < 100)
-	{
-		printf("Obtuviste una D, Bien es un buen inicio para ser un maestro pokemon aunque aun te falta practica, sigue practicando\n");
-	}
-	else if (promedio > 100 && promedio < 250)
-	{
-		printf("Obtuviste una C, Muy Bien, ¿Estuviste practicando mas, no?, sigue asi y algun dia podras ser un maestro pokemon\n");
-	}
-	else if (promedio > 250 && promedio < 500)
-	{
-		printf("Obtuviste una B, Excelente, estas muy cerca de poder comvertirte en un maestro pokemon, ya podrias inentra ir a tu primer gimnasio\n");
-	}
-	else if (promedio > 1000)
-	{
-		printf("Obtuviste una A, ¡Sorprendente! ,practicamente estas listo para ser un maestro poekmon, tu primer gimnasio sera facil para vos\n");
-	}
-	retraso = 0;
+	int promedio = (combo_mas_largo + juego.jugador->puntaje + juego.multiplicador_maximo) / 3 ;
+	
+	aplciar_delay(&retraso);	
+	
+	porcesar_calificacion(promedio);
 	printf(ANSI_COLOR_YELLOW"Espero que el juego hay funcionado correctamente y que quieras volver a jugar :D\n"ANSI_COLOR_RESET);
 }
 
@@ -635,7 +657,7 @@ int main(int argc, const char *argv[])
 	pokedex_t *pokedex_pokes_eliminados = pokedex_crear(comparador_monstruos);
 	pokedex_t *pokedex_combo_mas_largo = pokedex_crear(comparador_monstruos);
 
-	juego_t juego = {.jugador = &jugador,.pokedex_nueva = nueva_pokedex, .pokedex_vieja = pokedex, .pokemon_eliminado = NULL, .multiplicador_maximo = 1, .pokedex_pokes_eliminados = pokedex_pokes_eliminados, .pokedex_combo_mas_largo = pokedex_combo_mas_largo};
+	juego_t juego = {.jugador = &jugador,.pokedex_nueva = nueva_pokedex, .pokedex_vieja = pokedex, .pokemon_eliminado = NULL, .multiplicador_maximo = 1, .pokedex_pokes_eliminados = pokedex_pokes_eliminados, .pokedex_combo_mas_largo = pokedex_combo_mas_largo, .semilla = semilla};
 	
 	for (size_t i = 0; i < CANT_INICIAL_POKE; i++){
 		crear_setear_monstruo(pokedex,nueva_pokedex);
