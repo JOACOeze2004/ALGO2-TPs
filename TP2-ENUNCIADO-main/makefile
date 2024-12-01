@@ -34,7 +34,7 @@ formatear-pokedex:
 	$(CLANG_FORMAT) -i -style=file src/pokedex.c
 
 formatear-todo:
-	$(CLANG_FORMAT) -i -style=file src/menu.c && $(CLANG_FORMAT) -i -style=file src/menu.c && $(CLANG_FORMAT) -i -style=file src/pokedex.c && $(CLANG_FORMAT) -i -style=file src/menu.h && $(CLANG_FORMAT) -i -style=file tp2.c
+	$(CLANG_FORMAT) -i -style=file src/menu.c && $(CLANG_FORMAT) -i -style=file src/menu.c && $(CLANG_FORMAT) -i -style=file src/pokedex.c && $(CLANG_FORMAT) -i -style=file src/menu.h && $(CLANG_FORMAT) -i -style=file tp2.c && $(CLANG_FORMAT) -i -style=file src/castear.h && $(CLANG_FORMAT) -i -style=file src/castear.c
 	
 correr-pruebas:
 	$(CC) $(CFLAGS) src/*.c pruebas_alumno.c -o pruebas_alumno && valgrind $(VALGRIND_FLAGS) ./pruebas_alumno

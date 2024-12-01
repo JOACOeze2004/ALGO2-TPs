@@ -6,8 +6,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-
-
 /*
 *
 *   El string y el ctx deben ser validos. 
@@ -17,7 +15,6 @@
 *
 */
 bool castear_a_int(const char *str, void *ctx);
-
 
 /*
 *
@@ -29,7 +26,6 @@ bool castear_a_int(const char *str, void *ctx);
 */
 bool crear_string_nuevo(const char *str, void *ctx);
 
-
 /*
 *
 *   El string y el ctx deben ser validos. 
@@ -39,6 +35,5 @@ bool crear_string_nuevo(const char *str, void *ctx);
 *
 */
 bool castear_a_char(const char *str, void *ctx);
-
 
 #endif /* CASTEAR */

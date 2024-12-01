@@ -437,7 +437,7 @@ void EliminarPokemonInexistenteDevuelveFalse()
 	struct pokemon *eliminado = NULL;
 	pa2m_afirmar(!pokedex_eliminar_pokemon(pokedex, &charizard,
 					       (void *)&eliminado),
-		     "Se Pudo eliminar Correctamente a Pikachu");
+		     "Se Pudo eliminar Correctamente a Charizard");
 	pa2m_afirmar(
 		eliminado == NULL,
 		"El elemento eliminado sigue siendo NULL al inentra borrar un pokemon inexistente ");
