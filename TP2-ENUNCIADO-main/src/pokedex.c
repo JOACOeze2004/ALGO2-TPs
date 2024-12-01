@@ -187,14 +187,16 @@ bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *argv[],
 	void *ctx[] = { &nombre_pokemon, &puntaje, &color,
 			&patron_movimientos };
 	while (leer_linea_csv(archivo, columnas, funciones, ctx) == columnas) {
-		struct pokemon *nuevo_pokemon = crear_y_configurar_pokemon(
+		pokemon_t *nuevo_pokemon = crear_y_configurar_pokemon(
 			nombre_pokemon, puntaje, color, patron_movimientos);
 		if (!nuevo_pokemon) {
 			cerrar_archivo_csv(archivo);
+			liberar_recursos_csv(nombre_pokemon,color,patron_movimientos);
 			return false;
 		}
 		if (!pokedex_agregar_pokemon(pokedex, nuevo_pokemon)) {
 			cerrar_archivo_csv(archivo);
+			liberar_recursos_csv(nombre_pokemon,color,patron_movimientos);
 			free(nuevo_pokemon);
 			return false;
 		}

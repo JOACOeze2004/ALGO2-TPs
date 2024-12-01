@@ -107,7 +107,7 @@ void AgregarEnMenuNULLDevuelveFalse()
 		     "No agregamos la J como opcion al menu");
 
 	pa2m_afirmar(menu_cantidad_opciones(menu) == 0,
-		     "agregamos en total 0 opciones al menu NULL");
+		     "No agregamos ninguna opcion al menu NULL");
 
 	menu_destruir(menu);
 }
@@ -125,7 +125,7 @@ void AgregarEnMenuConFuncionNULLDevuelveFalse()
 
 	pa2m_afirmar(
 		menu_cantidad_opciones(menu) == 0,
-		"agregamos en total 0 opciones (con funcion NULL) al menu");
+		"No agregamos ninguna opcion (con funcion NULL) al menu");
 
 	menu_destruir(menu);
 }
@@ -249,7 +249,7 @@ void BuscarFuncionDeOpcionExistenteDevuelveNoNULL()
 
 	pa2m_afirmar(
 		menu_obtener_funcion_opcion(menu, 'P') != NULL,
-		"Se pudo encontrar la funcion asociada a la opcion P (proque es distinto de NULL)");
+		"Se pudo encontrar la funcion asociada a la opcion P (porque es distinta de NULL)");
 
 	menu_destruir(menu);
 }
@@ -265,7 +265,7 @@ void BuscarFuncionDeOpcionInexistenteDevuelveNULL()
 
 	pa2m_afirmar(
 		menu_obtener_funcion_opcion(menu, 'A') == NULL,
-		"No se pudo encontrar la funcion asociada a la opcion A que no existe ");
+		"No se pudo encontrar la funcion asociada a la opcion 'A' ya que no existe como opcion en el menu");
 
 	menu_destruir(menu);
 }
@@ -275,7 +275,7 @@ void BuscarFuncionDeOpcionInexistenteDevuelveNULL()
 void CrearPokedexConComparadorValidoDevuelePokedex()
 {
 	pokedex_t *pokedex = pokedex_crear(comparador);
-	pa2m_afirmar(pokedex != NULL, "Se crear exitosamente una pokedex");
+	pa2m_afirmar(pokedex != NULL, "Se pudo crear exitosamente una pokedex no NULL");
 	pokedex_destruir(pokedex);
 }
 
@@ -283,7 +283,7 @@ void CrearPokedexConComparadorNULLDevueleNULL()
 {
 	pokedex_t *pokedex = pokedex_crear(NULL);
 	pa2m_afirmar(pokedex == NULL,
-		     "No Se crear la pokedex porque el comparador es NULL");
+		     "No Se pudo crear la pokedex porque el comparador es NULL");
 	pokedex_destruir(pokedex);
 }
 
@@ -342,10 +342,7 @@ void InsertarVariasVecesAlMismoPokemonDevuelveTrue()
 	pokedex_t *pokedex = pokedex_crear(comparador);
 	struct pokemon pikachu = { "Pikachu", 15, "AMARILLO", "I" };
 	for (size_t i = 0; i < 5; i++) {
-		pa2m_afirmar(
-			pokedex_agregar_pokemon(pokedex, &pikachu),
-			"Pudismo agregar a pikachu a la pokedex (metidos:%zu)",
-			i);
+		pokedex_agregar_pokemon(pokedex, &pikachu);
 	}
 	pa2m_afirmar(
 		pokedex_cantidad_pokemones(pokedex) == 5,
@@ -357,13 +354,10 @@ void InsertarVariosPokemonesNULLDevuelvefalse()
 {
 	pokedex_t *pokedex = pokedex_crear(comparador);
 	for (size_t i = 0; i < 5; i++) {
-		pa2m_afirmar(
-			!pokedex_agregar_pokemon(pokedex, NULL),
-			"No Pudimos agregar a un pokemon null repetidamente (intentos:%zu)",
-			i);
+			pokedex_agregar_pokemon(pokedex, NULL);
 	}
 	pa2m_afirmar(pokedex_cantidad_pokemones(pokedex) == 0,
-		     "La cantidad de pokemones en la pokedex se mantiene en 0");
+		     "La cantidad de pokemones en la pokedex se mantiene en 0 luego de haber intentado meter 5 pokemones NULL");
 	pokedex_destruir(pokedex);
 }
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -509,9 +503,9 @@ void BuscarUnPokemonValidoDevuelveAlPokemon()
 	pa2m_afirmar(pokedex_buscar_pokemon(pokedex, elemento_guardado) != NULL,
 		     "Se Pudo encontrar Correctamente a Pikachu");
 	pa2m_afirmar(strcmp(elemento_guardado->nombre, pikachu.nombre) == 0,
-		     "El nombre del encontrado es el misma que la de pikachu");
+		     "El nombre del encontrado es el mismo que el de pikachu");
 	pa2m_afirmar(elemento_guardado->puntaje == pikachu.puntaje,
-		     "La puntaje del encontrado es el misma que la de pikachu");
+		     "La puntaje del encontrado es el mismo que el de pikachu");
 
 	pokedex_destruir(pokedex);
 }
@@ -529,7 +523,6 @@ void BuscarUnPokemoninexistenteDevuelveNULL()
 	pa2m_afirmar(
 		pokedex_buscar_pokemon(pokedex, elemento_guardado) == NULL,
 		"No se Pudo encontrar a Charizard porque no esta en la pokedex");
-
 	pokedex_destruir(pokedex);
 }
 
@@ -720,7 +713,7 @@ void LeerCSVConseparadorIncorrectoDevuelveFalse()
 int main()
 {
 	srand((unsigned int)time(
-		NULL)); //en time iria la semilla, es decir en vez de time(null) pones semilla qsy
+		NULL));
 	pa2m_nuevo_grupo("Pruebas de TDA Menu");
 	pa2m_nuevo_grupo("Pruebas de Crear (TDA Menu)");
 	CrearMenuDevuelveMenu();

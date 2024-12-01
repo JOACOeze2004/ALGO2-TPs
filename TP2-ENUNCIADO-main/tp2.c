@@ -153,7 +153,7 @@ int comparador_monstruos(void *a, void *b)
 bool imprimir_pokemon(void *elemento, void *ctx)
 {
 	pokemon_t *poke = elemento;
-	printf("Nombre: %s, puntaje: %i, color: %s\n", poke->nombre,
+	printf("Nombre: %s \t puntaje: %i \t color: %s\n", poke->nombre,
 	       poke->puntaje, poke->color);
 	return true;
 }
@@ -163,7 +163,7 @@ bool imprimir_pokemon(void *elemento, void *ctx)
 bool imprimir_pokemon2(void *elemento, void *ctx)
 {
 	monstruos_t *poke = elemento;
-	printf("%s<--->%s>--->\n", poke->color, poke->pokemon->nombre);
+	printf("%s<--->%s<--->\n", poke->color, poke->pokemon->nombre);
 	return true;
 }
 
@@ -179,41 +179,37 @@ void imprimir_inicio()
 	       "\t\t\t\t\t\t\t-----------------------------------------------------\n" ANSI_COLOR_RESET);
 	printf("\n");
 
-	printf(ANSI_COLOR_MAGENTA "Hola jugador,bienvenido a " ANSI_COLOR_BOLD
+	printf(ANSI_COLOR_MAGENTA ANSI_COLOR_BOLD"Hola jugador,bienvenido a " ANSI_COLOR_CYAN ANSI_COLOR_BOLD
 				  "Pokemon go 2\n" ANSI_COLOR_RESET);
 	printf(ANSI_COLOR_GREEN ANSI_COLOR_BOLD
-	       "El objetivo del juego es que atrapes pokemones, antes de que se acabe el tiempo.\n" ANSI_COLOR_RESET);
-	printf(ANSI_COLOR_GREEN
-	       "Lo ideal es que trapes a pokemones con el mismo color, asi obtendras un multiplicador al puntaje al capturarlos.\n");
-	printf(ANSI_COLOR_GREEN
-	       "Los pokemones se mueven a lo largo del tablero, pero no se mueven si no te moves.\n");
-	printf(ANSI_COLOR_GREEN
-	       "Por ultimo tenes 60 segundos de juego en total, una vez llegado a 0, finaliza el juego.\n");
+	       "El objetivo del juego es que atrapes pokemones, antes de que se acabe el tiempo.\n");
+	printf("Lo ideal es que trapes a pokemones con el mismo color o que tengan la primera letra igual , asi obtendras un multiplicador al puntaje al capturarlos.\n");
+	printf("Los pokemones se mueven a lo largo y ancho del tablero, cada uno con sus respectivos movimientos, pero no se mueven si no te moves.\n");
+	printf("Por ultimo tenes 60 segundos de juego en total, una vez llegado a 0, finaliza el juego.\n");
 	printf(ANSI_COLOR_RED ANSI_COLOR_BOLD
 	       "A continuacion veras un menu en el cual podras elegir entre 4 opciones.\n");
 	printf(ANSI_COLOR_RED
 	       "Cabe aclarar que tambien se aceptan las minusculas\n" ANSI_COLOR_RESET);
-
-	printf(ANSI_COLOR_YELLOW
+	printf(ANSI_COLOR_YELLOW ANSI_COLOR_BOLD
 	       "Una vez sabida esta informacion, ya puedes empezar a jugar, suerte!\n" ANSI_COLOR_RESET);
 	printf("\n");
 	printf(ANSI_COLOR_RED
-	       "====================================================\n");
-	printf("|" ANSI_COLOR_CYAN "[J]: Empezar Juego" ANSI_COLOR_RED
+	       "=====================================================\n");
+	printf("| " ANSI_COLOR_CYAN "[J]: Empezar Juego" ANSI_COLOR_RED
 	       "                                |\n" ANSI_COLOR_RESET);
 	printf(ANSI_COLOR_RED
-	       "|" ANSI_COLOR_CYAN
-	       "[S]: Empezar Juego usando una semilla que eligas" ANSI_COLOR_RED
-	       "  |\n" ANSI_COLOR_RESET);
+	       "| " ANSI_COLOR_CYAN
+	       "[S]: Elegir una semilla para el juego" ANSI_COLOR_RED
+	       "             |\n" ANSI_COLOR_RESET);
 	printf(ANSI_COLOR_RED
-	       "|" ANSI_COLOR_CYAN
+	       "| " ANSI_COLOR_CYAN
 	       "[P]: Mostrar todos los pokemones en la pokedex" ANSI_COLOR_RED
 	       "    |\n" ANSI_COLOR_RESET);
 	printf(ANSI_COLOR_RED
-	       "|" ANSI_COLOR_CYAN "[Q]: Salir del juego" ANSI_COLOR_RED
+	       "| " ANSI_COLOR_CYAN "[Q]: Salir del juego" ANSI_COLOR_RED
 	       "                              |\n" ANSI_COLOR_RESET);
 	printf(ANSI_COLOR_RED
-	       "====================================================\n" ANSI_COLOR_RESET);
+	       "=====================================================\n" ANSI_COLOR_RESET);
 }
 
 //pre:	El ctx debe ser valido.
@@ -718,7 +714,16 @@ int main(int argc, const char *argv[])
 	}
 	borrar_pantalla();
 	menu_t *menu = menu_crear();
+	if (!menu){
+		printf("Error al inentar crear el menu, vuelva a ejecutar el porgrama\n");
+		return -1;
+	}	
 	pokedex_t *pokedex = pokedex_crear(comparador);
+	if (!pokedex){
+		menu_destruir(menu);
+		printf("Error al inentar crear el pokedex, vuelva a ejecutar el porgrama\n");
+		return -1;
+	}
 	char entrada;
 	int opcion = -1;
 	int semilla = 0;
@@ -752,11 +757,25 @@ int main(int argc, const char *argv[])
 	jugador.multiplicador = 1;
 
 	pokedex_t *nueva_pokedex = pokedex_crear(comparador_monstruos);
+	if (!nueva_pokedex){
+		pokedex_destruir_todo(pokedex, liberar_pokemon);
+		menu_destruir(menu);
+	}	
 	pokedex_t *pokedex_pokes_eliminados =
 		pokedex_crear(comparador_monstruos);
+	if (!pokedex_pokes_eliminados){
+		pokedex_destruir_todo(nueva_pokedex, liberar_pokemon);
+		pokedex_destruir_todo(pokedex, liberar_pokemon);
+		menu_destruir(menu);
+	}	
 	pokedex_t *pokedex_combo_mas_largo =
 		pokedex_crear(comparador_monstruos);
-
+	if (!pokedex_combo_mas_largo){
+		pokedex_destruir_todo(pokedex_combo_mas_largo, liberar_pokemon);
+		pokedex_destruir_todo(nueva_pokedex, liberar_pokemon);
+		pokedex_destruir_todo(pokedex, liberar_pokemon);
+		menu_destruir(menu);
+	}
 	juego_t juego = { .jugador = &jugador,
 			  .pokedex_nueva = nueva_pokedex,
 			  .pokedex_vieja = pokedex,
