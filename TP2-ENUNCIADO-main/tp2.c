@@ -30,6 +30,7 @@ struct monstruo {
 	char *color;
 	pokemon_t *pokemon;
 	size_t indice_patron;
+	int id;
 };
 
 struct jugador {
@@ -122,7 +123,7 @@ int comparador(void *a, void *b)
 }
 
 //pre:	Los argumentos pasado debe ser validos. Y al pasarle como argumentos, deben tener un campo nombre o un string.
-//post:	En caso de que algun element sea NULL retorna 0, o -1. Y sino, devolvemos segun que posicion es mayor o menor de los elementos pasados.
+//post:	En caso de que algun element sea NULL retorna 0, o -1. Y sino, devolvemos segun cual sea mayor o menor id de los elementos pasados.
 int comparador_monstruos(void *a, void *b)
 {
 	if (a == NULL && b == NULL) {
@@ -136,16 +137,15 @@ int comparador_monstruos(void *a, void *b)
 	}
 	monstruos_t *poke_a = (monstruos_t *)a;
 	monstruos_t *poke_b = (monstruos_t *)b;
-	if (poke_a->posicion.x == poke_b->posicion.x &&
-	    poke_a->posicion.y == poke_b->posicion.y) {
-		return 0;
-	} else if (poke_a->posicion.x < poke_b->posicion.x ||
-		   (poke_a->posicion.x == poke_b->posicion.x &&
-		    poke_a->posicion.y < poke_b->posicion.y)) {
-		return -1;
-	} else {
-		return 1;
+	if (poke_a->id != poke_b->id) {
+		return poke_a->id - poke_b->id;
 	}
+	if (poke_a->posicion.x !=
+	    poke_b->posicion
+		    .x) { //seria poco probable que ocurra pero por las dudas comparamos depsues por posicion
+		return poke_a->posicion.x - poke_b->posicion.x;
+	}
+	return poke_a->posicion.y - poke_b->posicion.y;
 }
 
 //pre:	Los elementos pasados deben ser validos, y deberian tener un campo nombre, puntaje y color.
@@ -354,6 +354,7 @@ void setear_atributos_pokemon(monstruos_t *poke, pokemon_t *pokemon_nuevo)
 {
 	poke->pokemon = pokemon_nuevo;
 	poke->posicion = crear_fil_col_aleatorias();
+	poke->id = rand();
 	poke->caracter = pokemon_nuevo->nombre[0];
 	poke->color = setear_color(pokemon_nuevo->color);
 	poke->pokemon->patron_movimientos = pokemon_nuevo->patron_movimientos;
