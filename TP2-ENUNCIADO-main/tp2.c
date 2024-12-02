@@ -4,6 +4,7 @@
 #include "src/menu.h"
 #include "src/pokedex.h"
 #include <time.h>
+#include "src/lista.h"
 
 #define MAX_ANCHO 32
 #define MAX_ALTO 15
@@ -47,7 +48,9 @@ typedef struct juego {
 	pokedex_t *pokedex_nueva;
 	pokedex_t *pokedex_vieja;
 	pokedex_t *pokedex_pokes_eliminados;
-	pokedex_t *pokedex_combo_mas_largo;
+	Lista *racha_actual;
+	Lista *racha_maxima;
+	size_t max_racha;
 	monstruos_t *pokemon_eliminado;
 	monstruos_t *poke_aux;
 	bool hay_poke_a_eliminar;
@@ -165,6 +168,15 @@ bool imprimir_pokemon2(void *elemento, void *ctx)
 	monstruos_t *poke = elemento;
 	printf("%s<--->%s<--->\n", poke->color, poke->pokemon->nombre);
 	return true;
+}
+
+bool iterar_y_agregar(void *elemento, void *ctx)
+{
+    Lista *lista_destino = (Lista *)ctx;
+
+    lista_agregar_al_final(lista_destino, elemento);
+
+    return true;
 }
 
 //post: Imprime una pequeña intro para que el usuario sepa que comandos pasarle y como "reaccionan" al mismo.
@@ -512,14 +524,31 @@ void actualizar_multiplicador(juego_t *juego, monstruos_t *poke)
 	    (poke->caracter == juego->pokemon_eliminado->caracter ||
 	     (strcmp(poke->color, juego->pokemon_eliminado->color) == 0))) {
 		juego->jugador->multiplicador++;
+		if (!juego->racha_actual){
+				juego->racha_actual = lista_crear();
+		}
 		if (juego->jugador->multiplicador >
 		    juego->multiplicador_maximo) {
 			juego->multiplicador_maximo =
 				juego->jugador->multiplicador;
-			pokedex_agregar_monstruo(juego->pokedex_combo_mas_largo,
-						 poke);
 		}
+		lista_agregar_al_final(juego->racha_actual,poke);
 	} else {
+		if (juego->racha_actual){
+			size_t numero_racha = lista_cantidad_elementos(juego->racha_actual);
+
+			if (numero_racha > juego->max_racha){
+				juego->max_racha = numero_racha;
+
+				if (juego->racha_maxima){
+					lista_destruir(juego->racha_maxima);
+				}
+				juego->racha_maxima = lista_crear();
+				lista_iterar_elementos(juego->racha_actual, iterar_y_agregar, juego->racha_maxima);
+			}
+			lista_destruir(juego->racha_actual);
+            juego->racha_actual = NULL;
+		}
 		juego->jugador->multiplicador = 1;
 	}
 }
@@ -685,10 +714,12 @@ void mostrar_outro(juego_t juego)
 	printf(ANSI_COLOR_BLUE
 	       "Tu combo mas largo (sin contar al primero que capturaste) fue: " ANSI_COLOR_RED ANSI_COLOR_BOLD
 	       "\n" ANSI_COLOR_RESET);
-
-	int combo_mas_largo = pokedex_iterar(juego.pokedex_combo_mas_largo,
-					     imprimir_pokemon2, NULL);
-
+	size_t combo_mas_largo = 0;
+	if (juego.racha_maxima && lista_cantidad_elementos(juego.racha_maxima) > lista_cantidad_elementos(juego.racha_actual)){
+		combo_mas_largo = lista_iterar_elementos(juego.racha_maxima,imprimir_pokemon2,NULL);
+	}else{
+		combo_mas_largo = lista_iterar_elementos(juego.racha_actual,imprimir_pokemon2,NULL);
+	}
 	if (combo_mas_largo == 0) {
 		printf(ANSI_COLOR_MAGENTA
 		       "Que paso? no capturaste pokemones del mismo color o con misma inicial consecutivamente\n");
@@ -696,7 +727,7 @@ void mostrar_outro(juego_t juego)
 
 	printf(ANSI_COLOR_CYAN
 	       "Ahora veamos tu calificacion...\n" ANSI_COLOR_GREEN);
-	int promedio = (combo_mas_largo + juego.jugador->puntaje +
+	int promedio = ((int)combo_mas_largo + juego.jugador->puntaje +
 			juego.multiplicador_maximo) /
 		       3;
 
@@ -715,13 +746,13 @@ int main(int argc, const char *argv[])
 	borrar_pantalla();
 	menu_t *menu = menu_crear();
 	if (!menu){
-		printf("Error al inentar crear el menu, vuelva a ejecutar el porgrama\n");
+		printf("Error al inentar crear el menu, vuelva a ejecutar el programa\n");
 		return -1;
-	}	
+	}
 	pokedex_t *pokedex = pokedex_crear(comparador);
 	if (!pokedex){
 		menu_destruir(menu);
-		printf("Error al inentar crear el pokedex, vuelva a ejecutar el porgrama\n");
+		printf("Error al inentar crear el pokedex, vuelva a ejecutar el programa\n");
 		return -1;
 	}
 	char entrada;
@@ -760,32 +791,26 @@ int main(int argc, const char *argv[])
 	if (!nueva_pokedex){
 		pokedex_destruir_todo(pokedex, liberar_pokemon);
 		menu_destruir(menu);
-	}	
+	}
 	pokedex_t *pokedex_pokes_eliminados =
 		pokedex_crear(comparador_monstruos);
 	if (!pokedex_pokes_eliminados){
 		pokedex_destruir_todo(nueva_pokedex, liberar_pokemon);
 		pokedex_destruir_todo(pokedex, liberar_pokemon);
 		menu_destruir(menu);
-	}	
-	pokedex_t *pokedex_combo_mas_largo =
-		pokedex_crear(comparador_monstruos);
-	if (!pokedex_combo_mas_largo){
-		pokedex_destruir_todo(pokedex_combo_mas_largo, liberar_pokemon);
-		pokedex_destruir_todo(nueva_pokedex, liberar_pokemon);
-		pokedex_destruir_todo(pokedex, liberar_pokemon);
-		menu_destruir(menu);
 	}
+
 	juego_t juego = { .jugador = &jugador,
 			  .pokedex_nueva = nueva_pokedex,
 			  .pokedex_vieja = pokedex,
 			  .pokemon_eliminado = NULL,
 			  .multiplicador_maximo = 1,
 			  .pokedex_pokes_eliminados = pokedex_pokes_eliminados,
-			  .pokedex_combo_mas_largo = pokedex_combo_mas_largo,
 			  .semilla = semilla,
-			  .poke_aux = NULL };
-
+			  .poke_aux = NULL,
+			  .max_racha = 0,
+			  .racha_maxima = NULL,
+			  .racha_actual = NULL };
 	for (size_t i = 0; i < CANT_INICIAL_POKE; i++) {
 		crear_setear_monstruo(pokedex, nueva_pokedex);
 	}
@@ -798,7 +823,8 @@ int main(int argc, const char *argv[])
 
 	mostrar_outro(juego);
 
-	pokedex_destruir_todo(pokedex_combo_mas_largo, NULL);
+	lista_destruir(juego.racha_actual);
+	lista_destruir(juego.racha_maxima);
 	pokedex_destruir_todo(pokedex_pokes_eliminados, liberar_monstruos);
 	pokedex_destruir_todo(nueva_pokedex, liberar_monstruos);
 	pokedex_destruir_todo(pokedex, liberar_pokemon);
