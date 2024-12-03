@@ -159,9 +159,9 @@ bool imprimir_pokemon(void *elemento, void *ctx)
 	return true;
 }
 
-//pre: Los elementos pasados deben ser validos, y deberian tener un campo nombre y color.
+//pre: 	Los elementos pasados deben ser validos, y deberian tener un campo nombre y color.
 //post:	Imprime el color y el nombre del monstruo.
-bool imprimir_pokemon2(void *elemento, void *ctx)
+bool imprimir_monstruo(void *elemento, void *ctx)
 {
 	monstruos_t *poke = elemento;
 	printf("%s<--->%s<--->\n", poke->color, poke->pokemon->nombre);
@@ -743,10 +743,10 @@ void mostrar_outro(juego_t juego)
 	    racha_cantidad_combos(juego.racha_maxima) >
 		    racha_cantidad_combos(juego.racha_actual)) {
 		combo_mas_largo = racha_iterar(juego.racha_maxima,
-					       imprimir_pokemon2, NULL);
+					       imprimir_monstruo, NULL);
 	} else {
 		combo_mas_largo = racha_iterar(juego.racha_actual,
-					       imprimir_pokemon2, NULL);
+					       imprimir_monstruo, NULL);
 	}
 	if (combo_mas_largo == 0) {
 		printf(ANSI_COLOR_MAGENTA
