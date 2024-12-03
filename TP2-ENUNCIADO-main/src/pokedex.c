@@ -22,7 +22,7 @@ pokedex_t *pokedex_crear(int (*comparador)(void *, void *))
 	return pokedex;
 }
 
-bool pokedex_agregar_pokemon(pokedex_t *pokedex, pokemon_t *pokemon)
+bool pokedex_agregar_pokemon(pokedex_t *pokedex, void *pokemon)
 {
 	if (!pokedex || !pokemon) {
 		return false;
@@ -39,7 +39,7 @@ size_t pokedex_cantidad_pokemones(pokedex_t *pokedex)
 	return pokedex == NULL ? 0 : pokedex->cant_pokemones;
 }
 
-bool pokedex_eliminar_pokemon(pokedex_t *pokedex, pokemon_t *pokemon,
+bool pokedex_eliminar_pokemon(pokedex_t *pokedex, void *pokemon,
 			      void **eliminado)
 {
 	if (!pokedex || !pokemon || pokedex->cant_pokemones == 0) {
@@ -191,12 +191,14 @@ bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *argv[],
 			nombre_pokemon, puntaje, color, patron_movimientos);
 		if (!nuevo_pokemon) {
 			cerrar_archivo_csv(archivo);
-			liberar_recursos_csv(nombre_pokemon,color,patron_movimientos);
+			liberar_recursos_csv(nombre_pokemon, color,
+					     patron_movimientos);
 			return false;
 		}
 		if (!pokedex_agregar_pokemon(pokedex, nuevo_pokemon)) {
 			cerrar_archivo_csv(archivo);
-			liberar_recursos_csv(nombre_pokemon,color,patron_movimientos);
+			liberar_recursos_csv(nombre_pokemon, color,
+					     patron_movimientos);
 			free(nuevo_pokemon);
 			return false;
 		}
@@ -208,38 +210,13 @@ bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *argv[],
 
 bool pokedex_iterar(pokedex_t *pokedex, bool (*f)(void *, void *), void *ctx)
 {
-	if (!pokedex) {
+	if (!pokedex || !f) {
 		return false;
 	}
-	if (abb_iterar_preorden(pokedex->almacen, f, ctx)) {
+	if (abb_iterar_preorden(pokedex->almacen, f, ctx) > 0) {
 		return true;
 	}
 	return false;
-}
-
-bool pokedex_agregar_monstruo(pokedex_t *pokedex, monstruos_t *poke)
-{
-	if (!pokedex || !poke) {
-		return false;
-	}
-	if (!abb_insertar(pokedex->almacen, poke)) {
-		return false;
-	}
-	pokedex->cant_pokemones++;
-	return true;
-}
-
-bool pokedex_eliminar_monstruo(pokedex_t *pokedex, monstruos_t *poke,
-			       void **eliminado)
-{
-	if (!pokedex || !poke || pokedex->cant_pokemones == 0) {
-		return false;
-	}
-	if (!abb_quitar(pokedex->almacen, poke, eliminado)) {
-		return false;
-	}
-	pokedex->cant_pokemones--;
-	return true;
 }
 
 //pre:	La pokedex debe ser valida. Y si queremos aplicarle la funcion destructora no hya que pasarle null.

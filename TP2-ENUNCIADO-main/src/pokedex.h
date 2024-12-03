@@ -42,7 +42,7 @@ void pokedex_destruir_todo(pokedex_t *pokedex, void (*destructor)(void *));
  * Devuelve true si pudo agregar al pokemon,o false en caso de error.
  *
  */
-bool pokedex_agregar_pokemon(pokedex_t *pokedex, pokemon_t *pokemon);
+bool pokedex_agregar_pokemon(pokedex_t *pokedex, void *pokemon);
 
 /*
 *   Devuelve Cuantos pokemones hay en la pokedex.
@@ -53,7 +53,7 @@ size_t pokedex_cantidad_pokemones(pokedex_t *pokedex);
 /*
 *   Elimina un pokemon de la pokedex. Y se guarda el pokemon eliminado en eliminado, siempre que este no sea NULL.
 */
-bool pokedex_eliminar_pokemon(pokedex_t *pokedex, pokemon_t *pokemon,
+bool pokedex_eliminar_pokemon(pokedex_t *pokedex, void *pokemon,
 			      void **eliminado);
 
 /*
@@ -105,24 +105,5 @@ bool pokedex_cargar_pokemones_desde_csv(pokedex_t *pokedex, const char *argv[],
 *	
 */
 bool pokedex_iterar(pokedex_t *pokedex, bool (*f)(void *, void *), void *ctx);
-
-/**
- * Inserta un monstruo (pokemon para el juego/tablero) a la pokedex.
- * 
- *
- * Devuelve true si pudo agregar al monstruo,o false en caso contrario.
- *
- */
-bool pokedex_agregar_monstruo(pokedex_t *pokedex, monstruos_t *poke);
-
-/**
- * 
- * 	
- *	Elimina un monstruo de la pokedex. Y se guarda el monstruo eliminado en eliminado, siempre que este no sea NULL.
- * 
- *
- */
-bool pokedex_eliminar_monstruo(pokedex_t *pokedex, monstruos_t *poke,
-			       void **eliminado);
 
 #endif /* POKEDEX */

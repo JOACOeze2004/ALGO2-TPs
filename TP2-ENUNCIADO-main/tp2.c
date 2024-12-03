@@ -4,14 +4,12 @@
 #include "src/menu.h"
 #include "src/pokedex.h"
 #include <time.h>
-#include "src/lista.h"
+#include "src/racha.h"
 
 #define MAX_ANCHO 32
 #define MAX_ALTO 15
-
 #define CANT_INICIAL_POKE 7
 #define UN_MINUTO 60
-
 #define MOV_ARRIBA 'N'
 #define MOV_ABAJO 'S'
 #define MOV_DERECHO 'E'
@@ -48,8 +46,8 @@ typedef struct juego {
 	pokedex_t *pokedex_nueva;
 	pokedex_t *pokedex_vieja;
 	pokedex_t *pokedex_pokes_eliminados;
-	Lista *racha_actual;
-	Lista *racha_maxima;
+	racha_t *racha_actual;
+	racha_t *racha_maxima;
 	size_t max_racha;
 	monstruos_t *pokemon_eliminado;
 	monstruos_t *poke_aux;
@@ -145,7 +143,7 @@ int comparador_monstruos(void *a, void *b)
 	}
 	if (poke_a->posicion.x !=
 	    poke_b->posicion
-		    .x) { //seria poco probable que ocurra pero por las dudas comparamos depsues por posicion
+		    .x) { //seria poco probable que ocurra pero por las dudas, comparamos depues por posicion
 		return poke_a->posicion.x - poke_b->posicion.x;
 	}
 	return poke_a->posicion.y - poke_b->posicion.y;
@@ -170,13 +168,15 @@ bool imprimir_pokemon2(void *elemento, void *ctx)
 	return true;
 }
 
+//pre:	el elemento no deberia ser NULL, al igual que el ctx.
+//post:	Mete en la racha que se le pasa como ctx, el elemnto que le pasamos. Util para transladar informacion de una lista a otra.
 bool iterar_y_agregar(void *elemento, void *ctx)
 {
-    Lista *lista_destino = (Lista *)ctx;
+	racha_t *lista_destino = ctx;
 
-    lista_agregar_al_final(lista_destino, elemento);
+	racha_agregar(lista_destino, elemento);
 
-    return true;
+	return true;
 }
 
 //post: Imprime una pequeña intro para que el usuario sepa que comandos pasarle y como "reaccionan" al mismo.
@@ -191,8 +191,9 @@ void imprimir_inicio()
 	       "\t\t\t\t\t\t\t-----------------------------------------------------\n" ANSI_COLOR_RESET);
 	printf("\n");
 
-	printf(ANSI_COLOR_MAGENTA ANSI_COLOR_BOLD"Hola jugador,bienvenido a " ANSI_COLOR_CYAN ANSI_COLOR_BOLD
-				  "Pokemon go 2\n" ANSI_COLOR_RESET);
+	printf(ANSI_COLOR_MAGENTA ANSI_COLOR_BOLD
+	       "Hola jugador,bienvenido a " ANSI_COLOR_CYAN ANSI_COLOR_BOLD
+	       "Pokemon go 2\n" ANSI_COLOR_RESET);
 	printf(ANSI_COLOR_GREEN ANSI_COLOR_BOLD
 	       "El objetivo del juego es que atrapes pokemones, antes de que se acabe el tiempo.\n");
 	printf("Lo ideal es que trapes a pokemones con el mismo color o que tengan la primera letra igual , asi obtendras un multiplicador al puntaje al capturarlos.\n");
@@ -512,43 +513,58 @@ void crear_setear_monstruo(pokedex_t *pokedex, pokedex_t *nueva_pokedex)
 	pokemon_t *pokemon_nuevo = pokedex_devolver_pokemon_aleatorio(pokedex);
 	monstruos_t *poke_nuevo = calloc(1, sizeof(monstruos_t));
 	setear_atributos_pokemon(poke_nuevo, pokemon_nuevo);
-	pokedex_agregar_monstruo(nueva_pokedex, poke_nuevo);
+	pokedex_agregar_pokemon(nueva_pokedex, poke_nuevo);
 }
 
-//pre:	juego y poke deben ser validos.
-//post:	si el ultimo pokemon en ser eliminado no es null y el carater del pokemon a eliminar es el mismo que el ulimo pokemon eliminado o teniuan el mismo color
-// se aumenta el mutiplicador y se agrega al pokemon a un arbo para usarlo para mostrar la racha mas larga.
-void actualizar_multiplicador(juego_t *juego, monstruos_t *poke)
+//pre:	Poke y poke_eliminado deben estar inicializados.
+//post:	Si se cumplen las condiciones para aumentar el mutiplicador, se devuelve true, caso contrario devuelve false.
+bool se_aumenta_multiplicador(monstruos_t *poke, monstruos_t *poke_eliminado)
 {
-	if (juego->pokemon_eliminado != NULL &&
-	    (poke->caracter == juego->pokemon_eliminado->caracter ||
-	     (strcmp(poke->color, juego->pokemon_eliminado->color) == 0))) {
-		juego->jugador->multiplicador++;
-		if (!juego->racha_actual){
-				juego->racha_actual = lista_crear();
+	if (!poke_eliminado) {
+		return false;
+	}
+	return (poke->caracter == poke_eliminado->caracter ||
+		(strcmp(poke->color, poke_eliminado->color) == 0));
+}
+
+//pre:	juego y sus campos deben estar inicializados.
+//post:	Se aumenta el mutiplicador y si ocurre, tambien el mutiplicador maximo.
+void actualizar_multiplicador(juego_t *juego)
+{
+	juego->jugador->multiplicador++;
+	if (juego->jugador->multiplicador > juego->multiplicador_maximo) {
+		juego->multiplicador_maximo = juego->jugador->multiplicador;
+	}
+}
+
+//pre:	juego y sus campos deben estar inicializados.
+//post:	Verificamos si la cantidad de elementos en racha es mayor al numero de la racha maxima registrada. Si es asi, vaciamos la racha maxima y
+//	copiamos los elemntos de la racha actual en la racha maxima.
+void actualizar_racha_maxima(juego_t *juego)
+{
+	size_t numero_racha = racha_cantidad_combos(juego->racha_actual);
+	if (numero_racha > juego->max_racha) {
+		juego->max_racha = numero_racha;
+		if (juego->racha_maxima) {
+			racha_vaciar(juego->racha_maxima);
 		}
-		if (juego->jugador->multiplicador >
-		    juego->multiplicador_maximo) {
-			juego->multiplicador_maximo =
-				juego->jugador->multiplicador;
-		}
-		lista_agregar_al_final(juego->racha_actual,poke);
+		racha_iterar(juego->racha_actual, iterar_y_agregar,
+			     juego->racha_maxima);
+	}
+}
+
+//pre:	juego y poke deben ser validos e inicializados.
+//post:	Si el pokemon al que capturamos cumple con mismo color o primera letra igual al ultimo pokemon en ser atrapado, se actualiza el mutiplicador del jugador,
+//	y se agrega a la racha el pokemon que acabamos de atrapar. Caso donde se rompe la racha, se actualiza la racha maxima (si es necesario), se vacia la racha actual
+//	y el mutiplicador se resetea a 1.
+void actualizar_multiplicador_y_racha(juego_t *juego, monstruos_t *poke)
+{
+	if (se_aumenta_multiplicador(poke, juego->pokemon_eliminado)) {
+		actualizar_multiplicador(juego);
+		racha_agregar(juego->racha_actual, poke);
 	} else {
-		if (juego->racha_actual){
-			size_t numero_racha = lista_cantidad_elementos(juego->racha_actual);
-
-			if (numero_racha > juego->max_racha){
-				juego->max_racha = numero_racha;
-
-				if (juego->racha_maxima){
-					lista_destruir(juego->racha_maxima);
-				}
-				juego->racha_maxima = lista_crear();
-				lista_iterar_elementos(juego->racha_actual, iterar_y_agregar, juego->racha_maxima);
-			}
-			lista_destruir(juego->racha_actual);
-            juego->racha_actual = NULL;
-		}
+		actualizar_racha_maxima(juego);
+		racha_vaciar(juego->racha_actual);
 		juego->jugador->multiplicador = 1;
 	}
 }
@@ -561,7 +577,7 @@ bool capturar_pokemon(void *pokemon_void, void *ctx)
 	juego_t *juego = ctx;
 
 	if (son_posiciones_iguales(juego->jugador->posicion, poke->posicion)) {
-		actualizar_multiplicador(juego, poke);
+		actualizar_multiplicador_y_racha(juego, poke);
 		juego->poke_aux = poke;
 		juego->hay_poke_a_eliminar = true;
 		return false;
@@ -576,7 +592,7 @@ void imprimir_pie(juego_t *juego)
 	if (juego->pokemon_eliminado == NULL) {
 		printf("No has captudaro a ningun pokemon aun\n");
 	} else {
-		printf("El ultimo pokemon capturado es: %s%s\n" ANSI_COLOR_RESET,
+		printf("Ultimo pokemon capturado: %s%s\n" ANSI_COLOR_RESET,
 		       juego->pokemon_eliminado->color,
 		       juego->pokemon_eliminado->pokemon->nombre);
 	}
@@ -584,19 +600,18 @@ void imprimir_pie(juego_t *juego)
 
 //pre:	Juego debe eser valido y debe estar inicializado.
 //post:	si hay algun pokemon que debe ser eliminado, y si se pudo eliminar, se suma el puntaje dl mismo al jugador, se agrega un nuevo mosntruo al tablero y se guarda en
-// un arbol el pokemon eliminado para liberarlo al finla del programa sin que haya invalids reads o memory leaks.
+// un arbol el pokemon eliminado para liberarlo al final del programa sin que haya invalids reads o memory leaks.
 void eliminar_y_agregar_pokemon(juego_t *juego)
 {
 	if (juego->hay_poke_a_eliminar) {
-		if (pokedex_eliminar_monstruo(
+		if (pokedex_eliminar_pokemon(
 			    juego->pokedex_nueva, juego->poke_aux,
 			    (void *)&juego->pokemon_eliminado)) {
 			juego->jugador->puntaje +=
 				(juego->pokemon_eliminado->pokemon->puntaje *
 				 juego->jugador->multiplicador);
-			pokedex_agregar_monstruo(
-				juego->pokedex_pokes_eliminados,
-				juego->pokemon_eliminado);
+			pokedex_agregar_pokemon(juego->pokedex_pokes_eliminados,
+						juego->pokemon_eliminado);
 			crear_setear_monstruo(juego->pokedex_vieja,
 					      juego->pokedex_nueva);
 		}
@@ -688,7 +703,7 @@ void porcesar_calificacion(int promedio)
 	}
 }
 
-//pre:	juego deberia estar inicializado y se deberian haber modificado ssu campos durante la ejecuccion del programa.
+//pre:	juego deberia estar inicializado y se deberian haber modificado su campos durante la ejecuccion del programa.
 //post:	Imprime varias estadisticas de la partida.
 void mostrar_outro(juego_t juego)
 {
@@ -712,13 +727,17 @@ void mostrar_outro(juego_t juego)
 	aplciar_delay(&retraso);
 
 	printf(ANSI_COLOR_BLUE
-	       "Tu combo mas largo (sin contar al primero que capturaste) fue: " ANSI_COLOR_RED ANSI_COLOR_BOLD
+	       "Tu combo mas largo (sin contar al primero que capturaste de la racha) fue: " ANSI_COLOR_RED ANSI_COLOR_BOLD
 	       "\n" ANSI_COLOR_RESET);
 	size_t combo_mas_largo = 0;
-	if (juego.racha_maxima && lista_cantidad_elementos(juego.racha_maxima) > lista_cantidad_elementos(juego.racha_actual)){
-		combo_mas_largo = lista_iterar_elementos(juego.racha_maxima,imprimir_pokemon2,NULL);
-	}else{
-		combo_mas_largo = lista_iterar_elementos(juego.racha_actual,imprimir_pokemon2,NULL);
+	if (juego.racha_maxima &&
+	    racha_cantidad_combos(juego.racha_maxima) >
+		    racha_cantidad_combos(juego.racha_actual)) {
+		combo_mas_largo = racha_iterar(juego.racha_maxima,
+					       imprimir_pokemon2, NULL);
+	} else {
+		combo_mas_largo = racha_iterar(juego.racha_actual,
+					       imprimir_pokemon2, NULL);
 	}
 	if (combo_mas_largo == 0) {
 		printf(ANSI_COLOR_MAGENTA
@@ -738,6 +757,34 @@ void mostrar_outro(juego_t juego)
 	       "Espero que el juego hay funcionado correctamente y que quieras volver a jugar :D\n" ANSI_COLOR_RESET);
 }
 
+//pre:	Los parametros deberian estar inicializados, auqnue tambien funciona si alguno es NULL.
+//post:	Va liberando uno a uno las estructuras usadas del main.
+void liberar_estructuras(menu_t *menu, pokedex_t *pokedex,
+			 pokedex_t *nueva_pokedex,
+			 pokedex_t *pokedex_pokes_eliminados,
+			 racha_t *racha_max, racha_t *racha_actual)
+{
+	if (racha_actual) {
+		racha_destruir_todo(racha_actual, NULL);
+	}
+	if (racha_max) {
+		racha_destruir_todo(racha_max, NULL);
+	}
+	if (pokedex_pokes_eliminados) {
+		pokedex_destruir_todo(pokedex_pokes_eliminados,
+				      liberar_monstruos);
+	}
+	if (nueva_pokedex) {
+		pokedex_destruir_todo(nueva_pokedex, liberar_monstruos);
+	}
+	if (pokedex) {
+		pokedex_destruir_todo(pokedex, liberar_pokemon);
+	}
+	if (menu) {
+		menu_destruir(menu);
+	}
+}
+
 int main(int argc, const char *argv[])
 {
 	if (!son_argumentos_validos(argc, argv)) {
@@ -745,14 +792,12 @@ int main(int argc, const char *argv[])
 	}
 	borrar_pantalla();
 	menu_t *menu = menu_crear();
-	if (!menu){
-		printf("Error al inentar crear el menu, vuelva a ejecutar el programa\n");
+	if (!menu) {
 		return -1;
 	}
 	pokedex_t *pokedex = pokedex_crear(comparador);
-	if (!pokedex){
+	if (!pokedex) {
 		menu_destruir(menu);
-		printf("Error al inentar crear el pokedex, vuelva a ejecutar el programa\n");
 		return -1;
 	}
 	char entrada;
@@ -764,10 +809,10 @@ int main(int argc, const char *argv[])
 	agregar_todas_opciones(menu, ctx);
 
 	if (!pokedex_cargar_pokemones_desde_csv(pokedex, argv, ',', 4)) {
-		pokedex_destruir_todo(pokedex, liberar_pokemon);
-		menu_destruir(menu);
+		liberar_estructuras(menu, pokedex, NULL, NULL, NULL, NULL);
 		return -1;
 	}
+
 	while (opcion == -1) {
 		printf("\nIngrese la opcion que quiera ------------> ");
 		if (scanf(" %c", &entrada) == 1) {
@@ -782,22 +827,27 @@ int main(int argc, const char *argv[])
 		srand((unsigned int)semilla);
 	}
 	struct jugador jugador = { 0 };
-	jugador.ultima_coordenada.x = 0;
-	jugador.ultima_coordenada.y = 0;
-	jugador.puntaje = 0;
 	jugador.multiplicador = 1;
 
 	pokedex_t *nueva_pokedex = pokedex_crear(comparador_monstruos);
-	if (!nueva_pokedex){
-		pokedex_destruir_todo(pokedex, liberar_pokemon);
-		menu_destruir(menu);
+	if (!nueva_pokedex) {
+		liberar_estructuras(menu, pokedex, NULL, NULL, NULL, NULL);
 	}
 	pokedex_t *pokedex_pokes_eliminados =
 		pokedex_crear(comparador_monstruos);
-	if (!pokedex_pokes_eliminados){
-		pokedex_destruir_todo(nueva_pokedex, liberar_pokemon);
-		pokedex_destruir_todo(pokedex, liberar_pokemon);
-		menu_destruir(menu);
+	if (!pokedex_pokes_eliminados) {
+		liberar_estructuras(menu, pokedex, nueva_pokedex, NULL, NULL,
+				    NULL);
+	}
+	racha_t *racha_max = racha_crear();
+	if (!racha_max) {
+		liberar_estructuras(menu, pokedex, nueva_pokedex,
+				    pokedex_pokes_eliminados, NULL, NULL);
+	}
+	racha_t *racha_actual = racha_crear();
+	if (!racha_actual) {
+		liberar_estructuras(menu, pokedex, nueva_pokedex,
+				    pokedex_pokes_eliminados, racha_max, NULL);
 	}
 
 	juego_t juego = { .jugador = &jugador,
@@ -809,8 +859,8 @@ int main(int argc, const char *argv[])
 			  .semilla = semilla,
 			  .poke_aux = NULL,
 			  .max_racha = 0,
-			  .racha_maxima = NULL,
-			  .racha_actual = NULL };
+			  .racha_maxima = racha_max,
+			  .racha_actual = racha_actual };
 	for (size_t i = 0; i < CANT_INICIAL_POKE; i++) {
 		crear_setear_monstruo(pokedex, nueva_pokedex);
 	}
@@ -823,11 +873,7 @@ int main(int argc, const char *argv[])
 
 	mostrar_outro(juego);
 
-	lista_destruir(juego.racha_actual);
-	lista_destruir(juego.racha_maxima);
-	pokedex_destruir_todo(pokedex_pokes_eliminados, liberar_monstruos);
-	pokedex_destruir_todo(nueva_pokedex, liberar_monstruos);
-	pokedex_destruir_todo(pokedex, liberar_pokemon);
-	menu_destruir(menu);
+	liberar_estructuras(menu, pokedex, nueva_pokedex,
+			    pokedex_pokes_eliminados, racha_max, racha_actual);
 	return 0;
 }
