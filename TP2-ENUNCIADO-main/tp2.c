@@ -511,9 +511,18 @@ void imprimir_terreno(tablero_t terreno[MAX_ALTO][MAX_ANCHO])
 void crear_setear_monstruo(pokedex_t *pokedex, pokedex_t *nueva_pokedex)
 {
 	pokemon_t *pokemon_nuevo = pokedex_devolver_pokemon_aleatorio(pokedex);
+	if (!pokemon_nuevo) {
+		return;
+	}
 	monstruos_t *poke_nuevo = calloc(1, sizeof(monstruos_t));
+	if (!poke_nuevo) {
+		return;
+	}
 	setear_atributos_pokemon(poke_nuevo, pokemon_nuevo);
-	pokedex_agregar_pokemon(nueva_pokedex, poke_nuevo);
+	if (!pokedex_agregar_pokemon(nueva_pokedex, poke_nuevo)) {
+		free(poke_nuevo);
+		return;
+	}
 }
 
 //pre:	Poke y poke_eliminado deben estar inicializados.

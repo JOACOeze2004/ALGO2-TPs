@@ -24,7 +24,7 @@ void racha_destruir(racha_t *racha);
 void racha_destruir_todo(racha_t *racha, void (*destructor)(void *));
 
 /**
- * Inserta un combo ( qeu en nuestro caso es un monstruo_t) a la racha.
+ * Inserta un combo a la racha (nosotros lo usamos para meter monstruos a la racha solo aca).
  * 
  *
  * Devuelve true si pudo agregar al combo,o false en caso de error.
