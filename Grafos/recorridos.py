@@ -37,8 +37,6 @@ def bfs(grafo , nodo_inicial):
                 visitados.add(vecino)
 
 
-    
-
 visitados = []
 
 dfs(grafo, "F", visitados)
