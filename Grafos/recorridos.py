@@ -1,12 +1,15 @@
 from collections import deque
 
 grafo = {
-    "A": ["B","D"],
-    "B": ["A","C","F"],
-    "C": ["B","D"],
-    "D": ["A","C"],
-    "E": ["F","A"],
-    "F": ["E","B"],
+    'A': ['B', 'C', 'F', 'D'],
+    'B': ['A', 'H'],
+    'C': ['A', 'I', 'F', 'E'],
+    'D': ['G', 'H', 'A'],
+    'E': ['H', 'C'],
+    'F': ['A', 'I', 'C', 'G'],
+    'G': ['I', 'F', 'D'],
+    'H': ['E', 'B', 'D'],
+    'I': ['F', 'C', 'G']
 }
 
 def dfs(grafo , nodo_inicio,visitados):
