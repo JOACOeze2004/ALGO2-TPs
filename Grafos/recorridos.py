@@ -12,10 +12,10 @@ grafo = {
     'I': ['F', 'C', 'G']
 }
 
-def dfs(grafo , nodo_inicio,visitados):
-    vecinos = grafo[nodo_inicio]
+def dfs(grafo , vertice,visitados):
+    vecinos = grafo[vertice]
 
-    visitados.append(nodo_inicio)
+    visitados.append(vertice)
     for vecino in vecinos:
         if vecino not in visitados:
             dfs(grafo,vecino,visitados)
@@ -38,7 +38,6 @@ def bfs(grafo , nodo_inicial):
             if vecino not in visitados:
                 cola.append(vecino)
                 visitados.add(vecino)
-
 
 visitados = []
 

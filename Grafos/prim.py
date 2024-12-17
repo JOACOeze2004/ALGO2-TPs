@@ -36,9 +36,6 @@ class AristaAsiNomas:
     def __lt__(self,otro):
         return self.peso < otro.peso
 
-
-    
-
 #version en clase q no funciona xq no tenemos el heap q aparece en clase (el d python)
 # def prim(grafo, nodo_inicial):
 #     arbol = {nodo_inicial:{}}

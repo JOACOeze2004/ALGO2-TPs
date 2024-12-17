@@ -39,6 +39,23 @@ void floyd_warshall(int grafo[V][V]) {
     imprimir_matrix(dist);
 }
 
+
+void floyd_warshall_redux(int grafo[V][V]) {
+    for (int k = 0; k < V; k++) {       //K seria nodo intermedio o V0
+        for (int i = 0; i < V; i++) {   // I seria mi V1
+            for (int j = 0; j < V; j++) {   // J seria mi V2
+                if (grafo[i][j] > grafo[i][k] + grafo[k][j]) {          //verificamos que haya camino posible desde I --> K y desde K-->J y V1-->V2 > V1--->V0--->V2
+                    grafo[i][j] = grafo[i][k] + grafo[k][j];           //cambias esa distancia ( la de la matriz posta) sumando la distancia de  V1--->V0 y V0---->V2 
+                }
+            }
+        }
+    }
+
+    printf("Matriz de distancias más cortas entre todos los pares de vértices:\n");
+    imprimir_matrix(grafo);
+}
+
+
 int main() {
     int grafo[V][V] = {
         {0, 10, INF, 8},
@@ -47,6 +64,6 @@ int main() {
         {8, 1, INF, 0}
     };
 
-    floyd_warshall(grafo);
+    floyd_warshall_redux(grafo);
     return 0;
 }

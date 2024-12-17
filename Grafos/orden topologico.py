@@ -31,7 +31,6 @@ def topo (grafo):
             incidencias[vecino] += 1
 
     cola = deque([nodo for nodo in grafo if incidencias[nodo] == 0])
-
     orden = []
 
     while len(cola) > 0:
