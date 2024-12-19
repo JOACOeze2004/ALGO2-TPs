@@ -22,6 +22,16 @@ grafo2 = {
     "F": []
 }
 
+grafo3 = {
+    "1": ["2", "3", "4"],
+    "2": ["5", "3"],
+    "3": ["6"],
+    "4": ["3", "7"],
+    "5": ["6","8"],
+    "6": ["8"],
+    "7": ["6","8"],
+    "8": [],
+}
 
 def topo (grafo):
     incidencias = {nodo: 0 for nodo in grafo}
@@ -42,7 +52,7 @@ def topo (grafo):
                 cola.append(vecino)
     return orden
 
-print("Orden topológico:", topo(grafo2))
+print("Orden topológico:", topo(grafo3))
 
-a = 13%8
+a = (0)%10
 print(a)

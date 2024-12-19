@@ -60,7 +60,6 @@ class AristaAsiNomas:
 #                 if vecino not in visitados:
 #                     heap.push(AristaAsiNomas(siguiente.n2,vecino,peso))
 
-
 import heapq
 
 def prim(grafo, nodo_inicio):
