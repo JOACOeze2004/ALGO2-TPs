@@ -165,6 +165,7 @@ void actualizar_nueva_tabla(hash_t *hash, par_t **tabla_vieja, size_t i)
 //post:	Devolvemos un hash que tiene los elementos que tenia antes pero con un vector de pares con mayor capacidad para evitar coaliciones encadenadas.
 hash_t *rehash(hash_t *hash)
 {
+	printf("hago un rehash\n");
 	par_t **tabla_vieja = hash->pares;
 	size_t *contador_viejo = hash->contador_pares;
 	size_t capacidad_vieja = hash->capacidad;
@@ -186,6 +187,7 @@ hash_t *rehash(hash_t *hash)
 	free(tabla_vieja);
 	return hash;
 }
+
 
 bool hash_insertar(hash_t *hash, char *clave, void *valor, void **encontrado)
 {

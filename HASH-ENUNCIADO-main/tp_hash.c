@@ -326,7 +326,14 @@ int main(int argc, const char *argv[])
 		return -1;
 	}
 	hash_t *pokedex = hash_crear(3);
+	if (!pokedex) {
+		return -1;
+	}
 	struct archivo_csv *archivo = abrir_archivo_csv(argv[1], ';');
+	if (archivo) {
+		hash_destruir(pokedex);
+		return -1;
+	}
 	size_t contador_tipos[CANTIDAD_TIPOS] = { 0, 0, 0, 0, 0, 0, 0 };
 	size_t columnas = 5;
 	char *nombre_pokemon = NULL;
@@ -340,6 +347,12 @@ int main(int argc, const char *argv[])
 			&resistencia };
 	while (leer_linea_csv(archivo, columnas, funciones, ctx) == 5) {
 		struct pokemon *nuevo_pokemon = malloc(sizeof(struct pokemon));
+		if (!nuevo_pokemon) {
+			cerrar_archivo_csv(archivo);
+			free(nombre_pokemon);
+			hash_destruir(pokedex);
+			return -1;
+		}
 		setear_pokemon(nuevo_pokemon, nombre_pokemon, tipo, fuerza,
 			       destreza, resistencia);
 		if (!hash_insertar(pokedex, nuevo_pokemon->nombre,

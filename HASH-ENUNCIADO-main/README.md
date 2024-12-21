@@ -35,7 +35,7 @@ make correr-tp
 ---
 ##  Funcionamiento
 
-El TP consta en hacer algo similar a lo que se hizo para el TP de Listas y de ABB, pero acá usamos el TDA Hash, usando nodos simplemente enlazados. Lo que se pide hacer, es básicamente, leer un archivo caso, línea por línea, separar los elementos separados por el ";" o "," (depende del separador que le pasemos), irlo casteando/parseando esos datos e irlos guardando en el ABB. Y debemos darle la opción al usuario de listar los pokemones que se leyeron de ese .csv (netamente lo hecho en el tp1 y el de lista) o darle la opción de buscar X Pokémon y que aparezca por pantalla el nombre, el tipo y las estadísticas, si se lo encuentra claro. Y se imprimiría estas dos opciones:
+El TP consta en hacer algo similar a lo que se hizo para el TP de Listas y de ABB, pero acá usamos el TDA Hash, usando nodos simplemente enlazados. Lo que se pide hacer, es básicamente, leer un archivo caso, línea por línea, separar los elementos separados por el ";" o "," (depende del separador que le pasemos), irlo casteando/parseando esos datos e irlos guardando en una tabla de hash abierta, donde se guardan los elementos en una estructura auxiliar similar a una lista. Y debemos darle la opción al usuario de listar los pokemones que se leyeron de ese .csv (netamente lo hecho en el tp1 y el de lista) o darle la opción de buscar X Pokémon y que aparezca por pantalla el nombre, el tipo y las estadísticas, si se lo encuentra claro. Y se imprimiría estas dos opciones:
 
 Bueno, para estructurar un poco esta parte, podemos empezar con un diagrama de como quedan las estructuras, y luego ir comentando en general la implementación del hash, halar de funciones concretas (como la de insertar, la función hash y el rehash). Empecemos entonces por como definimos nuestras estructuras y luego vamos al diagrama:
 
@@ -65,176 +65,32 @@ Bien, capaz ahora si se entiende esto de verificar con el contador_pares (array 
 ## Funcionamiento Mas especifico
 Bueno, una vez explicada la estructura, podemos darle una ojeada a lo que hicimos en la implementación, particularmente me interesa hablar de insertar, la operación del rehash y este tema de meterle un contador a la cantidad de pares que hay por posición hash, más que nada las ventajas y desventajas que veo con hacer esto. 
 
-###  funcion hash
-Primero podemos hablar de la función de hash que se me ocurrio:
-```c
-size_t funcion_hash(const char *clave, size_t capacidad)
-{
-	size_t hash_posicion = 0;
-	size_t i = 0;
-	while (clave[i] != '\0') {
-		hash_posicion = (hash_posicion * 73 + (unsigned char)clave[i]) %
-				capacidad;
-		i++;
-	}
-	return hash_posicion;
-}
-```
+###  Funcion hash
+Primero podemos hablar de la función de hash que se me ocurrio.
+
 Dijeron que lo mejor que podíamos hacer es ir recorriendo la clave y jugar con el valor ascii de la letra en cuestión, y eso hacemos, vamos actualizando la variable hash_posicion multiplicando el valor de la misma por el 73 y le sumamos el valor Ascci de la letra en cuestión y dividimos por la capacidad y nos quedamos con el resto de la división y lo seteamos en hash_posicion. 
 Obvio que no es revolucionario, ni nada rebuscado, es lo primero que se me ocurrió y vi que dentro de todo funcionaba bien, y asumo que está bien porque no se rompió en las pruebas de meter los 50000 pares. Capaz te preguntes ¿por qué el 73? y es que nada, cuando estaba haciendo la función hash me apareció un video de el teorema de sheldon cooper y que hablaba del número 73 y nada, lo meto medio que porque apareció ahí.   
 
 ###  Hash Buscar
-Vamos con la función que mas usamos que es la de buscar, que depende de la función de dict_buscar_par;
-```c
-par_t *dict_buscar_par(hash_t *hash, char *clave)
-{
-	size_t indice = funcion_hash(clave, hash->capacidad);
-	par_t *par_actual = hash->pares[indice];
-	bool clave_encontrada = false;
-	void *par_buscado = NULL;
-	while (par_actual != NULL && !clave_encontrada) {
-		if (strcmp(clave, par_actual->clave) == 0) {
-			par_buscado = par_actual;
-			clave_encontrada = true;
-		}
-		par_actual = par_actual->siguiente;
-	}
-	return par_buscado;
-}
-```
+Vamos con la función que mas usamos que es la de buscar, que depende de la función de dict_buscar_par.
 
 Básicamente lo que hace es, primero se para en la posición del hash que me dé  hacer la clave que busco, luego itero "hacia abajo" (o itero los nodos que estén en esa posición del hash) hasta que la clave del par_actual (o par en i si lo quieres ver así) y la clave que busco sean iguales, cortamos la iteración y retornamos su el par que encontramos, o Null ya que si no existe, no se modifica su valor de entrada, entonces retornamos NULL, y en buscar devolvemos NULL si no lo encontró o el valor de ese par devuelto. 
 
 ###  Hash Quitar/eliminar
-Despues en eliminar, tenemos estas 3 funciones:
-```c
-void reajustar_destruir_par(hash_t *hash, par_t *par_actual, par_t *par_aux,
-			    size_t indice)
-{
-	if (par_aux == NULL) {
-		hash->pares[indice] = par_actual->siguiente;
-	} else {
-		par_aux->siguiente = par_actual->siguiente;
-	}
-	free(par_actual->clave);
-	free(par_actual);
-	hash->contador_pares[indice]--;
-	hash->cantidad--;
-}
-void *eliminar_par(hash_t *hash, char *clave, par_t *par_actual, size_t indice)
-{
-	void *valor_eliminado = NULL;
-	bool elimine_par = false;
-	par_t *par_aux = NULL;
-	while (par_actual != NULL && !elimine_par) {
-		if (strcmp(par_actual->clave, clave) == 0) {
-			valor_eliminado = par_actual->valor;
-			reajustar_destruir_par(hash, par_actual, par_aux,
-					       indice);
-			elimine_par = true;
-		}
-		par_aux = par_actual;
-		par_actual = par_actual->siguiente;
-	}
-	return valor_eliminado;
-}
-void *hash_quitar(hash_t *hash, char *clave)
-{
-	if (hash == NULL || clave == NULL || hash->cantidad == 0) {
-		return NULL;
-	}
-	size_t indice = funcion_hash(clave, hash->capacidad);
-	par_t *par_actual = hash->pares[indice];
-	if (par_actual == NULL) {
-		return NULL;
-	}
-	void *valor_eliminado = eliminar_par(hash, clave, par_actual, indice);
-	return valor_eliminado;
-}
-```
-Inicialmente, hacemos lo mismo que buscar, no vi tan claro que podamos usar buscar, ya que si bien queremos el valor eliminado, entre medio de la función, reajustar y luego liberar el par, entonces, preferí no reutilizar buscar. Si lo encontramos, nos guardamos en una variable el valor del elemento a eliminar y llamamos a reajustar_destruir_par, que tiene dos casos. El primer caso es que el para eliminar este en la primera posición (o sea que si par_aux se mantiene en NULL quiere decir que el primer elemento era el que buscábamos), entonces decimos que el primer elemento de posición hash, apunte al siguiente al que vamos a eliminar. Caso contrario, es que este en el medio o al final (que par_aux sea distinto de null),donde seteamos que el siguiente del nodo aux, apunte al siguiente del par que queremos eliminar, entonces si vemos los nodos, el par que queríamos eliminar quedo "desencadenado" y lo podemos liberar porque su dirección de memoria la estamos guardando en par_actual, y decrementamos la cantidad y el contador_pares de esa posición hash. Y al final devolvemos el valor eliminado que lo obtenemos de la función  eliminar_par. 
+Despues en eliminar, hacemos lo mismo que buscar, no vi tan claro que podamos usar buscar, ya que si bien queremos el valor eliminado, entre medio de la función, reajustar y luego liberar el par, entonces, preferí no reutilizar buscar. Si lo encontramos, nos guardamos en una variable el valor del elemento a eliminar y llamamos a reajustar_destruir_par, que tiene dos casos. El primer caso es que el para eliminar este en la primera posición (o sea que si par_aux se mantiene en NULL quiere decir que el primer elemento era el que buscábamos), entonces decimos que el primer elemento de posición hash, apunte al siguiente al que vamos a eliminar. Caso contrario, es que este en el medio o al final (que par_aux sea distinto de null),donde seteamos que el siguiente del nodo aux, apunte al siguiente del par que queremos eliminar, entonces si vemos los nodos, el par que queríamos eliminar quedo "desencadenado" y lo podemos liberar porque su dirección de memoria la estamos guardando en par_actual, y decrementamos la cantidad y el contador_pares de esa posición hash. Y al final devolvemos el valor eliminado que lo obtenemos de la función  eliminar_par. 
 
 ###  Hash Iterar
- ```c
-size_t hash_iterar(hash_t *hash, bool (*f)(char *, void *, void *), void *ctx){
-	if (hash == NULL || f == NULL) {
-		return 0;
-	}
-	size_t cantidad_iteraciones = 0;
-	bool finalizar_iteracion = false;
-	for (size_t i = 0; i < hash->capacidad && !finalizar_iteracion; i++) {
-		par_t *par_actual = hash->pares[i];
-		while (par_actual != NULL && !finalizar_iteracion) {
-			if (!f(par_actual->clave, par_actual->valor, ctx)) {
-				finalizar_iteracion = true;
-			}
-			cantidad_iteraciones++;
-			par_actual = par_actual->siguiente;
-		}
-	}
-	return cantidad_iteraciones;
-}
-```
 Luego tenemos iterar, que no tiene mucha gracia ya que lo que hacemos recorrer el has, pero como si fuera una "matriz" ya que primero te paras en la primera posición del vector de las posiciones hash, y luego iteras hasta que algún nodo te de NULL que quiere decir que llegaste al final del vector, y luego saltas a la siguiente posición del vector de posiciones hash y así sucesivamente. (Obvio que si la función devuelve false o llega al final de todo el hash se corta la iteración).
 
 ###  Hash Insertar, caso feliz.
 
-Ahora vamos con lo "más interesante, la función de insertar que depende de varias funciones y distintos casos. Podemos arrancar en el caso feliz, donde no vemos el tema de coaliciones y rehashing:
- ```c
-bool agregar_par(hash_t *hash, char *clave, void *valor, void **encontrado)
-{
-	size_t indice_hash = funcion_hash(clave, hash->capacidad);
-	par_t *pos_actual = hash->pares[indice_hash];
-	bool encontre_clave_repetida = false;
-	while (pos_actual != NULL && !encontre_clave_repetida) {
-		if (buscar_y_editar_valor_clave_repetida(
-			    clave, valor, pos_actual, encontrado)) {
-			encontre_clave_repetida = true;
-		}
-		pos_actual = pos_actual->siguiente;
-	}
-	if (!encontre_clave_repetida) {
-		if (!agregar_par_no_repetido(hash, clave, valor, indice_hash)) {
-			return false;
-		}
-	}
-	return true;
-}
-```
-En ese caso, tendríamos dos situaciones, la primera es que me pasaron una clave que ya existe, entonces debemos modificar su valor, o caso contrario donde la clave no existe en el hash entonces debemos crear un nodo y setearlo tal que quede la clave y el valor/contenido dentro del mismo. Entonces algo así hicimos: ```c
- ```c
-bool buscar_y_editar_valor_clave_repetida(char *clave, void *valor,
-					  par_t *pos_actual, void **encontrado)
-{
-	if (strcmp(clave, pos_actual->clave) == 0) {
-		if (encontrado != NULL) {
-			*encontrado = pos_actual->valor;
-		}
-		pos_actual->valor = valor;
-		return true;
-	}
-	return false;
-}
-```
+Ahora vamos con lo "más interesante, la función de insertar que depende de varias funciones y distintos casos. Podemos arrancar en el caso feliz, donde no vemos el tema de coaliciones y rehashing.
 
-Acá simplemente devolvemos true si pudimos la clave del par que estamos verificando es la misma a la clave que querían insertar, en ese caso, me guardo en encontrado el valor previo a ser modificado, modifico el valor viejo por el valor que me pasaron y devolvemos true, si no ocurre esto, devolvemos false, y en agregar par, seguís iterando hasta que se encuentre o no si es que hay clave repetida. Si se devolvió true tenemos una flag que corta la iteración y saltea el siguiente caso, que es que no existe dicha clave en el hash entonces debemos agregarla, y para eso tenemos a la función de agregar pero para clave que no es repetida: ```c
- ```c
-bool agregar_par_no_repetido(hash_t *hash, char *clave, void *valor,
-			     size_t indice_hash)
-{
-	par_t *par_nuevo = crear_nuevo_par(clave, valor);
-	if (par_nuevo == NULL) {
-		return false;
-	}
-	par_nuevo->siguiente = hash->pares[indice_hash];
-	hash->pares[indice_hash] = par_nuevo;
-	hash->contador_pares[indice_hash]++;
-	hash->cantidad++;
-	return true;
-}
-```
+En ese caso, tendríamos dos situaciones, la primera es que me pasaron una clave que ya existe, entonces debemos modificar su valor, o caso contrario donde la clave no existe en el hash entonces debemos crear un nodo y setearlo tal que quede la clave y el valor/contenido dentro del mismo.
 
-Donde simplemente creamos un par, si falla la función de crear, devolvemos directamente false, y si no falla el calloc, mandamos ese par a la posición hash que le pasamos a la función, aumentamos la cantidad de pares que hay tanto en general como en esa posición hash; algo igual que no sé muy bien si ocurre así, pero me parece (en base a algunas pruebas que hicimos), es que se insertan tipo pila ya que si meto a Mewtwo por ejemplo (que era el Pokémon que hacía que frenara la iteración en mis pruebas de iterar), y metía otros dos pokemones, la función de iterar me devolvía 3 entonces en teoría queda tipo una pila la inserción de pares nuevos, pero no estamos muy seguros de que sea realmente así.
+Acá simplemente devolvemos true si pudimos la clave del par que estamos verificando es la misma a la clave que querían insertar, en ese caso, me guardo en encontrado el valor previo a ser modificado, modifico el valor viejo por el valor que me pasaron y devolvemos true, si no ocurre esto, devolvemos false, y en agregar par, seguís iterando hasta que se encuentre o no si es que hay clave repetida. Si se devolvió true tenemos una flag que corta la iteración y saltea el siguiente caso, que es que no existe dicha clave en el hash entonces debemos agregarla, y para eso tenemos a la función de agregar pero para clave que no es repetida.
+
+Donde simplemente creamos un par, si falla la función de crear, devolvemos directamente false, y si no falla el calloc, mandamos ese par a la posición hash que le pasamos a la función, aumentamos la cantidad de pares que hay tanto en general como en esa posición hash; algo igual que no sé muy bien si ocurre así, pero me parece (en base a algunas pruebas que hicimos), es que se insertan tipo pila ya que si meto a Mewtwo por ejemplo (que era el Pokémon que hacía que frenara la iteración en mis pruebas de iterar), y metía otros dos pokemones, la función de iterar me devolvía 3.
 
 ###  Hash Insertar, caso triste, rehashing.
 
@@ -245,49 +101,7 @@ Tristemente, no vivimos siempre el caso feliz, y debemos hablar del rehashing, l
 Básicamente debemos solucionar el problema de encadenar muchas claves en una misma posición hash, de todas formas al ser un hash abierto podemos darnos una cierta libertad ya que se van metiendo en los nodos, no es que estrictamente dos pares no pueden ocupar una misma posición como ocurre en el hash cerrado. Pero tampoco podemos abusar ya que podemos tener la mala suerte de que muchos pares vayan a una misa posición hash, entonces para evitar esa situación, debemos hacer rehashing más que nada para intentar evitar la segunda situación que mencione. 
 Entonces ¿Como lo hacemos?, bueno en clase mencionaron que podías crearte otro hash pero con un vector de capacidad mayor (el doble/triple de la capacidad anterior), pero vi más conveniente crearme solo el vector de pares con la nueva capacidad, más que nada para no abusar tanto de pedir memoria que al final no usas para nada, porque simplemente haces calloc del vector de pares con una capacidad aumentada y luego de pasar los pares al nuevo vector (y si todo salió bien) le pedís al hash viejo que apunte al nuevo vector de pares. 
 
-Bueno nos desviamos, así que volviendo lo que deberíamos hacer, es pedir un nuevo vector de pares con una capacidad mayor, y tenemos que recorrer el vector viejo de pares e ir agregando el par en cuestión al nuevo vector, pero ahora como tenemos una capacidad mayor, nos va a dar resultados distintos a los que nos dio la primera vez ya que el dividiendo de la función hash (la capacidad) aumento, es como si divido 100/3, que nos queda de resto 1 contra 100 /6 que nos queda 4 como resto. Y a la vez, podes ir haciendo free, pero antes debemos guardarnos en una variable el par siguiente así podemos avanzar en la iteración sin perder referencia alguna o liberar mal, algo así en código:
- ```c
-void liberar_tabla_vieja(par_t *par_actual)
-{
-	free(par_actual->clave);
-	free(par_actual);
-}
-
-void actualizar_nueva_tabla(hash_t *hash, par_t **tabla_vieja, size_t i)
-{
-	par_t *par_actual = tabla_vieja[i];
-	while (par_actual != NULL) {
-		par_t *par_aux = par_actual->siguiente;
-		agregar_par(hash, par_actual->clave, par_actual->valor, NULL);
-		liberar_tabla_vieja(par_actual);
-		par_actual = par_aux;
-	}
-}
-
-hash_t *rehash(hash_t *hash)
-{
-	par_t **tabla_vieja = hash->pares;
-	size_t *contador_viejo = hash->contador_pares;
-	size_t capacidad_vieja = hash->capacidad;
-	hash->capacidad *= FACTOR_CRECIMIENTO;
-	hash->pares = calloc(hash->capacidad, sizeof(par_t));
-	if (hash->pares == NULL) {
-		return NULL;
-	}
-	hash->contador_pares = calloc(hash->capacidad, sizeof(size_t));
-	if (hash->contador_pares == NULL) {
-		free(hash->pares);
-		return NULL;
-	}
-	hash->cantidad = 0;
-	for (size_t i = 0; i < capacidad_vieja; i++) {
-		actualizar_nueva_tabla(hash, tabla_vieja, i);
-	}
-	free(contador_viejo);
-	free(tabla_vieja);
-	return hash;
-}
-```
+Bueno nos desviamos, así que volviendo lo que deberíamos hacer, es pedir un nuevo vector de pares con una capacidad mayor, y tenemos que recorrer el vector viejo de pares e ir agregando el par en cuestión al nuevo vector, pero ahora como tenemos una capacidad mayor, nos va a dar resultados distintos a los que nos dio la primera vez ya que el dividiendo de la función hash (la capacidad) aumento, es como si divido 100/3, que nos queda de resto 1 contra 100 /6 que nos queda 4 como resto. Y a la vez, podes ir haciendo free, pero antes debemos guardarnos en una variable el par siguiente así podemos avanzar en la iteración sin perder referencia alguna o liberar mal.
 
 Y para que quede mas claro podmeos hacer un dibujo de la idea del rehash.
 <div align="center">

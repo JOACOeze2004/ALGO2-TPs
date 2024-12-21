@@ -11,6 +11,20 @@ struct pokemon {
 	int resistencia;
 };
 
+bool continuar_iteracion2(char *clave, void *valor, void *ctx)
+{
+	int *p = valor;
+	if (p) {
+		printf("clave:%s\n", clave);
+		pa2m_afirmar(p != NULL,
+			     "Se itera correctamente sobre un pokemon");
+		if (strcmp(clave, "Mewtwo") == 0) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void CrearHashRetornaAlgoNoNULL()
 {
 	hash_t *hash = hash_crear(2);
@@ -78,12 +92,13 @@ void InsertarBienDevuelveTrue()
 		     "insertamos correctamente un elemento al diccionario");
 	pa2m_afirmar(hash_cantidad(hash) == 1,
 		     "La cantidad aumento correctemente en 1");
-	pa2m_afirmar(hash_buscar(hash, clave) == valor,
-		     "Encontre la clave porque es distinto de NULL");
+	pa2m_afirmar(
+		hash_buscar(hash, clave) == valor,
+		"Encontre la clave porque  porque lo devuelto es distinto de NULL");
 	hash_destruir(hash);
 }
 
-void InsertarVAriosElementosDevuelveTrue()
+void InsertarVariosElementosDevuelveTrue()
 {
 	hash_t *hash = hash_crear(2);
 
@@ -160,8 +175,9 @@ void InsertarRepetidosNoAuemntaLaCantidadYMePisaElValor()
 	pa2m_afirmar(
 		encontrado == NULL,
 		"encontrado se mantiene en NULL porque no reemplazamos nada aun ");
-	pa2m_afirmar(hash_buscar(hash, clave) == valor,
-		     "Encontre la clave porque es distinto de NULL");
+	pa2m_afirmar(
+		hash_buscar(hash, clave) == valor,
+		"Encontre la clave porque lo devuelto es distinto de NULL");
 	pa2m_afirmar(
 		hash_insertar(hash, clave, valor_nuevo, &encontrado),
 		"insertamos correctamente un elemento repetido al diccionario");
@@ -199,11 +215,10 @@ void InsertarUnvalorNULLdevuelveTrue()
 // pruebas de buscar
 void BuscarenHashNULLDevuelveNULL()
 {
-	hash_t *hash = hash_crear(2);
+	hash_t *hash = NULL;
 	char *clave = "noc";
-	pa2m_afirmar(hash_buscar(NULL, clave) == NULL,
+	pa2m_afirmar(hash_buscar(hash, clave) == NULL,
 		     "buscar en un hash NULL devuelve NULL");
-	hash_destruir(hash);
 }
 
 void BuscarenHashVAcioDevuelveNULL()
@@ -319,11 +334,10 @@ void BuscarClaveConVAloresActualizadosDevuelveUltimoValorInsertado()
 // Pruebas de eliminar
 void EliminarenHashNULLDevuelveNULL()
 {
-	hash_t *hash = hash_crear(3);
+	hash_t *hash = NULL;
 	char *clave = "noc";
-	pa2m_afirmar(hash_quitar(NULL, clave) == NULL,
+	pa2m_afirmar(hash_quitar(hash, clave) == NULL,
 		     "Quitar en un hash NULL devuelve NULL");
-	hash_destruir(hash);
 }
 
 void EliminarenHashVacioDevuelveNULL()
@@ -555,7 +569,7 @@ void EliminoTodosLosPokemonesAgreggodeNuevoYEliminoFuncionaBien()
 	hash_destruir(hash);
 }
 
-void EliminaEliminarEinsertarMismoParFuncionaBien()
+void EliminarEinsertarMismoParFuncionaBien()
 {
 	hash_t *hash = hash_crear(3);
 
@@ -564,7 +578,7 @@ void EliminaEliminarEinsertarMismoParFuncionaBien()
 	void *valor = &(pikachu.fuerza);
 	void *encontrado = NULL;
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++) { //no esta bueno que usemos pa2m en bucles.
 		hash_insertar(hash, clave, valor, &encontrado);
 		pa2m_afirmar(hash_cantidad(hash) == 1,
 			     "La cantidad aumento correctemente en 1");
@@ -597,14 +611,13 @@ bool continuar_iteracion(char *clave, void *valor, void *ctx)
 
 void IterarConHashNULLDevuelve0()
 {
-	hash_t *hash = hash_crear(2);
+	hash_t *hash = NULL;
 
 	size_t elementos_iterados =
-		hash_iterar(NULL, continuar_iteracion, NULL);
+		hash_iterar(hash, continuar_iteracion, NULL);
 
 	pa2m_afirmar(elementos_iterados == 0,
 		     "Con un HAsh NULL, itero 0 elementos");
-	hash_destruir(hash);
 }
 
 void IterarConFuncionNULLDevuelve0()
@@ -950,7 +963,7 @@ void ContieneClaveEnHashValido()
 
 void NoContieneClaveEnHashNULL()
 {
-	hash_t *hash = hash_crear(3);
+	hash_t *hash = NULL;
 
 	struct pokemon pikachu = { "Pikachu", 'E', 55, 40, 50 };
 	struct pokemon charizard = { "Charizard", 'F', 100, 143, 239 };
@@ -971,10 +984,8 @@ void NoContieneClaveEnHashNULL()
 	hash_insertar(hash, clave2, valor2, &encontrado);
 	hash_insertar(hash, clave3, valor3, &encontrado);
 
-	pa2m_afirmar(!hash_contiene(NULL, clave1),
+	pa2m_afirmar(!hash_contiene(hash, clave1),
 		     "No existe la clave en un hash NULl");
-
-	hash_destruir(hash);
 }
 
 void NoContieneClaveNULLEnHashValido()
@@ -1002,7 +1013,6 @@ void NoContieneClaveNULLEnHashValido()
 
 	pa2m_afirmar(!hash_contiene(hash, NULL),
 		     "No existe la clave si esta es NULL en un hash valido");
-
 	hash_destruir(hash);
 }
 
@@ -1018,7 +1028,7 @@ int main()
 	InsertarEnHAshNULLDevuelveFalse();
 	InsertarConClaveNULLDevuelveFalse();
 	InsertarBienDevuelveTrue();
-	InsertarVAriosElementosDevuelveTrue();
+	InsertarVariosElementosDevuelveTrue();
 	InsertarRepetidosNoAuemntaLaCantidadYMePisaElValor();
 	InsertarBienPeroConEncontradoNULLDevuelveTrue();
 	InsertarUnvalorNULLdevuelveTrue();
@@ -1039,7 +1049,7 @@ int main()
 	InsertarVariosPokemonesYeliminarlosExitosamente();
 	IntentarEliminarVariasVecesElMismoDevuelveNULL();
 	EliminoTodosLosPokemonesAgreggodeNuevoYEliminoFuncionaBien();
-	EliminaEliminarEinsertarMismoParFuncionaBien();
+	EliminarEinsertarMismoParFuncionaBien();
 
 	pa2m_nuevo_grupo("Pruebas de Iterar en Hash");
 	IterarConHashNULLDevuelve0();
