@@ -58,93 +58,19 @@ Primero que todo, vamos con el diagrama de cómo queda las estructuras del ABB:
 
 Nosotros al crear el abb, reservamos memoria para la estructura del mismo, y seteamos a 0 el contador de nodos (o nodos), la raíz como NULL ya que este vacío de momento el ABB y el comparador es seteado con el comparador que le pasemos a la función. Y el struct nodo_t se setea, de inicio, con todo NULL ya que la raíz, por tomarlo como ejemplo, no existe y por lo tanto no tiene ni hijo izquierdo ni derecho. Y si agregamos una raíz, está ahora ya no es NULL, tiene un elemento pero izquierda y derecha siguen siendo NULL porque no hay nodo ahí. Y si agregamos, se van modificando esos campos de izquierda y derecha según lo que vayamos agregando. 
 
-Ahora empecemos por las funciones del ABB, vamos con insertar, se nos presentaban dos casos, uno que es insertar la raíz, es decir el árbol esta vacío y Tenes que insertar el primer elemento, entonces eso termina siendo bastante fácil porque es solo setear el campo raíz con el nodo a agregar y seteas por las dudas que izquierda y derecha sean NULL ( y se aumenta la cantidad de nodos, obvio). El otro caso, es que el ABB ya tuviera raíz y tuviéramos que agregar un elemento nuevo, aquí el código y lo desglosamos un poco:
+### Insertar
 
-```c
-nodo_t *insertar_abb_no_vacio(nodo_t *raiz, nodo_t *nuevo_nodo,
-                  int (*comparador)(void *, void *))
-{
-    if (raiz == NULL) {
-        return nuevo_nodo;
-    }
-    int resultado_comparacion =
-        comparador(nuevo_nodo->elemento, raiz->elemento);
-    if (resultado_comparacion <= 0) {
-        raiz->izq = insertar_abb_no_vacio(raiz->izq, nuevo_nodo,
-                          comparador);
-    } else {
-        raiz->der = insertar_abb_no_vacio(raiz->der, nuevo_nodo,
-                          comparador);
-    }
-    return raiz;
-}
-```
+Ahora empecemos por las funciones del ABB, vamos con insertar, se nos presentaban dos casos, uno que es insertar la raíz, es decir el árbol esta vacío y Tenes que insertar el primer elemento, entonces eso termina siendo bastante fácil porque es solo setear el campo raíz con el nodo a agregar y seteas por las dudas que izquierda y derecha sean NULL ( y se aumenta la cantidad de nodos, obvio). El otro caso, es que el ABB ya tuviera raíz y tuviéramos que agregar un elemento nuevo, aquí el código y lo desglosamos un poco.
+
 Básicamente lo que hacemos como condición de corte, es que si el nodo raiz es NULL, devolvemos el nuevo nodo pero actualizado según lo que dio la comparación. Luego calculamos ,usando el comparador que nos pasen, si la comparación diera mayor, debemos recorrer a la derecha y volver a comparar y en caso contrario de que diera menor o igual a 0, vamos a recorrer del lado izquierdo y volver a comparar hasta que podamos insertarlo. En todo este proceso recursivo, vamos sesteando el campo derecho o izquierdo según nos de la comparación, y finalmente devolvemos el nodo raiz que le pasamos actualizada. Y bueno en la función de abb_insertar si la raiz es NULL (no tiene nodo aun) seteamos la raiz, y caso contrario es otro elemento cualquiera.
 
-Para buscar es algo similar a insertar en caso de que la raiz no sea NULL. Veamos el código:
+Para buscar es algo similar a insertar en caso de que la raiz no sea NULL. 
 
-```c
-void *abb_obtener_elemento_recursivo(nodo_t *nodo, void *elemento,
-                     int (*comparador) (void *, void *))
-{
-    if (nodo == NULL) {
-        return NULL;
-    }
-    int resultado_comparacion = comparador(elemento, nodo->elemento);
-    if (resultado_comparacion == 0) {
-        return nodo->elemento;
-    }
-    if (resultado_comparacion > 0) {
-        return abb_obtener_elemento_recursivo(nodo->der, elemento,
-                              comparador);
-    }
-    return abb_obtener_elemento_recursivo(nodo->izq, elemento, comparador);
-}
+Buscar es como insertar en caso de Raiz no NULL, ya que acá vamos haciendo una búsqueda binaria, si el comparador me dio igual a 0, quiere decir que el elemento buscado y el encontrado son iguales, entonces retorno ese nodo. Si el resultado da mayor, me debería mover a la derecha del árbol ya que ahí se encuentran los elementos mayores a la raiz del ABB, y caso contrario me muevo a la izquierda y vuelvo a preguntar lo mismo, esto todo recursivo ya que volvemos a llamar a la función hasta que se cumpla que nodo es == NULL (que seria que llego al final de alguna de las dos ramas) y en ese caso retornamos NULL ya que no lo encontró. Y en abb obtener si el abb es NULL o si la cantidad de elementos en el abb es 0, retorno NULL porque no encontraría nada si el abb está vacío o si es NULL. Y luego retornamos lo que devuelva la función recursiva de buscar.
 
-void *abb_obtener(abb_t *abb, void *elemento)
-{
-    if (abb == NULL || abb->nodos == 0) {
-        return NULL;
-    }
-    return abb_obtener_elemento_recursivo(abb->raiz, elemento,
-                          abb->comparador);
-}
-```
-Como vemos buscar es como insertar en caso de Raiz no NULL, ya que acá vamos haciendo una búsqueda binaria, si el comparador me dio igual a 0, quiere decir que el elemento buscado y el encontrado son iguales, entonces retorno ese nodo. Si el resultado da mayor, me debería mover a la derecha del árbol ya que ahí se encuentran los elementos mayores a la raiz del ABB, y caso contrario me muevo a la izquierda y vuelvo a preguntar lo mismo, esto todo recursivo ya que volvemos a llamar a la función hasta que se cumpla que nodo es == NULL (que seria que llego al final de alguna de las dos ramas) y en ese caso retornamos NULL ya que no lo encontró. Y en abb obtener si el abb es NULL o si la cantidad de elementos en el abb es 0, retorno NULL porque no encontraría nada si el abb está vacío o si es NULL. Y luego retornamos lo que devuelva la función recursiva de buscar.
+### Iteraciones Preorden-Inorden-Postorden
 
-Ahora vamos con iterar_inorden que me trajo problemas por un pequeño detalle, pero vamos con el código:
-```c
-size_t contar_iteraciones_inorder(nodo_t *nodo, bool (*f)(void *, void *),
-                  void *ctx, bool *continua_iteracion)
-{
-    if (nodo == NULL || !(*continua_iteracion)) {
-        return 0;
-    }
-    size_t cantidad = 0;
-    cantidad += contar_iteraciones_inorder(nodo->izq, f, ctx,
-                           continua_iteracion);
-
-    if (*continua_iteracion) {
-        if (!f(nodo->elemento, ctx)) {
-            *continua_iteracion = false;
-        }
-        cantidad++;
-    }
-    cantidad += contar_iteraciones_inorder(nodo->der, f, ctx,
-                           continua_iteracion);
-    return cantidad;
-}
-
-size_t abb_iterar_inorden(abb_t *abb, bool (*f)(void *, void *), void *ctx)
-{
-    if (abb == NULL || f == NULL) {
-        return 0;
-    }
-    bool continuar_iteracion = true;
-    return contar_iteraciones_inorder(abb->raiz, f, ctx,
-                      &continuar_iteracion);
-}
-```
+Ahora vamos con iterar_inorden que me trajo problemas por un pequeño detalle.
 
 Para empezar, podemos aclarar que el bool* es más que nada para frenar la iteración, ya que la condición de corte para el recorrido seria preguntar si el nodo es NULL o si se cortó la iteración, lo primero será básicamente preguntar si llego al final del árbol o que lo recorrido todo, y la segunda seria que si se cortó la iteración (porque la función f devolvió false).
 Entonces como hacemos recorrido inorden, recordamos que primero recorremos el subárbol izquierdo, luego el elemento en cuestión (si no tiene algún hijo izquierdo) y luego vamos y recorremos el subárbol derecho. Por eso hacemos suma directa de la cantidad e elementos que de hacer el llamado a la función del nodo a la izquierda del que estemos parados. Y vamos comparando siempre que si sigue la iteración y F retorna True, aumentamos en 1 la cantidad de iteraciones. Y entonces llega el momento donde f da false. Yo lo que hice en un principio era agregar pokemones en un ABB y una función que corte prematuramente la iteración si el nombre de un Pokémon era X nombre, y ahí cortar la iteración, entonces llegaba, preguntaba, si se seguía la iteración (si porque aún no devolvimos false), F devuelve false, el bool* ahora es false (así no ejecutamos ese bloque) y aumentamos la cantidad en 1 porque debemos contar a ese Pokémon.
@@ -175,120 +101,24 @@ size_t contar_iteraciones_inorder(nodo_t *nodo, bool (*f)(void *, void *),
 ```
 Entonces al cortar el bloque con return cantidad, no aumentábamos en 1 entonces las pruebas me daban mal las pruebas porque tomaba con que no cortaba bien la función entonces, también fallaban en vectorizar si cortábamos prematuramente la iteración. Mas allá de ese problema tonto, después repetimos con el árbol derecho (si no cortamos la iteración antes) y retornamos la cantidad una vez terminada la iteración. Si queremos hacer los otros recorridos, es intercambiar el orden de los recorridos o la verificación de la función F. 
 
-Luego tenemos la función de vectorizar, que no tuvimos problemas (mas allá de los cortes prematuros) pero capaz tome una mala decisión o una polémica, más que nada al no querer reutilizar la función de iterar. Mas que anda, lo decidí así por vagancia, ya que son muy similares pero hacen cosas distintas, yo lo pensé de otra forma pero es total mente valido usar la función de iterar y luego vas vectorizando, pero bueno, analicemos el código y la "función principal" de vectorizar:
+### Vectorizar
 
-```c
-void agregar_elemento_al_vector(void *elemento, size_t *i, void **vector)
-{
-    vector[*i] = elemento;
-    (*i)++;
-}
+Luego tenemos la función de vectorizar, que no tuvimos problemas (mas allá de los cortes prematuros) pero capaz tome una mala decisión o una polémica, más que nada al no querer reutilizar la función de iterar. Mas que anda, lo decidí así por vagancia, ya que son muy similares pero hacen cosas distintas, yo lo pensé de otra forma pero es total mente valido usar la función de iterar y luego vas vectorizando, pero bueno, analicemos el código y la "función principal" de vectorizar.
 
-void rellenar_vector_inorden_recu(nodo_t *nodo, void **vector, size_t tamaño,
-                  size_t *i)
-{
-    if (*i == tamaño || nodo == NULL) {
-        return;
-    }
-    if (nodo->izq != NULL) {
-        rellenar_vector_inorden_recu(nodo->izq, vector, tamaño, i);
-    }
-    if (*i < tamaño) {
-        agregar_elemento_al_vector(nodo->elemento, i, vector);
-    }
-    if (nodo->der != NULL) {
-        rellenar_vector_inorden_recu(nodo->der, vector, tamaño, i);
-    }
-}
-
-size_t abb_vectorizar_inorden(abb_t *abb, void **vector, size_t tamaño)
-{
-    if (abb == NULL || vector == NULL) {
-        return 0;
-    }
-    size_t i = 0;
-    rellenar_vector_inorden_recu(abb->raiz, vector, tamaño, &i);
-    return i;
-}
-```
 Lo que más "destaca" es que i lo pasamos por referencia, esto es más que nada porque necesitamos que I se vaya aumentando a medida que vamos metiendo elementos en el vector y ya que lo vamos a modificar y necesitamos que se mantenga el índice, lo pasamos por referencia. Entonces, vamos recorriendo y en vez de preguntar si una función f es true, llamamos a la funcione agregar al vector, y así sucesivamente hasta que i sea igual al tamaño que me pasaron o se llegó al final del árbol y no hay nada más que recorrer. Como vemos es un calco de la iteración pero cambiando el hecho de vamos llenando el vector en vez de verificar si cortamos la iteración. 
 
-Ahora vamos con la función más problemática (para variar), eliminar:
-```c
-nodo_t *buscar_predecesor_inorden(nodo_t *nodo)
-{
-    if (nodo == NULL) {
-        return NULL;
-    }
-    nodo_t *nodo_actual = nodo->izq;
-    while (nodo_actual->der != NULL) {
-        nodo_actual = nodo_actual->der;
-    }
-    return nodo_actual;
-}
 
-nodo_t *eliminar_nodo(nodo_t *nodo, void *buscado, void **encontrado,
-              int (*comparador)(void *, void *),
-              bool *se_encontro_elemento)
-{
-    if (nodo == NULL) {
-        return NULL;
-    }
-    int resultado_comparacion = comparador(buscado, nodo->elemento);
-    if (resultado_comparacion == 0) {
-        if (!(*se_encontro_elemento)) {
-            if (encontrado != NULL) {
-                *encontrado = nodo->elemento;
-            }
-            *se_encontro_elemento = true;
-        }
-        if (nodo->der != NULL && nodo->izq != NULL) {
-            nodo_t *nodo_inorden = buscar_predecesor_inorden(nodo);
-            nodo->elemento = nodo_inorden->elemento;
-            nodo->izq = eliminar_nodo(nodo->izq,
-                          nodo_inorden->elemento,
-                          encontrado, comparador,
-                          se_encontro_elemento);
-            return nodo;
-        }
-        nodo_t *hijo_no_null = (nodo->der != NULL) ? nodo->der :
-                                 nodo->izq;
-        free(nodo);
-        return hijo_no_null;
-    } else if (resultado_comparacion > 0) {
-        nodo->der = eliminar_nodo(nodo->der, buscado, encontrado,
-                      comparador, se_encontro_elemento);
-    } else {
-        nodo->izq = eliminar_nodo(nodo->izq, buscado, encontrado,
-                      comparador, se_encontro_elemento);
-    }
-    return nodo;
-}
+### Eliminar en ABB
 
-bool abb_quitar(abb_t *abb, void *buscado, void **encontrado)
-{
-    if (abb == NULL) {
-        return false;
-    }
-    if (encontrado != NULL) {
-        *encontrado = NULL;
-    }
-    bool se_encontro_elemento = false;
-    abb->raiz = eliminar_nodo(abb->raiz, buscado, encontrado,
-                  abb->comparador, &se_encontro_elemento);
-    if (se_encontro_elemento) {
-        (abb->nodos)--;
-        return true;
-    }
-    return false;
-}
-```
+Ahora vamos con la función más problemática (para variar), eliminar.
+
 Vamos por lo fácil primero, primero buscamos el elemento a eliminar (como hacíamos con buscar), una vez encontrado seteamos el bool* a true y guardamos en encontrado el elemento que estaba en ese nodo así queda seteado por si quieres saber que eliminaste (u tanto innecesario pero s lo que se pide). Luego tendríamos que eliminar el elemento en cuestión y para eso tendríamos dos casos; tiene 0 o 1 hijo y caso con 2 hijos. El fácil es el caso con 0/1 hijos, que lo hacemos es, crearnos una variable donde guardamos el nodo derecho si este no es NULL (es decir si existe) o el izquierdo si no se cumple lo anterior, luego liberamos el nodo en cuestión y retornamos esa variable auxiliar. Para explicar mejor, caso donde no tuviera hijos devolveríamos NULL (porque quedaría el izquierdo del nodo) entonces es válido ya que estamos "marcando" que no hay nada ahí, y si había un hijo, pisamos el valor viejo básicamente. 
 Ahora viene la parte difícil, y que probablemente algo este mal, es eliminar con dos hijos. Empezamos igual, buscamos el elemento a eliminar y nos quedamos con el valor del elemento a eliminar en encontrado, y después verificamos que si el nodo derecho e izquierdo no son NULL, es decir existen, entonces primero nos buscamos el predecesor inorden del elemento a buscar, en otras palabras, buscar el elemento que esta mas ala derecha del subárbol izquierdo. Una vez conseguido el predecesor inorden, me guardo en el elemento del predecesor inorden en el nodo a eliminar, y llamamos recursivamente a la función pero el resultado de ese llamado recursivo será el valor que tenga el hijo izquierdo del nodo a eliminar, y nos mismo a la izquierda. Honestamente fue un poco difícil llegar a esta solución, y no estoy seguro de que este 100% correcto, más que anda por el llamado recursivo, pero si lo pensamos más en frio, llamar recursivamente a la función nos "garantiza" que se va a ir actualizando el resto de los elementos hasta que se llegue al predecesor inorden. 
 Pero ¿Como?, bueno la respuesta es que vos ahora vas a ir a la izquierda del nodo y el elemento a buscar cambia al del predecesor inorden que nos faltaría hacerle free porque estaría repetido el elemento, entonces vamos recorriendo recursivamente y vamos actualizando del nodo el campo izquierdo hasta que llegamos al caso donde el elemento que busco es el predecesor, y como es muy probable que sea un nodo hoja (porque es el elemento que este más a la derecha por ende no hay hijos) caeríamos en el caso con 0 hijos así que terminaríamos haciéndole free. Es un proceso complicado, capaz se podría hacer de otra forma y la realidad es que no se me ocurrió una mejor forma de hacerlo sin que no se rompa el árbol (o el programa en muchos casos).Por último, si es llego a encontrar el elemento (el bool* es true), restamos uno a la cantidad y devolvemos true, sino devolvemos false. 
 Una última cosa a agregar sería el caso borde de si encontrado era NULL, algo que note en el taller que era un error común de muchos (incluyéndome) más que anda porque uno ataja el caso de que si encontrado es NULL no puedas eliminarlo, entonces eso te traía problema en dos pruebas que eliminaban elementos y hacían otra cosa (como destruir o buscar) entonces al no eliminarlo te tiraba error en la prueba. Tengo entendido que se debería tomar como invalido el caso donde los punteros sean NULL, pero al parecer acá debías ser capaz de eliminarlo, es raro más que nada porque no lo comenta explícitamente n la precondición del .h. Pero supongamos que puede ser valido, era algo solo para comentar. Pero permitiendo que sea NULL y manejarlo como corresponde, no se rompe nada y funcionaria ese caso borde, aunque se me hace raro que te permita eliminar si le paso un encontrado como NULL, asumo que si le pasamos NULL, estarías diciendo que no te interesa guardarte el elemento eliminado. 
 
-Una cosita a aclarar, sería el uso del bool*, originalmente, no me había dado cuenta de que al llegar a volver a hacer la comparación entre el predecesor inorden y ese elemento (cuando hacemos el llamado recursivo para eliminar dos hijos), entonces entraba al if(comparador == 0) y e pisaba el valor de encontrado con el del predecesor orden, entonces metí un if que decía que if(*encontrado == NULL) y que me pise el valor de *encontrado. Pero teníamos otro gran problema, y es que yo pensé a esta función como que si se devolvía NULL en *encontrado quería decir que nunca se llegó a pisar y prende nunca se eliminó el elemento. Y había unas pruebas que se intentaban eliminar elementos NULL y claro, se pisaba *encontrado con el elemento en cuestión que era NULL entonces nunca llegaba a devolverme true. Así que pensé en el problema podría resolverse de dos formas, sacando el llamado recursivo (cosa que no se me ocurrió como hacerlo y que no se rompa nada) o con un bool* como hice en iterador. 
+Una cosita a aclarar, sería el uso del bool*, originalmente, no me había dado cuenta de que al llegar a volver a hacer la comparación entre el predecesor inorden y ese elemento (cuando hacemos el llamado recursivo para eliminar dos hijos), entonces entraba al if(comparador == 0) y e pisaba el valor de encontrado con el del predecesor orden, entonces metí un if que decía que if(*encontrado == NULL) y que me pise el valor de *encontrado. Pero teníamos otro gran problema, y es que yo pensé a esta función como que si se devolvía NULL en *encontrado quería decir que nunca se llegó a pisar y prende nunca se eliminó el elemento. Y había unas pruebas que se intentaban eliminar elementos NULL y claro, se pisaba *encontrado con el elemento en cuestión que era NULL entonces nunca llegaba a devolverme true. Así que pensé en el problema podría resolverse de dos formas, sacando el llamado recursivo (cosa que no se me ocurrió como hacerlo y que no se rompa nada) o con un bool* como hice en iterador.
+ 
 ---
 ## Respuestas a las preguntas teóricas
 1. Explique teóricamente (y utilizando gráficos) qué es una árbol, árbol binario y árbol binario de búsqueda. Explique cómo funcionan, cuáles son sus operaciones básicas (incluyendo el análisis de complejidad de cada una de ellas) y por qué es importante la distinción de cada uno de estos diferentes tipos de árboles. Ayúdese con diagramas para explicar.
