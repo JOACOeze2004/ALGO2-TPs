@@ -13,13 +13,10 @@ struct pokedex {
 
 struct pokedex *pokedex_crear()
 {
-	struct pokedex *nueva_pokedex = malloc(sizeof(struct pokedex));
-	if (nueva_pokedex == NULL) {
+	struct pokedex *nueva_pokedex = calloc(1,sizeof(struct pokedex));
+	if (!nueva_pokedex) {
 		return NULL;
 	}
-	nueva_pokedex->pokemones = NULL;
-	nueva_pokedex->capacidad = 0;
-	nueva_pokedex->cantidad = 0;
 	return nueva_pokedex;
 }
 
@@ -29,7 +26,7 @@ bool asignar_memoria_pokemon(struct pokedex *pokedex, struct pokemon pokemon)
 {
 	pokedex->pokemones[pokedex->cantidad].nombre =
 		malloc(strlen(pokemon.nombre) + 1);
-	if (pokedex->pokemones[pokedex->cantidad].nombre == NULL) {
+	if (!pokedex->pokemones[pokedex->cantidad].nombre) {
 		return false;
 	}
 	return true;
@@ -72,7 +69,7 @@ bool es_tipo_esperado(struct pokemon pokemon)
 //post: devuelve true si el nombre del pokemon no es vacio, y si las demas estadisticas del pokemon son mayores o iguales a 0.
 bool es_entrada_adecuada(struct pokemon pokemon)
 {
-	if (pokemon.nombre == NULL) {
+	if (!pokemon.nombre) {
 		return false;
 	}
 	return (strcmp(pokemon.nombre, "") != 0 && es_tipo_esperado(pokemon) &&
@@ -91,7 +88,7 @@ bool redimensionar_pokedex(struct pokedex *pokedex)
 	struct pokemon *pokemones_redimensionados =
 		realloc(pokedex->pokemones,
 			nueva_capacidad_pokedex * sizeof(struct pokemon));
-	if (pokemones_redimensionados == NULL) {
+	if (!pokemones_redimensionados ) {
 		return false;
 	}
 	pokedex->pokemones = pokemones_redimensionados;
@@ -101,7 +98,7 @@ bool redimensionar_pokedex(struct pokedex *pokedex)
 
 bool pokedex_agregar_pokemon(struct pokedex *pokedex, struct pokemon pokemon)
 {
-	if (pokedex == NULL) {
+	if (!pokedex) {
 		return false;
 	}
 	if (pokedex->capacidad <= pokedex->cantidad) {
@@ -120,30 +117,13 @@ bool pokedex_agregar_pokemon(struct pokedex *pokedex, struct pokemon pokemon)
 
 size_t pokedex_cantidad_pokemones(struct pokedex *pokedex)
 {
-	if (pokedex == NULL) {
-		return 0;
-	}
-	return pokedex->cantidad;
-}
-
-//pre:	Los dos strings deberian ser validos.
-//post:	Retorna el resultado de la comparacion entre los ds strings.
-int comparar_strs(const char *str1, const char *str2)
-{
-	return strcmp(str1, str2);
-}
-
-//pre:	El inicio y el fin deberian ser validos.
-//post:	Devuelve el calculo del centro del arreglo.
-size_t calcular_centro(size_t inicio, size_t fin)
-{
-	return (inicio + fin) / 2;
+	return pokedex ? pokedex->cantidad : 0;
 }
 
 const struct pokemon *pokedex_buscar_pokemon(struct pokedex *pokedex,
 					     const char *nombre)
 {
-	if (pokedex == NULL || nombre == NULL || (pokedex->cantidad <= 0) ||
+	if (!pokedex || !nombre || pokedex->cantidad <= 0 ||
 	    (strcmp(nombre, "") == 0)) {
 		return NULL;
 	}
@@ -152,26 +132,23 @@ const struct pokemon *pokedex_buscar_pokemon(struct pokedex *pokedex,
 	size_t inicio = 0;
 	size_t fin = pokedex->cantidad - 1;
 	while (inicio <= fin && !se_encontro_pokemon) {
-		size_t centro = calcular_centro(inicio, fin);
+		size_t centro = (inicio + fin) / 2;
 		if (centro >= pokedex->cantidad ||
-		    pokedex->pokemones[centro].nombre == NULL) {
+		    !pokedex->pokemones[centro].nombre) {
 			return NULL;
 		}
-		int resultado_entr_strs = comparar_strs(
+		int resultado = strcmp(
 			pokedex->pokemones[centro].nombre, nombre);
-		if (resultado_entr_strs == 0) {
+		if (resultado == 0) {
 			se_encontro_pokemon = true;
 			pos_pokemon_buscado = centro;
-		} else if (resultado_entr_strs < 0) {
+		} else if (resultado < 0) {
 			inicio = centro + 1;
 		} else {
 			fin = centro - 1;
 		}
 	}
-	if (se_encontro_pokemon) {
-		return &pokedex->pokemones[pos_pokemon_buscado];
-	}
-	return NULL;
+	return se_encontro_pokemon ? &pokedex->pokemones[pos_pokemon_buscado] : NULL;
 }
 
 //pre:	Los punteros al struct pokemones deberian ser validos.
@@ -203,7 +180,7 @@ size_t pokedex_iterar_pokemones(struct pokedex *pokedex,
 				bool (*funcion)(struct pokemon *, void *),
 				void *ctx)
 {
-	if (pokedex == NULL) {
+	if (!pokedex) {
 		return 0;
 	}
 	if (pokedex->cantidad > 1) {
@@ -213,8 +190,7 @@ size_t pokedex_iterar_pokemones(struct pokedex *pokedex,
 	size_t i = 0;
 	bool finalizar_iteracion = false;
 	while (i < pokedex->cantidad && !finalizar_iteracion) {
-		bool continuar_iteracion = funcion(&pokedex->pokemones[i], ctx);
-		if (!continuar_iteracion) {
+		if (!funcion(&pokedex->pokemones[i], ctx)) {
 			finalizar_iteracion = true;
 		}
 		cant_iterada++;
@@ -225,8 +201,8 @@ size_t pokedex_iterar_pokemones(struct pokedex *pokedex,
 
 void pokedex_destruir(struct pokedex *pokedex)
 {
-	if (pokedex != NULL) {
-		if (pokedex->pokemones != NULL) {
+	if (pokedex) {
+		if (pokedex->pokemones) {
 			for (size_t i = 0; i < pokedex->cantidad; i++) {
 				free(pokedex->pokemones[i].nombre);
 			}

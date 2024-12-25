@@ -3,7 +3,7 @@
 #include <string.h>
 
 struct archivo_csv {
-	FILE *nombre_archivo;
+	FILE *archivo;
 	size_t columnas;
 	char **string;
 	char separador;
@@ -95,26 +95,17 @@ struct archivo_csv *dividir_string(struct archivo_csv *archivo,
 void liberar_todo(struct archivo_csv *archivo)
 {
 	free(archivo->string);
-	fclose(archivo->nombre_archivo);
+	fclose(archivo->archivo);
 	free(archivo);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//pre:	Se asume que el puntero al struct es valido.
-//post:	Inicializa los distintos campos del struct archvios.
-void inicializar_campos(struct archivo_csv *archivo, char separador)
-{
-	archivo->columnas = 0;
-	archivo->string = NULL;
-	archivo->separador = separador;
-}
-
 //pre:	Se supone que el  puntero al struct archivos y el puntero al nombre del archivo son validos o ya fueron validados de antemano.
 //post:	Devuelve true si el archivo existe y se pudo abriri, fase en caso de que el nombre del archivo es null.
 bool es_archivo_valido(struct archivo_csv *archivo, const char *nombre_archivo)
 {
-	archivo->nombre_archivo = fopen(nombre_archivo, "r");
-	if (archivo->nombre_archivo == NULL) {
+	archivo->archivo = fopen(nombre_archivo, "r");
+	if (!archivo->archivo) {
 		return false;
 	}
 	return true;
@@ -123,15 +114,15 @@ bool es_archivo_valido(struct archivo_csv *archivo, const char *nombre_archivo)
 struct archivo_csv *abrir_archivo_csv(const char *nombre_archivo,
 				      char separador)
 {
-	struct archivo_csv *archivo = malloc(sizeof(struct archivo_csv));
-	if (archivo == NULL) {
+	struct archivo_csv *archivo = calloc(1,sizeof(struct archivo_csv));
+	if (!archivo) {
 		return NULL;
 	}
 	if (!es_archivo_valido(archivo, nombre_archivo)) {
 		free(archivo);
 		return NULL;
 	}
-	inicializar_campos(archivo, separador);
+	archivo->separador = separador;
 	return archivo;
 }
 
@@ -154,14 +145,14 @@ size_t leer_linea_csv(struct archivo_csv *archivo, size_t columnas,
 	size_t contador_lineas_casteadas = 0;
 	size_t i = 0;
 	archivo->columnas = columnas;
-	if (fgets(texto, sizeof(texto), archivo->nombre_archivo) == NULL) {
+	if (fgets(texto, sizeof(texto), archivo->archivo) == NULL) {
 		return contador_lineas_casteadas;
 	}
 	if (dividir_string(archivo, texto) == NULL) {
 		return 0;
 	}
 	while (i < archivo->columnas) {
-		if (funciones[i] != NULL) {
+		if (funciones[i]) {
 			if (funciones[i](archivo->string[i],
 					 ctx ? ctx[i] : NULL)) {
 				contador_lineas_casteadas++;

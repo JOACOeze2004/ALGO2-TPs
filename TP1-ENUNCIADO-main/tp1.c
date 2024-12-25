@@ -2,6 +2,8 @@
 #include "src/pokedex.h"
 #include <stdio.h>
 #include <string.h>
+#define CANT_INICIAL_TIPOS 7
+
 
 //pre: asumimos que los argumentos que le pasamos son validos (poque se los pasamos nosotros al ejecutar el programa).
 //post: devuelve false en caso de que le pasemos menos de dos arguemntos, sino devolvemos true.
@@ -174,9 +176,16 @@ int main(int argc, char const *argv[])
 	}
 	const char *nombre_archivo = argv[1];
 	struct pokedex *nueva_pokedex = pokedex_crear();
+	if (!nueva_pokedex){
+		return -1;
+	}	
 	struct pokemon pokemon;
 	struct archivo_csv *archivo = abrir_archivo_csv(nombre_archivo, ';');
-	size_t contador_tipos[7] = { 0 };
+	if (!archivo){
+		pokedex_destruir(nueva_pokedex);
+		return -1;
+	}	
+	size_t contador_tipos[CANT_INICIAL_TIPOS] = { 0 };
 	int fuerza_maxima = 0;
 	int destreza_maxima = 0;
 	int resistencia_maxima = 0;

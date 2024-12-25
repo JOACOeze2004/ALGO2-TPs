@@ -25,3 +25,8 @@ valgrind-tp1: ejemplo
 clean:
 	rm -f pruebas_alumno ejemplo tp1
 
+correr-tp:
+	$(CC) $(CFLAGS) src/*.c tp1.c -o tp1 && valgrind $(VALGRIND_FLAGS) ./tp1 ejemplos/pokedex.csv
+	
+correr-pruebas:
+	$(CC) $(CFLAGS) src/*.c pruebas_alumno.c -o pruebas_alumno && valgrind $(VALGRIND_FLAGS) ./pruebas_alumno
