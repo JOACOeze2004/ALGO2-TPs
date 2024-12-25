@@ -72,10 +72,17 @@ void lista_destruir_todo(Lista *lista, void (*destructor)(void *))
 
 size_t lista_cantidad_elementos(Lista *lista)
 {
-	if (!lista) {
-		return 0;
+	return	lista ? lista->cantidad : 0;
+}
+
+//pre:	El nodo pasado debe ser valido y se debn pasar los argumentos correspondientes.
+//post:	Devuelve el nodo segun los parametros que le pasamos.
+Nodo *recorrer_lista(Nodo *nodo_actual,size_t inicio, size_t posicion,  size_t tope)
+{
+	for (size_t i = inicio; i < posicion - tope; i++) {
+		nodo_actual = nodo_actual->siguiente;
 	}
-	return lista->cantidad;
+	return nodo_actual;
 }
 
 //pre:  Los punteros recibidos deberian haber sido atajados antes de llamr a esta funcion.
@@ -92,23 +99,21 @@ void agregar_en_posicion_intermedia(Lista *lista, size_t posicion,
 				    Nodo *nodo_nuevo)
 {
 	Nodo *nodo_anterior = lista->nodo_inicio;
-	for (size_t i = 0; i < posicion - 1; i++) {
-		nodo_anterior = nodo_anterior->siguiente;
-	}
+	nodo_anterior = recorrer_lista(nodo_anterior,0,posicion,1);
 	nodo_nuevo->siguiente = nodo_anterior->siguiente;
 	nodo_anterior->siguiente = nodo_nuevo;
 }
 
-bool lista_agregar_elemento(Lista *lista, size_t posicion, void *cosa)
+bool lista_agregar_elemento(Lista *lista, size_t posicion, void *elem)
 {
 	if (!lista || posicion > lista->cantidad) {
 		return false;
 	}
-	Nodo *nodo_nuevo = crear_nuevo_nodo(cosa);
+	Nodo *nodo_nuevo = crear_nuevo_nodo(elem);
 	if (!nodo_nuevo) {
 		return NULL;
 	}
-	nodo_nuevo->elemento = cosa;
+	nodo_nuevo->elemento = elem;
 	if (posicion == 0) {
 		agregar_al_inicio(lista, nodo_nuevo);
 	} else {
@@ -136,12 +141,12 @@ void agregar_nodo_al_final(Lista *lista, Nodo *nodo_nuevo)
 	lista->nodo_final = nodo_nuevo;
 }
 
-bool lista_agregar_al_final(Lista *lista, void *cosa)
+bool lista_agregar_al_final(Lista *lista, void *elem)
 {
-	if (!lista || !cosa) {
+	if (!lista || !elem) {
 		return false;
 	}
-	Nodo *nodo_nuevo = crear_nuevo_nodo(cosa);
+	Nodo *nodo_nuevo = crear_nuevo_nodo(elem);
 	if (nodo_nuevo == NULL) {
 		return false;
 	}
@@ -159,9 +164,7 @@ bool lista_agregar_al_final(Lista *lista, void *cosa)
 Nodo *lista_quitar_nodo_en_posicion(Lista *lista, size_t posicion)
 {
 	Nodo *nodo_anterior = lista->nodo_inicio;
-	for (size_t i = 1; i < posicion; i++) {
-		nodo_anterior = nodo_anterior->siguiente;
-	}
+	nodo_anterior = recorrer_lista(nodo_anterior,1,posicion,0);
 	Nodo *nodo_aux = nodo_anterior->siguiente;
 	nodo_anterior->siguiente = nodo_aux->siguiente;
 	return nodo_aux;
@@ -249,9 +252,7 @@ void *lista_buscar_elemento(Lista *lista, void *buscado,
 Nodo *obtener_el_nodo_en_posicion(Lista *lista, size_t posicion)
 {
 	Nodo *nodo_actual = lista->nodo_inicio;
-	for (size_t i = 0; i < posicion; i++) {
-		nodo_actual = nodo_actual->siguiente;
-	}
+	nodo_actual = recorrer_lista (nodo_actual,0,posicion,0);
 	return nodo_actual;
 }
 

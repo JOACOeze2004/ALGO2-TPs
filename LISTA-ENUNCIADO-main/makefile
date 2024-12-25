@@ -41,3 +41,6 @@ formatear-cola:
 	
 formatear-tp:
 	$(CLANG_FORMAT) -i -style=file tp_lista.c
+	
+formatear-todo:
+	$(CLANG_FORMAT) -i -style=file pruebas_alumno.c && $(CLANG_FORMAT) -i -style=file src/lista.c && $(CLANG_FORMAT) -i -style=file src/pila.c && $(CLANG_FORMAT) -i -style=file src/cola.c && $(CLANG_FORMAT) -i -style=file tp_lista.c
