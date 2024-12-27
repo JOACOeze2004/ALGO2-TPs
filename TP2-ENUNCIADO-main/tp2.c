@@ -17,6 +17,7 @@
 #define MOV_JUGADOR 'J'
 #define MOV_JUGADOR_INVERTIDO 'I'
 #define MOV_RANDOM 'R'
+#define SEGUNODS_DELAY 1.5
 
 typedef struct coordenada {
 	int x;
@@ -42,7 +43,6 @@ struct jugador {
 
 typedef struct juego {
 	struct jugador *jugador;
-	int semilla;
 	pokedex_t *pokedex_nueva;
 	pokedex_t *pokedex_vieja;
 	pokedex_t *pokedex_pokes_eliminados;
@@ -673,12 +673,11 @@ int logica(int entrada, void *datos)
 
 //pre:	A prior el restraso deberia estar inicializado. (auque no es estrictamente necesario)
 //post:	Hace un for con el uso del tipo volatile (que le dice al compilador que no optimice los for asi tarda mas en hacerlo y da la sensacion de un delay) y seteamos a 0 el retraso para poder reutilizarlo despues.
-void aplciar_delay(volatile long *retraso)
+void aplciar_delay(double segundos)
 {
-	for (long i = 0; i < 99999999; i++) {
-		(*retraso)++;
-	}
-	*retraso = 0;
+	clock_t empezar_delay = clock();
+	while ((double)(clock() - empezar_delay) / CLOCKS_PER_SEC < segundos)
+		;
 }
 
 //pre:	Promedio debe estar inicializado.
@@ -718,22 +717,18 @@ void mostrar_outro(juego_t juego)
 {
 	printf(ANSI_COLOR_GREEN
 	       "Bueno se acabo el tiempo, veamos tus estadisticas...\n" ANSI_COLOR_RESET);
-	volatile long retraso =
-		0; //tengo entendido que es C99, pero queria como meter un delay para simular una carga de datos, quedo bien igual. Aunque es posible q time.h tenga algun delay mejor del que hice yo.
-	aplciar_delay(&retraso);
+	aplciar_delay(SEGUNODS_DELAY);
 
 	printf(ANSI_COLOR_BOLD ANSI_COLOR_BLUE
 	       "Tu puntaje fue de: " ANSI_COLOR_RED ANSI_COLOR_BOLD "%i\n",
 	       juego.jugador->puntaje);
-
-	aplciar_delay(&retraso);
+	aplciar_delay(SEGUNODS_DELAY);
 
 	printf(ANSI_COLOR_BLUE
 	       "Tu multiplicador maximo fue de: " ANSI_COLOR_RED ANSI_COLOR_BOLD
 	       "%i\n",
 	       juego.multiplicador_maximo);
-
-	aplciar_delay(&retraso);
+	aplciar_delay(SEGUNODS_DELAY);
 
 	printf(ANSI_COLOR_BLUE
 	       "Tu combo mas largo (sin contar al primero que capturaste de la racha) fue: " ANSI_COLOR_RED ANSI_COLOR_BOLD
@@ -759,7 +754,7 @@ void mostrar_outro(juego_t juego)
 			juego.multiplicador_maximo) /
 		       3;
 
-	aplciar_delay(&retraso);
+	aplciar_delay(SEGUNODS_DELAY);
 
 	porcesar_calificacion(promedio);
 	printf(ANSI_COLOR_YELLOW
@@ -791,6 +786,27 @@ void liberar_estructuras(menu_t *menu, pokedex_t *pokedex,
 	}
 	if (menu) {
 		menu_destruir(menu);
+	}
+}
+
+void inicializar_juego(juego_t *juego, struct jugador *jugador,
+		       pokedex_t *nueva_pokedex, pokedex_t *pokedex,
+		       pokedex_t *pokedex_pokes_eliminados, racha_t *racha_max,
+		       racha_t *racha_actual)
+{
+	juego->jugador = jugador;
+	juego->pokedex_nueva = nueva_pokedex;
+	juego->pokedex_vieja = pokedex;
+	juego->pokemon_eliminado = NULL;
+	juego->multiplicador_maximo = 1;
+	juego->pokedex_pokes_eliminados = pokedex_pokes_eliminados;
+	juego->poke_aux = NULL;
+	juego->max_racha = 0;
+	juego->racha_maxima = racha_max;
+	juego->racha_actual = racha_actual;
+
+	for (size_t i = 0; i < CANT_INICIAL_POKE; i++) {
+		crear_setear_monstruo(pokedex, nueva_pokedex);
 	}
 }
 
@@ -835,6 +851,7 @@ int main(int argc, const char *argv[])
 	} else {
 		srand((unsigned int)semilla);
 	}
+
 	struct jugador jugador = { 0 };
 	jugador.multiplicador = 1;
 
@@ -842,37 +859,29 @@ int main(int argc, const char *argv[])
 	if (!nueva_pokedex) {
 		liberar_estructuras(menu, pokedex, NULL, NULL, NULL, NULL);
 	}
+
 	pokedex_t *pokedex_pokes_eliminados =
 		pokedex_crear(comparador_monstruos);
 	if (!pokedex_pokes_eliminados) {
 		liberar_estructuras(menu, pokedex, nueva_pokedex, NULL, NULL,
 				    NULL);
 	}
+
 	racha_t *racha_max = racha_crear();
 	if (!racha_max) {
 		liberar_estructuras(menu, pokedex, nueva_pokedex,
 				    pokedex_pokes_eliminados, NULL, NULL);
 	}
+
 	racha_t *racha_actual = racha_crear();
 	if (!racha_actual) {
 		liberar_estructuras(menu, pokedex, nueva_pokedex,
 				    pokedex_pokes_eliminados, racha_max, NULL);
 	}
 
-	juego_t juego = { .jugador = &jugador,
-			  .pokedex_nueva = nueva_pokedex,
-			  .pokedex_vieja = pokedex,
-			  .pokemon_eliminado = NULL,
-			  .multiplicador_maximo = 1,
-			  .pokedex_pokes_eliminados = pokedex_pokes_eliminados,
-			  .semilla = semilla,
-			  .poke_aux = NULL,
-			  .max_racha = 0,
-			  .racha_maxima = racha_max,
-			  .racha_actual = racha_actual };
-	for (size_t i = 0; i < CANT_INICIAL_POKE; i++) {
-		crear_setear_monstruo(pokedex, nueva_pokedex);
-	}
+	juego_t juego;
+	inicializar_juego(&juego, &jugador, nueva_pokedex, pokedex,
+			  pokedex_pokes_eliminados, racha_max, racha_actual);
 
 	game_loop(logica, &juego);
 
